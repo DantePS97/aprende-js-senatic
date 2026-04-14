@@ -1,0 +1,38 @@
+{
+  "id": "js-basico-m2-l2",
+  "title": "Múltiples condiciones: else if",
+  "xpReward": 25,
+  "theory": {
+    "markdown": "## Múltiples condiciones: else if\n\nA veces necesitas verificar más de dos casos. Para eso usamos `else if`:\n\n```javascript\nif (condicion1) {\n  // caso 1\n} else if (condicion2) {\n  // caso 2\n} else if (condicion3) {\n  // caso 3\n} else {\n  // si ninguna condición se cumple\n}\n```\n\n### Ejemplo: Sistema de notas\n\n```javascript\nlet nota = 78;\nlet calificacion;\n\nif (nota >= 90) {\n  calificacion = 'Excelente';\n} else if (nota >= 75) {\n  calificacion = 'Bueno';\n} else if (nota >= 60) {\n  calificacion = 'Aprobado';\n} else {\n  calificacion = 'Reprobado';\n}\n\nconsole.log(calificacion); // 'Bueno'\n```\n\n### ¿Cómo funciona?\n\nJavaScript evalúa las condiciones **de arriba hacia abajo**. Cuando encuentra la primera condición que sea `true`, ejecuta ese bloque y **salta el resto**.\n\n### Operadores lógicos\n\nPuedes combinar condiciones:\n\n| Operador | Significado | Ejemplo |\n|----------|-------------|--------|\n| `&&` | Y (ambas deben ser true) | `edad >= 18 && tieneId` |\n| `\\|\\|` | O (al menos una debe ser true) | `esAdmin \\|\\| esModerador` |\n| `!` | NO (invierte) | `!estaLogueado` |",
+    "examples": [
+      {
+        "code": "let hora = 14;\nlet saludo;\n\nif (hora < 12) {\n  saludo = 'Buenos días';\n} else if (hora < 18) {\n  saludo = 'Buenas tardes';\n} else {\n  saludo = 'Buenas noches';\n}\n\nconsole.log(saludo); // 'Buenas tardes'",
+        "explanation": "Saludo según la hora del día usando else if"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea un sistema de calificación.\n\n- Crea una variable `puntos` con el valor `82`\n- Crea una variable `nivel` que sea:\n  - `'Oro'` si puntos >= 90\n  - `'Plata'` si puntos >= 70 (y menos de 90)\n  - `'Bronce'` si puntos >= 50 (y menos de 70)\n  - `'Sin medalla'` si es menor a 50",
+    "starterCode": "// Tu código aquí\n",
+    "tests": [
+      {
+        "description": "La variable 'puntos' existe y vale 82",
+        "expression": "typeof puntos !== 'undefined' && puntos === 82"
+      },
+      {
+        "description": "La variable 'nivel' existe",
+        "expression": "typeof nivel !== 'undefined'"
+      },
+      {
+        "description": "Con 82 puntos el nivel es 'Plata'",
+        "expression": "nivel === 'Plata'"
+      }
+    ],
+    "hints": [
+      "Declara las dos variables primero: `let puntos = 82;` y `let nivel;`",
+      "Usa if / else if / else if / else para cubrir los 4 casos",
+      "Recuerda: las condiciones se evalúan en orden, de la más alta a la más baja",
+      "Con puntos = 82 y la condición `puntos >= 70`, el resultado debe ser 'Plata'"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "js-basico-m1-l3",
+  "title": "let vs const",
+  "xpReward": 20,
+  "theory": {
+    "markdown": "## let vs const\n\nEn JavaScript moderno tenemos dos formas principales de declarar variables:\n\n### `let` — para valores que cambian\n\n```javascript\nlet puntaje = 0;\npuntaje = 100;  // ✅ OK, puede cambiar\n```\n\nUsa `let` cuando el valor de la variable va a cambiar durante el programa.\n\n### `const` — para valores fijos\n\n```javascript\nconst PI = 3.14159;\nPI = 3;  // ❌ Error! No puede cambiar\n```\n\nUsa `const` cuando el valor NO debe cambiar. La palabra `const` viene de **constante**.\n\n### ¿Cuándo usar cada una?\n\n| Situación | Usa |\n|-----------|-----|\n| El valor va a cambiar | `let` |\n| El valor es fijo | `const` |\n| No sabes aún | `const` (es la opción más segura) |\n\n### Ejemplo práctico\n\n```javascript\nconst NOMBRE_APP = 'AprendeJS';  // No cambia\nlet vidas = 3;                    // Cambia durante el juego\n\nvidas = vidas - 1;  // ✅ Correcto\nNOMBRE_APP = 'Otro';  // ❌ Error!\n```\n\n> **Buena práctica**: Usa siempre `const` por defecto. Solo usa `let` cuando sepas que el valor va a cambiar.",
+    "examples": [
+      {
+        "code": "const VELOCIDAD_LUZ = 299792458; // metros por segundo\nlet distancia = 0;\ndistancia = 100;  // Podemos cambiarla",
+        "explanation": "VELOCIDAD_LUZ nunca cambia (const). distancia puede cambiar (let)"
+      },
+      {
+        "code": "const MAX_INTENTOS = 3;\nlet intentosRestantes = MAX_INTENTOS;\n\nintentosRestantes = intentosRestantes - 1;",
+        "explanation": "Típico en juegos: el máximo de intentos es constante, los restantes van bajando"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea:\n- Una constante `MAX_NIVEL` con el valor `10`\n- Una variable `nivelActual` con el valor `1`\n\nLuego incrementa `nivelActual` en 1 (debe quedar en 2).",
+    "starterCode": "// Declara MAX_NIVEL como constante\n// Declara nivelActual como variable\n// Incrementa nivelActual en 1\n",
+    "tests": [
+      {
+        "description": "MAX_NIVEL existe y vale 10",
+        "expression": "typeof MAX_NIVEL !== 'undefined' && MAX_NIVEL === 10"
+      },
+      {
+        "description": "nivelActual existe y vale 2 (fue incrementado)",
+        "expression": "typeof nivelActual !== 'undefined' && nivelActual === 2"
+      }
+    ],
+    "hints": [
+      "Usa `const` para MAX_NIVEL: `const MAX_NIVEL = 10;`",
+      "Usa `let` para nivelActual: `let nivelActual = 1;`",
+      "Para incrementar: `nivelActual = nivelActual + 1;` o también `nivelActual++;`"
+    ]
+  }
+}

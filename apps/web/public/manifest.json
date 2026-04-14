@@ -1,0 +1,34 @@
+{
+  "name": "AprendeJS — SENATIC",
+  "short_name": "AprendeJS",
+  "description": "Aprende JavaScript desde cero con lecciones interactivas y gamificación",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "orientation": "portrait",
+  "lang": "es",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Continuar curso",
+      "url": "/courses",
+      "description": "Ir directamente a mis cursos"
+    }
+  ]
+}

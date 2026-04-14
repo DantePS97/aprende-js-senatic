@@ -1,0 +1,42 @@
+{
+  "id": "js-basico-m1-l2",
+  "title": "Tipos de datos",
+  "xpReward": 15,
+  "theory": {
+    "markdown": "## Tipos de datos en JavaScript\n\nEn JavaScript, los valores tienen diferentes **tipos**. Piénsalos como el tipo de contenido que cabe en una caja.\n\n### Los 3 tipos básicos\n\n**1. String (texto)**\n```javascript\nlet saludo = 'Hola mundo';\nlet nombre = \"Valentina\";\n```\nLos strings van entre comillas simples `'...'` o dobles `\"...\"`\n\n**2. Number (número)**\n```javascript\nlet edad = 17;\nlet precio = 3.99;\nlet temperatura = -5;\n```\nPueden ser enteros o decimales, positivos o negativos.\n\n**3. Boolean (verdadero/falso)**\n```javascript\nlet esMayorDeEdad = true;\nlet tieneCuenta = false;\n```\nSolo tienen dos valores posibles: `true` o `false`.\n\n### Cómo saber el tipo de una variable\n\nUsa el operador `typeof`:\n```javascript\nconsole.log(typeof 'Hola');   // 'string'\nconsole.log(typeof 42);       // 'number'\nconsole.log(typeof true);     // 'boolean'\n```",
+    "examples": [
+      {
+        "code": "let nombre = 'Sebastián';  // String\nlet notas = 85;            // Number\nlet aprobado = true;       // Boolean",
+        "explanation": "Tres variables de diferentes tipos. JavaScript sabe automáticamente el tipo por el valor."
+      },
+      {
+        "code": "console.log(typeof nombre);  // 'string'\nconsole.log(typeof notas);   // 'number'",
+        "explanation": "typeof nos dice qué tipo de dato tiene una variable"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea tres variables:\n- `miNombre`: con tu nombre como texto\n- `miEdad`: con tu edad como número\n- `meGustaJS`: con el valor `true` (boolean)",
+    "starterCode": "// Crea tus tres variables aquí\n",
+    "tests": [
+      {
+        "description": "La variable 'miNombre' es un string",
+        "expression": "typeof miNombre === 'string' && miNombre.length > 0"
+      },
+      {
+        "description": "La variable 'miEdad' es un número",
+        "expression": "typeof miEdad === 'number' && miEdad > 0"
+      },
+      {
+        "description": "La variable 'meGustaJS' es true",
+        "expression": "meGustaJS === true"
+      }
+    ],
+    "hints": [
+      "Necesitas crear 3 variables usando `let`",
+      "Los textos van entre comillas: `let miNombre = 'Tu nombre';`",
+      "Los números van sin comillas: `let miEdad = 16;`",
+      "Los booleanos son literalmente `true` o `false`: `let meGustaJS = true;`"
+    ]
+  }
+}

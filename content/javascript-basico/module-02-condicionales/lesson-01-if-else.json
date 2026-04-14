@@ -1,0 +1,42 @@
+{
+  "id": "js-basico-m2-l1",
+  "title": "Condicionales: if y else",
+  "xpReward": 20,
+  "theory": {
+    "markdown": "## Condicionales: if y else\n\nLos condicionales permiten que tu programa **tome decisiones**: ejecutar código diferente según una condición.\n\nPiénsalo como un semáforo:\n- 🟢 Si está verde → avanza\n- 🔴 Si está rojo → detente\n\n### Sintaxis básica\n\n```javascript\nif (condicion) {\n  // código que se ejecuta si la condición es true\n}\n```\n\n### if / else\n\n```javascript\nlet nota = 70;\n\nif (nota >= 60) {\n  console.log('¡Aprobaste!');\n} else {\n  console.log('Debes recuperar.');\n}\n```\n\n### Operadores de comparación\n\n| Operador | Significado | Ejemplo |\n|----------|-------------|--------|\n| `===` | igual a | `edad === 18` |\n| `!==` | diferente de | `nombre !== 'Ana'` |\n| `>` | mayor que | `nota > 60` |\n| `<` | menor que | `precio < 100` |\n| `>=` | mayor o igual | `edad >= 18` |\n| `<=` | menor o igual | `intentos <= 3` |\n\n> ⚠️ Usa siempre `===` (triple igual) para comparar, no `==` (doble igual). El triple igual compara también el tipo.",
+    "examples": [
+      {
+        "code": "let temperatura = 30;\n\nif (temperatura > 28) {\n  console.log('Hace calor, toma agua');\n} else {\n  console.log('Clima agradable');\n}",
+        "explanation": "Si la temperatura es mayor a 28, muestra un mensaje. Si no, muestra otro."
+      },
+      {
+        "code": "let usuario = 'admin';\n\nif (usuario === 'admin') {\n  console.log('Bienvenido, administrador');\n} else {\n  console.log('Acceso de usuario normal');\n}",
+        "explanation": "Verificar si el usuario es un administrador"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nLuego crea una variable `mensaje` que sea:\n- `'Hace calor'` si la temperatura es mayor a 30\n- `'Clima fresco'` si la temperatura es 30 o menos",
+    "starterCode": "// Crea la variable temperatura\n// Usa if/else para asignar el mensaje correcto a la variable 'mensaje'\n",
+    "tests": [
+      {
+        "description": "La variable 'temperatura' existe",
+        "expression": "typeof temperatura !== 'undefined'"
+      },
+      {
+        "description": "La variable 'mensaje' existe",
+        "expression": "typeof mensaje !== 'undefined'"
+      },
+      {
+        "description": "El mensaje es correcto para temperatura = 35",
+        "expression": "mensaje === 'Hace calor'"
+      }
+    ],
+    "hints": [
+      "Primero: `let temperatura = 35;`",
+      "Luego declara `let mensaje;` sin valor inicial",
+      "Dentro del if/else, asigna: `mensaje = 'Hace calor';`",
+      "La condición para 'Hace calor' es: `temperatura > 30`"
+    ]
+  }
+}

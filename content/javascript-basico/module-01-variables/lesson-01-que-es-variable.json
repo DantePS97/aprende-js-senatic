@@ -1,0 +1,45 @@
+{
+  "id": "js-basico-m1-l1",
+  "title": "¿Qué es una variable?",
+  "xpReward": 15,
+  "theory": {
+    "markdown": "## ¿Qué es una variable?\n\nImagina que una variable es una **caja con nombre** donde puedes guardar información.\n\nPor ejemplo, si quieres guardar tu nombre, creas una caja llamada `nombre` y la llenas con tu nombre.\n\nEn JavaScript, usamos la palabra `let` para crear variables:\n\n```javascript\nlet nombre = 'Ana';\n```\n\nEsto le dice al programa: *\"Crea una caja llamada nombre y guarda dentro de ella el texto Ana\"*.\n\n### ¿Por qué se llaman variables?\n\nSe llaman variables porque su contenido puede **cambiar** (variar) durante el programa:\n\n```javascript\nlet puntos = 0;\npuntos = 100;  // Ahora tiene 100\npuntos = 250;  // Ahora tiene 250\n```\n\n### Reglas para nombrar variables\n\n✅ Pueden contener letras, números, `_` y `$`  \n✅ Deben empezar con una letra (no con número)  \n✅ Son sensibles a mayúsculas: `nombre` ≠ `Nombre`  \n❌ No pueden tener espacios  \n❌ No pueden ser palabras reservadas como `let`, `if`, `for`",
+    "examples": [
+      {
+        "code": "let nombre = 'Camila';",
+        "explanation": "Creamos una caja llamada 'nombre' y guardamos el texto 'Camila' dentro"
+      },
+      {
+        "code": "let edad = 16;",
+        "explanation": "Creamos una caja llamada 'edad' y guardamos el número 16"
+      },
+      {
+        "code": "let estaActivo = true;",
+        "explanation": "Creamos una caja llamada 'estaActivo' y guardamos el valor verdadero (true)"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una variable llamada `ciudad` que contenga el nombre de tu ciudad como texto.",
+    "starterCode": "// Escribe tu código aquí\n",
+    "tests": [
+      {
+        "description": "La variable 'ciudad' existe",
+        "expression": "typeof ciudad !== 'undefined'"
+      },
+      {
+        "description": "La variable 'ciudad' contiene un texto (string)",
+        "expression": "typeof ciudad === 'string'"
+      },
+      {
+        "description": "La variable 'ciudad' no está vacía",
+        "expression": "ciudad.length > 0"
+      }
+    ],
+    "hints": [
+      "Usa la palabra clave `let` para crear una variable",
+      "La sintaxis es: `let nombreVariable = valor;`",
+      "Las cadenas de texto van entre comillas: `let ciudad = 'Bogotá';`"
+    ]
+  }
+}
