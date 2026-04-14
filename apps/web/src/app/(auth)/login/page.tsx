@@ -16,7 +16,7 @@ export default function LoginPage() {
     clearError();
     try {
       await login(email, password);
-      router.push('/');
+      router.push('/courses');
     } catch {
       // error ya está en el store
     }

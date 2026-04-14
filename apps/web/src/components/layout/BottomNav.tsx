@@ -5,8 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Home, BookOpen, MessageSquare, User } from 'lucide-react';
 
 const navItems = [
-  { href: '/', label: 'Inicio', Icon: Home },
-  { href: '/courses', label: 'Cursos', Icon: BookOpen },
+  { href: '/courses', label: 'Inicio', Icon: Home },
   { href: '/forum', label: 'Foro', Icon: MessageSquare },
   { href: '/profile', label: 'Perfil', Icon: User },
 ];

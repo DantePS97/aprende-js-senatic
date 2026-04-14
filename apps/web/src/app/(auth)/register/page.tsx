@@ -17,7 +17,7 @@ export default function RegisterPage() {
     clearError();
     try {
       await register(email, password, displayName);
-      router.push('/');
+      router.push('/courses');
     } catch {
       // error ya está en el store
     }
