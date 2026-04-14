@@ -14,9 +14,16 @@ import type { LessonContent } from '@senatic/shared';
 type Tab = 'theory' | 'exercise';
 
 interface LessonData {
-  lesson: { _id: string; title: string; xpReward: number; moduleId: string };
+  lesson: {
+    _id: string;
+    title: string;
+    xpReward: number;
+    moduleId: string;
+    courseId: string | null;
+    nextLessonId: string | null;
+  };
   content: LessonContent;
-  progress: { status: string } | null;
+  progress: { status: string; xpEarned?: number } | null;
 }
 
 export default function LessonPage() {
@@ -31,10 +38,12 @@ export default function LessonPage() {
   const [activeTab, setActiveTab] = useState<Tab>('theory');
 
   useEffect(() => {
+    setActiveTab('theory');
+    setLoading(true);
     api
       .get(`/courses/lessons/${params.lessonId}`)
       .then(({ data: res }) => setData(res.data))
-      .catch(() => router.push('/'))
+      .catch(() => router.push('/courses'))
       .finally(() => setLoading(false));
   }, [params.lessonId, router]);
 
@@ -45,10 +54,7 @@ export default function LessonPage() {
 
     if (passed && result.xpEarned > 0) {
       showXpGain(result.xpEarned);
-
-      if (user) {
-        updateUser({ xp: user.xp + result.xpEarned });
-      }
+      if (user) updateUser({ xp: user.xp + result.xpEarned });
     }
 
     if (result.leveledUp && result.newLevel !== undefined) {
@@ -60,10 +66,21 @@ export default function LessonPage() {
     }
   };
 
+  const handleNextLesson = () => {
+    if (!data) return;
+    if (data.lesson.nextLessonId) {
+      router.push(`/lessons/${data.lesson.nextLessonId}`);
+    } else if (data.lesson.courseId) {
+      router.push(`/courses/${data.lesson.courseId}`);
+    } else {
+      router.push('/courses');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-slate-500 animate-pulse">Cargando lección...</div>
+        <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -71,6 +88,7 @@ export default function LessonPage() {
   if (!data) return null;
 
   const isCompleted = data.progress?.status === 'completed';
+  const hasNext = !!data.lesson.nextLessonId;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
@@ -124,6 +142,8 @@ export default function LessonPage() {
           xpReward={data.lesson.xpReward}
           onComplete={handleComplete}
           isCompleted={isCompleted}
+          onNextLesson={handleNextLesson}
+          hasNext={hasNext}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Play, RotateCcw, ChevronRight } from 'lucide-react';
+import { Play, RotateCcw, ChevronRight, ArrowRight, LayoutGrid } from 'lucide-react';
 import type { LessonExercise } from '@senatic/shared';
 import { CodeEditor } from '@/components/editor/CodeEditor';
 import { Console } from '@/components/editor/Console';
@@ -14,9 +14,18 @@ interface ExercisePanelProps {
   xpReward: number;
   onComplete: (passed: boolean, hintsUsed: number) => Promise<void>;
   isCompleted?: boolean;
+  onNextLesson: () => void;
+  hasNext: boolean;
 }
 
-export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: ExercisePanelProps) {
+export function ExercisePanel({
+  exercise,
+  xpReward,
+  onComplete,
+  isCompleted,
+  onNextLesson,
+  hasNext,
+}: ExercisePanelProps) {
   const [code, setCode] = useState(exercise.starterCode);
   const [output, setOutput] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +33,12 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
   const [isRunning, setIsRunning] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  // Rastreo local para mostrar el estado completado inmediatamente
+  // sin esperar a que la prop isCompleted se actualice tras el submit
+  const [justCompleted, setJustCompleted] = useState(false);
 
   const allPassed = testResults.length > 0 && testResults.every((r) => r.passed);
+  const showCompletedState = isCompleted || justCompleted;
 
   const handleRun = useCallback(async () => {
     setIsRunning(true);
@@ -47,11 +60,13 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
     setError(null);
     setTestResults([]);
     setSubmitted(false);
+    setJustCompleted(false);
   };
 
   const handleSubmit = async () => {
     setSubmitted(true);
     await onComplete(allPassed, hintsUsed);
+    if (allPassed) setJustCompleted(true);
   };
 
   return (
@@ -72,13 +87,13 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
       </div>
 
       {/* Editor */}
-      <CodeEditor value={code} onChange={setCode} readOnly={isCompleted} />
+      <CodeEditor value={code} onChange={setCode} readOnly={showCompletedState} />
 
       {/* Controles */}
       <div className="flex gap-2">
         <button
           onClick={handleRun}
-          disabled={isRunning || isCompleted}
+          disabled={isRunning || showCompletedState}
           className="flex items-center gap-2 btn-primary flex-1"
           aria-label="Ejecutar código"
         >
@@ -88,8 +103,9 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
 
         <button
           onClick={handleReset}
+          disabled={showCompletedState}
           className="p-3 border border-slate-700 rounded-lg text-slate-400 hover:text-white
-                     hover:border-slate-500 transition-colors"
+                     hover:border-slate-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Reiniciar código"
           title="Reiniciar al código inicial"
         >
@@ -110,8 +126,8 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
       {/* Pistas */}
       <HintSystem hints={exercise.hints} onHintUsed={setHintsUsed} />
 
-      {/* Botón de entrega */}
-      {allPassed && !submitted && !isCompleted && (
+      {/* Botón de entrega — solo visible cuando todos los tests pasan y no se ha enviado */}
+      {allPassed && !submitted && !showCompletedState && (
         <button
           onClick={handleSubmit}
           className="w-full flex items-center justify-center gap-2 py-3 px-6
@@ -123,10 +139,34 @@ export function ExercisePanel({ exercise, xpReward, onComplete, isCompleted }: E
         </button>
       )}
 
-      {isCompleted && (
-        <div className="card text-center">
-          <p className="text-success-400 font-semibold">✅ Lección completada</p>
-          <p className="text-xs text-slate-500 mt-1">Puedes seguir practicando el código</p>
+      {/* Estado de completado + navegación */}
+      {showCompletedState && (
+        <div className="card space-y-4 text-center animate-bounce-in">
+          <div>
+            <p className="text-success-400 font-bold text-lg">¡Lección completada!</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {hasNext ? 'Continúa con la siguiente lección' : 'Has terminado el módulo'}
+            </p>
+          </div>
+
+          <button
+            onClick={onNextLesson}
+            className="w-full flex items-center justify-center gap-2 py-3 px-6
+                       bg-primary-500 hover:bg-primary-600 text-white font-semibold
+                       rounded-lg transition-colors duration-200"
+          >
+            {hasNext ? (
+              <>
+                Siguiente lección
+                <ArrowRight className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Ver mapa del curso
+                <LayoutGrid className="w-4 h-4" />
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>

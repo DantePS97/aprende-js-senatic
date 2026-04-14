@@ -37,17 +37,24 @@ export default function CourseDetailPage() {
         setCourse(raw);
 
         // Calcular estado de cada módulo y lección
+        // previousModuleCompleted arranca en true para que el módulo 1 siempre quede
+        // desbloqueado y sus lecciones disponibles desde el inicio.
         let previousModuleCompleted = true;
 
         const enriched: ModuleWithStatus[] = raw.modules.map((mod) => {
+          // CRÍTICO: capturar ANTES de sobrescribir. Si se lee después de la
+          // asignación `previousModuleCompleted = moduleCompleted`, el módulo N
+          // evalúa su propio estado (false si no ha empezado) en vez del del módulo N-1.
+          const unlockedByPrevious = previousModuleCompleted;
+
           const lessons: LessonWithStatus[] = mod.lessons.map((lesson, i) => {
             const status = getLessonStatus(lesson._id);
-            const isCompleted = status === 'completed';
 
             let lessonStatus: LessonStatus;
-            if (isCompleted) {
+            if (status === 'completed') {
               lessonStatus = 'completed';
-            } else if (previousModuleCompleted && (i === 0 || mod.lessons[i - 1]?.status === 'completed')) {
+            } else if (unlockedByPrevious && i === 0) {
+              // Primera lección del módulo: disponible si el módulo está desbloqueado
               lessonStatus = 'available';
             } else {
               lessonStatus = 'locked';
@@ -56,29 +63,22 @@ export default function CourseDetailPage() {
             return { ...lesson, status: lessonStatus };
           });
 
-          // La primera lección siempre disponible si el módulo está desbloqueado
-          if (previousModuleCompleted && lessons[0]?.status === 'locked') {
-            lessons[0] = { ...lessons[0], status: 'available' };
-          }
-
-          // Desbloquear lecciones en secuencia
+          // Desbloquear lecciones en secuencia dentro del módulo
           for (let i = 1; i < lessons.length; i++) {
-            if (lessons[i - 1].status === 'completed') {
-              if (lessons[i].status === 'locked') {
-                lessons[i] = { ...lessons[i], status: 'available' };
-              }
+            if (lessons[i - 1].status === 'completed' && lessons[i].status === 'locked') {
+              lessons[i] = { ...lessons[i], status: 'available' };
             }
           }
 
           const completedCount = lessons.filter((l) => l.status === 'completed').length;
           const moduleCompleted = completedCount === lessons.length && lessons.length > 0;
 
-          previousModuleCompleted = moduleCompleted;
+          previousModuleCompleted = moduleCompleted; // Actualizar para la siguiente iteración
 
           return {
             ...mod,
             lessons,
-            isUnlocked: mod.order === 1 || completedCount > 0 || previousModuleCompleted,
+            isUnlocked: mod.order === 1 || unlockedByPrevious,
             completedCount,
           };
         });

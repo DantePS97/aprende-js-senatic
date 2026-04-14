@@ -129,15 +129,48 @@ coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, re
       lessonId: lesson._id,
     });
 
+    // ─── Calcular lección siguiente ──────────────────────────────────────────
+    const mod = await ModuleModel.findById(lesson.moduleId);
+    const courseId = mod?.courseId?.toString() ?? null;
+
+    const siblingsInModule = await LessonModel.find({
+      moduleId: lesson.moduleId,
+      isPublished: true,
+    }).sort({ order: 1 });
+
+    const currentIdx = siblingsInModule.findIndex((l) => l._id.equals(lesson._id));
+    let nextLessonId: string | null = null;
+
+    if (currentIdx !== -1 && currentIdx < siblingsInModule.length - 1) {
+      // Siguiente lección en el mismo módulo
+      nextLessonId = siblingsInModule[currentIdx + 1]._id.toString();
+    } else if (mod) {
+      // Última lección del módulo: buscar la primera lección del módulo siguiente
+      const nextMod = await ModuleModel.findOne({
+        courseId: mod.courseId,
+        order: mod.order + 1,
+        isPublished: true,
+      });
+      if (nextMod) {
+        const firstOfNext = await LessonModel.findOne({
+          moduleId: nextMod._id,
+          isPublished: true,
+        }).sort({ order: 1 });
+        nextLessonId = firstOfNext?._id.toString() ?? null;
+      }
+    }
+
     res.json({
       success: true,
       data: {
         lesson: {
           _id: lesson._id,
           moduleId: lesson.moduleId,
+          courseId,
           order: lesson.order,
           title: lesson.title,
           xpReward: lesson.xpReward,
+          nextLessonId,
         },
         content,
         progress: progress
