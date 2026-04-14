@@ -1,7 +1,7 @@
-import type { NextConfig } from 'next';
+/** @type {import('next').NextConfig} */
 const withPWA = require('next-pwa');
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@senatic/shared'],
   experimental: {
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+module.exports = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
