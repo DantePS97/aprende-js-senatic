@@ -4,6 +4,7 @@
  *
  * Uso: npx tsx src/scripts/seed.ts
  */
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
