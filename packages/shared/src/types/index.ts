@@ -90,6 +90,7 @@ export interface LessonTest {
 }
 
 export interface LessonExercise {
+  title?: string;      // nombre del ejercicio para el stepper (ej: "Básico", "Práctica", "Aplicación")
   prompt: string;
   starterCode: string;
   tests: LessonTest[];
@@ -106,7 +107,7 @@ export interface LessonContent {
   title: string;
   xpReward: number;
   theory: LessonTheory;
-  exercise: LessonExercise;
+  exercises: LessonExercise[];  // array — mínimo 1; XP se otorga al pasar exercises[0]
 }
 
 // ─── Progress ─────────────────────────────────────────────────────────────────

@@ -60,8 +60,6 @@ export default function LessonPage() {
         if (user) userUpdates.xp = user.xp + result.xpEarned;
       }
 
-      // Actualizar streak en el store local para que todos los componentes
-      // (StreakCounter en navbar, perfil, dashboard) lo reflejen sin recarga
       if (result.newStreak !== undefined) {
         userUpdates.streak = result.newStreak;
       }
@@ -104,6 +102,13 @@ export default function LessonPage() {
   const isCompleted = data.progress?.status === 'completed';
   const hasNext = !!data.lesson.nextLessonId;
 
+  // Normalizar: el JSON puede tener "exercises" (nuevo) o "exercise" (legado)
+  const exercises =
+    data.content.exercises ??
+    (data.content as unknown as { exercise: LessonContent['exercises'][0] }).exercise
+      ? [(data.content as unknown as { exercise: LessonContent['exercises'][0] }).exercise]
+      : [];
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
       {/* Header */}
@@ -130,7 +135,7 @@ export default function LessonPage() {
       <div className="flex border-b border-slate-700">
         {[
           { id: 'theory' as Tab, label: 'Teoría', Icon: BookOpen },
-          { id: 'exercise' as Tab, label: 'Ejercicio', Icon: Code2 },
+          { id: 'exercise' as Tab, label: 'Ejercicios', Icon: Code2 },
         ].map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -143,16 +148,25 @@ export default function LessonPage() {
           >
             <Icon className="w-4 h-4" />
             {label}
+            {id === 'exercise' && exercises.length > 1 && (
+              <span className="ml-1 text-xs bg-slate-700 text-slate-400 rounded-full px-1.5 py-0.5 leading-none">
+                {exercises.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Content */}
       {activeTab === 'theory' ? (
-        <TheoryPanel theory={data.content.theory} />
+        <TheoryPanel
+          theory={data.content.theory}
+          onStartExercise={() => setActiveTab('exercise')}
+          exerciseCount={exercises.length}
+        />
       ) : (
         <ExercisePanel
-          exercise={data.content.exercise}
+          exercises={exercises}
           xpReward={data.lesson.xpReward}
           onComplete={handleComplete}
           isCompleted={isCompleted}

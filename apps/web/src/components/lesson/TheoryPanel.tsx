@@ -2,11 +2,14 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ArrowRight } from 'lucide-react';
 import type { LessonTheory } from '@senatic/shared';
 import type { Components } from 'react-markdown';
 
 interface TheoryPanelProps {
   theory: LessonTheory;
+  onStartExercise?: () => void;
+  exerciseCount?: number;
 }
 
 const mdComponents: Components = {
@@ -127,7 +130,7 @@ const mdComponents: Components = {
   ),
 };
 
-export function TheoryPanel({ theory }: TheoryPanelProps) {
+export function TheoryPanel({ theory, onStartExercise, exerciseCount = 1 }: TheoryPanelProps) {
   return (
     <div className="space-y-6">
       {/* Contenido markdown */}
@@ -165,6 +168,31 @@ export function TheoryPanel({ theory }: TheoryPanelProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* CTA: ir a practicar */}
+      {onStartExercise && (
+        <button
+          onClick={onStartExercise}
+          className="w-full flex items-center justify-between px-5 py-4 rounded-xl
+                     bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/30
+                     hover:border-primary-500/60 transition-all duration-200 group"
+        >
+          <div className="text-left">
+            <p className="text-sm font-semibold text-primary-300 group-hover:text-primary-200 transition-colors">
+              ¡Listo para practicar!
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {exerciseCount === 1
+                ? '1 ejercicio te espera'
+                : `${exerciseCount} ejercicios te esperan`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-primary-400 group-hover:text-primary-300 transition-colors">
+            <span className="text-sm font-medium">Ir a practicar</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
       )}
     </div>
   );
