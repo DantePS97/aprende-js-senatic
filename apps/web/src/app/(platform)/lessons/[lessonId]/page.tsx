@@ -52,9 +52,23 @@ export default function LessonPage() {
 
     const result = await submitLesson(data.lesson._id, passed, hintsUsed);
 
-    if (passed && result.xpEarned > 0) {
-      showXpGain(result.xpEarned);
-      if (user) updateUser({ xp: user.xp + result.xpEarned });
+    if (passed) {
+      const userUpdates: Record<string, number> = {};
+
+      if (result.xpEarned > 0) {
+        showXpGain(result.xpEarned);
+        if (user) userUpdates.xp = user.xp + result.xpEarned;
+      }
+
+      // Actualizar streak en el store local para que todos los componentes
+      // (StreakCounter en navbar, perfil, dashboard) lo reflejen sin recarga
+      if (result.newStreak !== undefined) {
+        userUpdates.streak = result.newStreak;
+      }
+
+      if (Object.keys(userUpdates).length > 0) {
+        updateUser(userUpdates);
+      }
     }
 
     if (result.leveledUp && result.newLevel !== undefined) {

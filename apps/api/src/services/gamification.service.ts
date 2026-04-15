@@ -21,6 +21,50 @@ export function calculateLevel(xp: number): number {
   return level;
 }
 
+// ─── Streak update ────────────────────────────────────────────────────────────
+
+/**
+ * Actualiza la racha del usuario basada en la actividad actual.
+ * Usa fechas UTC para evitar problemas de zona horaria del servidor.
+ *
+ * Reglas:
+ * - diffDays === 0 → mismo día, no modificar racha
+ * - diffDays === 1 → día siguiente consecutivo, incrementar
+ * - diffDays  > 1 → se saltó días, resetear a 1
+ */
+export async function updateStreak(
+  userId: string
+): Promise<{ streak: number; streakIncremented: boolean }> {
+  const user = await UserModel.findById(userId);
+  if (!user) throw new Error('Usuario no encontrado');
+
+  // Normalizar a inicio del día en UTC para comparación correcta
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+
+  const lastActiveUTC = new Date(user.lastActiveDate);
+  lastActiveUTC.setUTCHours(0, 0, 0, 0);
+
+  const diffDays = Math.round(
+    (todayUTC.getTime() - lastActiveUTC.getTime()) / 86_400_000
+  );
+
+  let streakIncremented = false;
+
+  if (diffDays === 1) {
+    user.streak += 1;
+    streakIncremented = true;
+  } else if (diffDays > 1) {
+    user.streak = 1; // racha rota
+  }
+  // diffDays === 0 → mismo día, la racha no cambia
+
+  user.lastActiveDate = new Date();
+  await user.save();
+
+  return { streak: user.streak, streakIncremented };
+}
+
 // ─── XP award by hints used ───────────────────────────────────────────────────
 
 export function calculateXpReward(baseXp: number, hintsUsed: number): number {

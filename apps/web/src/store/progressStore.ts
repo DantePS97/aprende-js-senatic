@@ -18,6 +18,7 @@ interface ProgressState {
     xpEarned: number;
     leveledUp: boolean;
     newLevel?: number;
+    newStreak?: number;
     newAchievements: Achievement[];
   }>;
   getLessonStatus: (lessonId: string) => Progress['status'];
@@ -63,13 +64,13 @@ export const useProgressStore = create<ProgressState>()(
             completedAt,
           });
 
-          const { progress, xpEarned, leveledUp, newLevel, newAchievements } = data.data;
+          const { progress, xpEarned, leveledUp, newLevel, newStreak, newAchievements } = data.data;
 
           set((state) => ({
             progressMap: { ...state.progressMap, [lessonId]: progress },
           }));
 
-          return { xpEarned, leveledUp, newLevel, newAchievements: newAchievements ?? [] };
+          return { xpEarned, leveledUp, newLevel, newStreak, newAchievements: newAchievements ?? [] };
         } catch {
           // Offline: guardar en IndexedDB y encolar para sync
           const { db } = await import('@/lib/db');
@@ -102,7 +103,7 @@ export const useProgressStore = create<ProgressState>()(
             pendingSync: [...state.pendingSync, localId],
           }));
 
-          return { xpEarned: 0, leveledUp: false, newAchievements: [] };
+          return { xpEarned: 0, leveledUp: false, newAchievements: [], newStreak: undefined };
         }
       },
 

@@ -5,6 +5,7 @@ import { UserModel } from '../models/User.model';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
 import { validate } from '../middleware/validate.middleware';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
+import { updateStreak } from '../services/gamification.service';
 
 export const authRouter = Router();
 
@@ -81,21 +82,8 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
       return;
     }
 
-    // Actualizar racha al hacer login
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const lastActive = new Date(user.lastActiveDate);
-    lastActive.setHours(0, 0, 0, 0);
-
-    const diffDays = Math.floor((today.getTime() - lastActive.getTime()) / 86400000);
-
-    if (diffDays === 1) {
-      user.streak += 1;
-    } else if (diffDays > 1) {
-      user.streak = 1;
-    }
-    user.lastActiveDate = new Date();
-    await user.save();
+    // Actualizar racha al hacer login (usa UTC — mismo algoritmo que en /progress)
+    const { streak: updatedStreak } = await updateStreak(user._id.toString());
 
     const payload = { userId: user._id.toString(), email: user.email };
     const tokens = {
@@ -112,8 +100,8 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
           displayName: user.displayName,
           xp: user.xp,
           level: user.level,
-          streak: user.streak,
-          lastActiveDate: user.lastActiveDate,
+          streak: updatedStreak,
+          lastActiveDate: new Date().toISOString(),
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },

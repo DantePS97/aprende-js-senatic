@@ -6,7 +6,7 @@ import { LessonModel } from '../models/Lesson.model';
 import { UserModel } from '../models/User.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { awardXp, calculateXpReward, checkAchievements } from '../services/gamification.service';
+import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
 
 export const progressRouter = Router();
 
@@ -51,11 +51,18 @@ progressRouter.post('/', requireAuth, validate(submitProgressSchema), async (req
 
     let leveledUp = false;
     let newLevel: number | undefined;
+    let newStreak: number | undefined;
 
-    if (passed && isFirstCompletion && xpEarned > 0) {
-      const result = await awardXp(userId, xpEarned);
-      leveledUp = result.leveledUp;
-      newLevel = result.newLevel;
+    if (passed && isFirstCompletion) {
+      // Actualizar racha — siempre que la lección se pase por primera vez
+      const streakResult = await updateStreak(userId);
+      newStreak = streakResult.streak;
+
+      if (xpEarned > 0) {
+        const xpResult = await awardXp(userId, xpEarned);
+        leveledUp = xpResult.leveledUp;
+        newLevel = xpResult.newLevel;
+      }
     }
 
     const newAchievements = await checkAchievements(userId);
@@ -76,6 +83,7 @@ progressRouter.post('/', requireAuth, validate(submitProgressSchema), async (req
         xpEarned,
         leveledUp,
         newLevel,
+        newStreak,
         newAchievements,
       },
     });
