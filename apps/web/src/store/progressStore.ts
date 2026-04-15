@@ -17,6 +17,7 @@ interface ProgressState {
   ) => Promise<{
     xpEarned: number;
     leveledUp: boolean;
+    newLevel?: number;
     newAchievements: Achievement[];
   }>;
   getLessonStatus: (lessonId: string) => Progress['status'];
@@ -62,13 +63,13 @@ export const useProgressStore = create<ProgressState>()(
             completedAt,
           });
 
-          const { progress, xpEarned, leveledUp, newAchievements } = data.data;
+          const { progress, xpEarned, leveledUp, newLevel, newAchievements } = data.data;
 
           set((state) => ({
             progressMap: { ...state.progressMap, [lessonId]: progress },
           }));
 
-          return { xpEarned, leveledUp, newAchievements: newAchievements ?? [] };
+          return { xpEarned, leveledUp, newLevel, newAchievements: newAchievements ?? [] };
         } catch {
           // Offline: guardar en IndexedDB y encolar para sync
           const { db } = await import('@/lib/db');
@@ -81,6 +82,7 @@ export const useProgressStore = create<ProgressState>()(
             hintsUsed,
             completedAt,
             synced: false,
+            createdAt: new Date().toISOString(),
           });
 
           // Actualizar estado local optimistamente
