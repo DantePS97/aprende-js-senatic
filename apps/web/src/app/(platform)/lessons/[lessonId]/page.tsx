@@ -103,10 +103,13 @@ export default function LessonPage() {
   const hasNext = !!data.lesson.nextLessonId;
 
   // Normalizar: el JSON puede tener "exercises" (nuevo) o "exercise" (legado)
-  const exercises =
-    data.content.exercises ??
-    (data.content as unknown as { exercise: LessonContent['exercises'][0] }).exercise
-      ? [(data.content as unknown as { exercise: LessonContent['exercises'][0] }).exercise]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const legacyContent = data.content as any;
+  const exercises: LessonContent['exercises'] =
+    Array.isArray(data.content.exercises) && data.content.exercises.length > 0
+      ? data.content.exercises
+      : legacyContent.exercise
+      ? [legacyContent.exercise]
       : [];
 
   return (
