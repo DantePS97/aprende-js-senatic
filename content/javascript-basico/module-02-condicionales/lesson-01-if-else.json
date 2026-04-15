@@ -15,28 +15,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nLuego crea una variable `mensaje` que sea:\n- `'Hace calor'` si la temperatura es mayor a 30\n- `'Clima fresco'` si la temperatura es 30 o menos",
-    "starterCode": "// Crea la variable temperatura\n// Usa if/else para asignar el mensaje correcto a la variable 'mensaje'\n",
-    "tests": [
-      {
-        "description": "La variable 'temperatura' existe",
-        "expression": "typeof temperatura !== 'undefined'"
-      },
-      {
-        "description": "La variable 'mensaje' existe",
-        "expression": "typeof mensaje !== 'undefined'"
-      },
-      {
-        "description": "El mensaje es correcto para temperatura = 35",
-        "expression": "mensaje === 'Hace calor'"
-      }
-    ],
-    "hints": [
-      "Primero: `let temperatura = 35;`",
-      "Luego declara `let mensaje;` sin valor inicial",
-      "Dentro del if/else, asigna: `mensaje = 'Hace calor';`",
-      "La condición para 'Hace calor' es: `temperatura > 30`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: if/else simple",
+      "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nLuego crea una variable `mensaje` que sea:\n- `'Hace calor'` si la temperatura es mayor a 30\n- `'Clima fresco'` si la temperatura es 30 o menos",
+      "starterCode": "// Crea la variable temperatura\n// Usa if/else para asignar el mensaje correcto a la variable 'mensaje'\n",
+      "tests": [
+        {
+          "description": "La variable 'temperatura' existe",
+          "expression": "typeof temperatura !== 'undefined'"
+        },
+        {
+          "description": "La variable 'mensaje' existe",
+          "expression": "typeof mensaje !== 'undefined'"
+        },
+        {
+          "description": "El mensaje es correcto para temperatura = 35",
+          "expression": "mensaje === 'Hace calor'"
+        }
+      ],
+      "hints": [
+        "Primero: `let temperatura = 35;`",
+        "Luego declara `let mensaje;` sin valor inicial",
+        "Dentro del if/else, asigna: `mensaje = 'Hace calor';`",
+        "La condición para 'Hace calor' es: `temperatura > 30`"
+      ]
+    },
+    {
+      "title": "Práctica: Temperatura",
+      "prompt": "Crea `let temperatura = 35` y `let clima = ''`.\n\nUsa if/else if/else para asignar a `clima`:\n- `'calor'` si temperatura >= 30\n- `'templado'` si temperatura >= 15\n- `'frío'` en cualquier otro caso",
+      "starterCode": "let temperatura = 35;\nlet clima = '';\n\n// Escribe el if/else if/else aquí\n",
+      "tests": [
+        {
+          "description": "Con temperatura 35, clima es 'calor'",
+          "expression": "clima === 'calor'"
+        }
+      ],
+      "hints": [
+        "Usa `if (temperatura >= 30)` para el primer caso",
+        "Luego `else if (temperatura >= 15)` para el segundo",
+        "El `else` final cubre el caso de frío"
+      ]
+    },
+    {
+      "title": "Aplicación: Acceso al sistema",
+      "prompt": "Crea:\n- `const usuario = 'admin'`\n- `const password = '1234'`\n- `let acceso = false`\n\nSi el usuario es `'admin'` Y la contraseña es `'1234'`, cambia `acceso` a `true`.",
+      "starterCode": "const usuario = 'admin';\nconst password = '1234';\nlet acceso = false;\n\n// Escribe el if aquí\n",
+      "tests": [
+        {
+          "description": "acceso es true cuando usuario y password son correctos",
+          "expression": "acceso === true"
+        }
+      ],
+      "hints": [
+        "Usa el operador `&&` para combinar dos condiciones",
+        "`if (usuario === 'admin' && password === '1234')`",
+        "Dentro del if: `acceso = true;`"
+      ]
+    }
+  ]
 }

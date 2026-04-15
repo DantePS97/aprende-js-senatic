@@ -11,28 +11,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea un sistema de calificación.\n\n- Crea una variable `puntos` con el valor `82`\n- Crea una variable `nivel` que sea:\n  - `'Oro'` si puntos >= 90\n  - `'Plata'` si puntos >= 70 (y menos de 90)\n  - `'Bronce'` si puntos >= 50 (y menos de 70)\n  - `'Sin medalla'` si es menor a 50",
-    "starterCode": "// Tu código aquí\n",
-    "tests": [
-      {
-        "description": "La variable 'puntos' existe y vale 82",
-        "expression": "typeof puntos !== 'undefined' && puntos === 82"
-      },
-      {
-        "description": "La variable 'nivel' existe",
-        "expression": "typeof nivel !== 'undefined'"
-      },
-      {
-        "description": "Con 82 puntos el nivel es 'Plata'",
-        "expression": "nivel === 'Plata'"
-      }
-    ],
-    "hints": [
-      "Declara las dos variables primero: `let puntos = 82;` y `let nivel;`",
-      "Usa if / else if / else if / else para cubrir los 4 casos",
-      "Recuerda: las condiciones se evalúan en orden, de la más alta a la más baja",
-      "Con puntos = 82 y la condición `puntos >= 70`, el resultado debe ser 'Plata'"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: else-if",
+      "prompt": "Crea un sistema de calificación.\n\n- Crea una variable `puntos` con el valor `82`\n- Crea una variable `nivel` que sea:\n  - `'Oro'` si puntos >= 90\n  - `'Plata'` si puntos >= 70 (y menos de 90)\n  - `'Bronce'` si puntos >= 50 (y menos de 70)\n  - `'Sin medalla'` si es menor a 50",
+      "starterCode": "// Tu código aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'puntos' existe y vale 82",
+          "expression": "typeof puntos !== 'undefined' && puntos === 82"
+        },
+        {
+          "description": "La variable 'nivel' existe",
+          "expression": "typeof nivel !== 'undefined'"
+        },
+        {
+          "description": "Con 82 puntos el nivel es 'Plata'",
+          "expression": "nivel === 'Plata'"
+        }
+      ],
+      "hints": [
+        "Declara las dos variables primero: `let puntos = 82;` y `let nivel;`",
+        "Usa if / else if / else if / else para cubrir los 4 casos",
+        "Recuerda: las condiciones se evalúan en orden, de la más alta a la más baja",
+        "Con puntos = 82 y la condición `puntos >= 70`, el resultado debe ser 'Plata'"
+      ]
+    },
+    {
+      "title": "Práctica: Calificación",
+      "prompt": "Crea `let nota = 75` y `let resultado = ''`.\n\nAsigna a `resultado`:\n- `'Excelente'` si nota >= 90\n- `'Bueno'` si nota >= 70\n- `'Regular'` si nota >= 50\n- `'Reprobado'` en cualquier otro caso",
+      "starterCode": "let nota = 75;\nlet resultado = '';\n\n// Escribe el if/else if/else aquí\n",
+      "tests": [
+        {
+          "description": "Con nota 75, resultado es 'Bueno'",
+          "expression": "resultado === 'Bueno'"
+        }
+      ],
+      "hints": [
+        "Empieza con `if (nota >= 90)`",
+        "Luego `else if (nota >= 70)` — nota 75 entra aquí",
+        "Las condiciones se evalúan en orden: cuando una es true, las demás se saltan"
+      ]
+    },
+    {
+      "title": "Aplicación: Precio por edad",
+      "prompt": "Crea `let edad = 12` y `let precio = 0`.\n\nAsigna a `precio`:\n- `15000` si edad > 17 (adulto)\n- `8000` si edad >= 12 (adolescente)\n- `5000` si es menor de 12 (niño)",
+      "starterCode": "let edad = 12;\nlet precio = 0;\n\n// Escribe el if/else if/else aquí\n",
+      "tests": [
+        {
+          "description": "Con edad 12, precio es 8000",
+          "expression": "precio === 8000"
+        }
+      ],
+      "hints": [
+        "Evalúa primero el caso de mayor edad: `if (edad > 17)`",
+        "Luego `else if (edad >= 12)` — edad 12 entra aquí",
+        "El `else` final cubre a los menores de 12"
+      ]
+    }
+  ]
 }

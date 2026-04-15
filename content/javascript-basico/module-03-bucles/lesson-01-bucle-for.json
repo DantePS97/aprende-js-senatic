@@ -15,24 +15,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Usa un bucle `for` para calcular la suma de todos los números del 1 al 10.\n\nGuarda el resultado en una variable llamada `suma`.\n\nAl final, imprime el valor de `suma` con `console.log`.\n\n(El resultado debe ser 55)",
-    "starterCode": "let suma = 0;\n\n// Escribe tu bucle for aquí\n\nconsole.log(suma);\n",
-    "tests": [
-      {
-        "description": "La variable 'suma' existe",
-        "expression": "typeof suma !== 'undefined'"
-      },
-      {
-        "description": "La suma de 1 a 10 es 55",
-        "expression": "suma === 55"
-      }
-    ],
-    "hints": [
-      "Empieza el contador en 1: `for (let i = 1; ...)`",
-      "La condición para llegar hasta 10: `i <= 10`",
-      "En cada vuelta suma i a la variable: `suma += i;`",
-      "Solución: `for (let i = 1; i <= 10; i++) { suma += i; }`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: for simple",
+      "prompt": "Usa un bucle `for` para calcular la suma de todos los números del 1 al 10.\n\nGuarda el resultado en una variable llamada `suma`.\n\nAl final, imprime el valor de `suma` con `console.log`.\n\n(El resultado debe ser 55)",
+      "starterCode": "let suma = 0;\n\n// Escribe tu bucle for aquí\n\nconsole.log(suma);\n",
+      "tests": [
+        {
+          "description": "La variable 'suma' existe",
+          "expression": "typeof suma !== 'undefined'"
+        },
+        {
+          "description": "La suma de 1 a 10 es 55",
+          "expression": "suma === 55"
+        }
+      ],
+      "hints": [
+        "Empieza el contador en 1: `for (let i = 1; ...)`",
+        "La condición para llegar hasta 10: `i <= 10`",
+        "En cada vuelta suma i a la variable: `suma += i;`",
+        "Solución: `for (let i = 1; i <= 10; i++) { suma += i; }`"
+      ]
+    },
+    {
+      "title": "Práctica: Suma de pares",
+      "prompt": "Usa un bucle `for` para sumar todos los números **pares** del 1 al 10.\n\nGuarda el resultado en `let suma = 0`.\n\n(Los pares del 1 al 10 son: 2, 4, 6, 8, 10 — su suma es 30)",
+      "starterCode": "let suma = 0;\n\n// Escribe tu bucle for aquí\n// Suma solo los números pares\n",
+      "tests": [
+        {
+          "description": "La suma de los pares del 1 al 10 es 30",
+          "expression": "suma === 30"
+        }
+      ],
+      "hints": [
+        "Un número es par si `i % 2 === 0`",
+        "Usa un `if` dentro del for para sumar solo los pares",
+        "2 + 4 + 6 + 8 + 10 = 30"
+      ]
+    },
+    {
+      "title": "Aplicación: Tabla de multiplicar",
+      "prompt": "Crea `let tabla = []`.\n\nUsa un bucle `for` con `i` del 1 al 5 y en cada vuelta agrega `7 * i` al array usando `tabla.push(7 * i)`.\n\nAl finalizar, `tabla` debe contener `[7, 14, 21, 28, 35]`.",
+      "starterCode": "let tabla = [];\n\n// Escribe tu bucle for aquí\n",
+      "tests": [
+        {
+          "description": "tabla[0] es 7 (7 * 1)",
+          "expression": "tabla[0] === 7"
+        },
+        {
+          "description": "tabla[4] es 35 (7 * 5)",
+          "expression": "tabla[4] === 35"
+        }
+      ],
+      "hints": [
+        "`for (let i = 1; i <= 5; i++)`",
+        "Dentro del for: `tabla.push(7 * i);`",
+        "`push` agrega un elemento al final del array"
+      ]
+    }
+  ]
 }

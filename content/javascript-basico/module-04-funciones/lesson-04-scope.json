@@ -15,32 +15,87 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea un mini sistema de puntuación:\n\n1. Declara una variable global `puntuacion` con valor `0`\n2. Crea una función `sumarPuntos(n)` que sume `n` a `puntuacion`\n3. Crea una función `obtenerPuntuacion()` que **retorne** el valor actual de `puntuacion`\n\nLuego:\n- Llama `sumarPuntos(50)`\n- Llama `sumarPuntos(30)`\n- Guarda `obtenerPuntuacion()` en `totalFinal`",
-    "starterCode": "// Variable global\nlet puntuacion = 0;\n\n// Función que suma puntos\n\n\n// Función que retorna la puntuación\n\n\n// Llama las funciones\nsumarPuntos(50);\nsumarPuntos(30);\nconst totalFinal = obtenerPuntuacion();\nconsole.log(totalFinal);\n",
-    "tests": [
-      {
-        "description": "sumarPuntos es una función",
-        "expression": "typeof sumarPuntos === 'function'"
-      },
-      {
-        "description": "obtenerPuntuacion es una función",
-        "expression": "typeof obtenerPuntuacion === 'function'"
-      },
-      {
-        "description": "totalFinal es 80 (50 + 30)",
-        "expression": "totalFinal === 80"
-      },
-      {
-        "description": "obtenerPuntuacion retorna un número",
-        "expression": "typeof obtenerPuntuacion() === 'number'"
-      }
-    ],
-    "hints": [
-      "`sumarPuntos`: `function sumarPuntos(n) { puntuacion += n; }`",
-      "`obtenerPuntuacion`: `function obtenerPuntuacion() { return puntuacion; }`",
-      "Las funciones pueden leer y modificar variables del scope externo (global)",
-      "50 + 30 = 80"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Scope global",
+      "prompt": "Crea un mini sistema de puntuación:\n\n1. Declara una variable global `puntuacion` con valor `0`\n2. Crea una función `sumarPuntos(n)` que sume `n` a `puntuacion`\n3. Crea una función `obtenerPuntuacion()` que **retorne** el valor actual de `puntuacion`\n\nLuego:\n- Llama `sumarPuntos(50)`\n- Llama `sumarPuntos(30)`\n- Guarda `obtenerPuntuacion()` en `totalFinal`",
+      "starterCode": "// Variable global\nlet puntuacion = 0;\n\n// Función que suma puntos\n\n\n// Función que retorna la puntuación\n\n\n// Llama las funciones\nsumarPuntos(50);\nsumarPuntos(30);\nconst totalFinal = obtenerPuntuacion();\nconsole.log(totalFinal);\n",
+      "tests": [
+        {
+          "description": "sumarPuntos es una función",
+          "expression": "typeof sumarPuntos === 'function'"
+        },
+        {
+          "description": "obtenerPuntuacion es una función",
+          "expression": "typeof obtenerPuntuacion === 'function'"
+        },
+        {
+          "description": "totalFinal es 80 (50 + 30)",
+          "expression": "totalFinal === 80"
+        },
+        {
+          "description": "obtenerPuntuacion retorna un número",
+          "expression": "typeof obtenerPuntuacion() === 'number'"
+        }
+      ],
+      "hints": [
+        "`sumarPuntos`: `function sumarPuntos(n) { puntuacion += n; }`",
+        "`obtenerPuntuacion`: `function obtenerPuntuacion() { return puntuacion; }`",
+        "Las funciones pueden leer y modificar variables del scope externo (global)",
+        "50 + 30 = 80"
+      ]
+    },
+    {
+      "title": "Práctica: Variables locales",
+      "prompt": "Crea una función `calcularArea(base, altura)` que:\n1. Declare una variable local `area = base * altura` dentro de la función\n2. Retorne `area`\n\nGuarda el resultado de `calcularArea(4, 6)` en `miArea`.\n\nRecuerda: `area` solo existe dentro de la función.",
+      "starterCode": "// Define calcularArea con una variable local\n\nconst miArea = calcularArea(4, 6);\nconsole.log(miArea);\n",
+      "tests": [
+        {
+          "description": "calcularArea es una función",
+          "expression": "typeof calcularArea === 'function'"
+        },
+        {
+          "description": "calcularArea(4, 6) retorna 24",
+          "expression": "calcularArea(4, 6) === 24"
+        },
+        {
+          "description": "miArea es 24",
+          "expression": "miArea === 24"
+        },
+        {
+          "description": "calcularArea(3, 3) retorna 9",
+          "expression": "calcularArea(3, 3) === 9"
+        }
+      ],
+      "hints": [
+        "`function calcularArea(base, altura) { const area = base * altura; return area; }`",
+        "`const area` es local — solo existe dentro de la función",
+        "4 × 6 = 24"
+      ]
+    },
+    {
+      "title": "Aplicación: Contador encapsulado",
+      "prompt": "Crea un sistema de contador con scope:\n\n1. Declara `let contadorGlobal = 0`\n2. Crea `function incrementar(n)` que sume `n` a `contadorGlobal`\n3. Crea `function reiniciar()` que ponga `contadorGlobal` en `0`\n\nLuego ejecuta:\n- `incrementar(5)`\n- `incrementar(3)`\n- `reiniciar()`\n- `incrementar(2)`\n\nAl final, `contadorGlobal` debe valer `2`.",
+      "starterCode": "// Variable global\nlet contadorGlobal = 0;\n\n// Define incrementar(n)\n\n// Define reiniciar()\n\n// Ejecuta las llamadas\nincrementar(5);\nincrementar(3);\nreiniciar();\nincrementar(2);\nconsole.log(contadorGlobal);\n",
+      "tests": [
+        {
+          "description": "incrementar es una función",
+          "expression": "typeof incrementar === 'function'"
+        },
+        {
+          "description": "reiniciar es una función",
+          "expression": "typeof reiniciar === 'function'"
+        },
+        {
+          "description": "contadorGlobal es 2 al final",
+          "expression": "contadorGlobal === 2"
+        }
+      ],
+      "hints": [
+        "`function incrementar(n) { contadorGlobal += n; }`",
+        "`function reiniciar() { contadorGlobal = 0; }`",
+        "Después de reiniciar(), el contador vuelve a 0. Luego incrementar(2) lo deja en 2"
+      ]
+    }
+  ]
 }

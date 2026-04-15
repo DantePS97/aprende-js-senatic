@@ -15,23 +15,66 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea:\n- Una constante `MAX_NIVEL` con el valor `10`\n- Una variable `nivelActual` con el valor `1`\n\nLuego incrementa `nivelActual` en 1 (debe quedar en 2).",
-    "starterCode": "// Declara MAX_NIVEL como constante\n// Declara nivelActual como variable\n// Incrementa nivelActual en 1\n",
-    "tests": [
-      {
-        "description": "MAX_NIVEL existe y vale 10",
-        "expression": "typeof MAX_NIVEL !== 'undefined' && MAX_NIVEL === 10"
-      },
-      {
-        "description": "nivelActual existe y vale 2 (fue incrementado)",
-        "expression": "typeof nivelActual !== 'undefined' && nivelActual === 2"
-      }
-    ],
-    "hints": [
-      "Usa `const` para MAX_NIVEL: `const MAX_NIVEL = 10;`",
-      "Usa `let` para nivelActual: `let nivelActual = 1;`",
-      "Para incrementar: `nivelActual = nivelActual + 1;` o también `nivelActual++;`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: const vs let",
+      "prompt": "Crea:\n- Una constante `MAX_NIVEL` con el valor `10`\n- Una variable `nivelActual` con el valor `1`\n\nLuego incrementa `nivelActual` en 1 (debe quedar en 2).",
+      "starterCode": "// Declara MAX_NIVEL como constante\n// Declara nivelActual como variable\n// Incrementa nivelActual en 1\n",
+      "tests": [
+        {
+          "description": "MAX_NIVEL existe y vale 10",
+          "expression": "typeof MAX_NIVEL !== 'undefined' && MAX_NIVEL === 10"
+        },
+        {
+          "description": "nivelActual existe y vale 2 (fue incrementado)",
+          "expression": "typeof nivelActual !== 'undefined' && nivelActual === 2"
+        }
+      ],
+      "hints": [
+        "Usa `const` para MAX_NIVEL: `const MAX_NIVEL = 10;`",
+        "Usa `let` para nivelActual: `let nivelActual = 1;`",
+        "Para incrementar: `nivelActual = nivelActual + 1;` o también `nivelActual++;`"
+      ]
+    },
+    {
+      "title": "Práctica: Acumulador",
+      "prompt": "Crea:\n- `const MAX = 10`\n- `let contador = 0`\n\nLuego incrementa `contador` tres veces usando `contador++`.\n\nVerifica que `contador` sea `3` y que `MAX` siga siendo `10`.",
+      "starterCode": "// Declara MAX y contador\n// Incrementa contador tres veces\n",
+      "tests": [
+        {
+          "description": "contador vale 3 después de tres incrementos",
+          "expression": "contador === 3"
+        },
+        {
+          "description": "MAX sigue valiendo 10",
+          "expression": "MAX === 10"
+        }
+      ],
+      "hints": [
+        "`const MAX = 10;` — no cambia nunca",
+        "`let contador = 0;` — puede cambiar",
+        "Escribe `contador++;` tres veces para incrementarlo"
+      ]
+    },
+    {
+      "title": "Aplicación: Precio con descuento",
+      "prompt": "Crea:\n- `const PRECIO_BASE = 50000`\n- `let precioFinal = PRECIO_BASE`\n\nAplica un descuento del 10%: `precioFinal = precioFinal * 0.9`\n\nVerifica que `PRECIO_BASE` no cambió y que `precioFinal` sea `45000`.",
+      "starterCode": "// Declara PRECIO_BASE y precioFinal\n// Aplica el descuento del 10% a precioFinal\n",
+      "tests": [
+        {
+          "description": "PRECIO_BASE sigue siendo 50000",
+          "expression": "PRECIO_BASE === 50000"
+        },
+        {
+          "description": "precioFinal es 45000 (10% de descuento)",
+          "expression": "precioFinal === 45000"
+        }
+      ],
+      "hints": [
+        "`const PRECIO_BASE = 50000;` — el precio original no cambia",
+        "`let precioFinal = PRECIO_BASE;` — empieza igual",
+        "`precioFinal = precioFinal * 0.9;` — multiplica por 0.9 para quitar el 10%"
+      ]
+    }
+  ]
 }

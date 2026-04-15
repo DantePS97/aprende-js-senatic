@@ -15,28 +15,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una variable `diaSemana` con el número `3` (donde 1=lunes, 7=domingo).\n\nUsa un `switch` para crear una variable `nombreDia` con el nombre del día:\n- 1 → 'Lunes'\n- 2 → 'Martes'\n- 3 → 'Miércoles'\n- 4 → 'Jueves'\n- 5 → 'Viernes'\n- 6 → 'Sábado'\n- 7 → 'Domingo'\n- default → 'Día inválido'",
-    "starterCode": "let diaSemana = 3;\nlet nombreDia;\n\n// Escribe tu switch aquí\n",
-    "tests": [
-      {
-        "description": "La variable 'diaSemana' existe y vale 3",
-        "expression": "typeof diaSemana !== 'undefined' && diaSemana === 3"
-      },
-      {
-        "description": "La variable 'nombreDia' existe",
-        "expression": "typeof nombreDia !== 'undefined'"
-      },
-      {
-        "description": "El día 3 corresponde a 'Miércoles'",
-        "expression": "nombreDia === 'Miércoles'"
-      }
-    ],
-    "hints": [
-      "Empieza con: `switch (diaSemana) {`",
-      "Cada caso sigue el patrón: `case 1: nombreDia = 'Lunes'; break;`",
-      "No olvides el `break` después de cada caso para evitar el fall-through",
-      "Agrega `default: nombreDia = 'Día inválido';` al final del switch"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Switch básico",
+      "prompt": "Crea una variable `diaSemana` con el número `3` (donde 1=lunes, 7=domingo).\n\nUsa un `switch` para crear una variable `nombreDia` con el nombre del día:\n- 1 → 'Lunes'\n- 2 → 'Martes'\n- 3 → 'Miércoles'\n- 4 → 'Jueves'\n- 5 → 'Viernes'\n- 6 → 'Sábado'\n- 7 → 'Domingo'\n- default → 'Día inválido'",
+      "starterCode": "let diaSemana = 3;\nlet nombreDia;\n\n// Escribe tu switch aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'diaSemana' existe y vale 3",
+          "expression": "typeof diaSemana !== 'undefined' && diaSemana === 3"
+        },
+        {
+          "description": "La variable 'nombreDia' existe",
+          "expression": "typeof nombreDia !== 'undefined'"
+        },
+        {
+          "description": "El día 3 corresponde a 'Miércoles'",
+          "expression": "nombreDia === 'Miércoles'"
+        }
+      ],
+      "hints": [
+        "Empieza con: `switch (diaSemana) {`",
+        "Cada caso sigue el patrón: `case 1: nombreDia = 'Lunes'; break;`",
+        "No olvides el `break` después de cada caso para evitar el fall-through",
+        "Agrega `default: nombreDia = 'Día inválido';` al final del switch"
+      ]
+    },
+    {
+      "title": "Práctica: Días de la semana",
+      "prompt": "Crea `let dia = 3` y `let nombre = ''`.\n\nUsa un `switch` para mapear el número al nombre del día:\n- 1 → 'Lunes', 2 → 'Martes', 3 → 'Miércoles', 4 → 'Jueves',\n- 5 → 'Viernes', 6 → 'Sábado', 7 → 'Domingo'\n- default → 'Inválido'",
+      "starterCode": "let dia = 3;\nlet nombre = '';\n\n// Escribe tu switch aquí\n",
+      "tests": [
+        {
+          "description": "Con dia 3, nombre es 'Miércoles'",
+          "expression": "nombre === 'Miércoles'"
+        }
+      ],
+      "hints": [
+        "`switch (dia) {` — evalúa el valor de `dia`",
+        "`case 3: nombre = 'Miércoles'; break;`",
+        "No olvides el `break` en cada `case` para evitar el fall-through"
+      ]
+    },
+    {
+      "title": "Aplicación: Calculadora",
+      "prompt": "Crea:\n- `let operacion = 'suma'`\n- `let a = 10, b = 5`\n- `let resultado = 0`\n\nUsa un `switch` sobre `operacion` para:\n- `'suma'` → `resultado = a + b`\n- `'resta'` → `resultado = a - b`\n- `'multiplicacion'` → `resultado = a * b`\n- `'division'` → `resultado = a / b`",
+      "starterCode": "let operacion = 'suma';\nlet a = 10, b = 5;\nlet resultado = 0;\n\n// Escribe tu switch aquí\n",
+      "tests": [
+        {
+          "description": "Con operacion 'suma', resultado es 15",
+          "expression": "resultado === 15"
+        }
+      ],
+      "hints": [
+        "`switch (operacion) {`",
+        "`case 'suma': resultado = a + b; break;`",
+        "10 + 5 = 15"
+      ]
+    }
+  ]
 }

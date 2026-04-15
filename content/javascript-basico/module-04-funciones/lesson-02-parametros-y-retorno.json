@@ -15,32 +15,91 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una función llamada `calcularPromedio` que:\n1. Reciba tres parámetros: `nota1`, `nota2`, `nota3`\n2. Calcule el promedio (suma dividida entre 3)\n3. Retorne el promedio (usa `return`)\n\nLuego llama a la función con los valores `80`, `90`, `70` y guarda el resultado en una variable `miPromedio`.",
-    "starterCode": "// Define la función calcularPromedio aquí\n\n\n// Llama la función con 80, 90, 70\nconst miPromedio = calcularPromedio(80, 90, 70);\nconsole.log(miPromedio);\n",
-    "tests": [
-      {
-        "description": "Existe una función llamada 'calcularPromedio'",
-        "expression": "typeof calcularPromedio === 'function'"
-      },
-      {
-        "description": "La variable 'miPromedio' existe",
-        "expression": "typeof miPromedio !== 'undefined'"
-      },
-      {
-        "description": "El promedio de 80, 90 y 70 es 80",
-        "expression": "miPromedio === 80"
-      },
-      {
-        "description": "La función retorna correctamente para cualquier nota",
-        "expression": "calcularPromedio(100, 100, 100) === 100"
-      }
-    ],
-    "hints": [
-      "La función recibe tres parámetros: `function calcularPromedio(nota1, nota2, nota3)`",
-      "Calcula la suma: `const suma = nota1 + nota2 + nota3;`",
-      "Divide entre 3: `return suma / 3;`",
-      "80 + 90 + 70 = 240. Dividido entre 3 = 80"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Parámetros y return",
+      "prompt": "Crea una función llamada `calcularPromedio` que:\n1. Reciba tres parámetros: `nota1`, `nota2`, `nota3`\n2. Calcule el promedio (suma dividida entre 3)\n3. Retorne el promedio (usa `return`)\n\nLuego llama a la función con los valores `80`, `90`, `70` y guarda el resultado en una variable `miPromedio`.",
+      "starterCode": "// Define la función calcularPromedio aquí\n\n\n// Llama la función con 80, 90, 70\nconst miPromedio = calcularPromedio(80, 90, 70);\nconsole.log(miPromedio);\n",
+      "tests": [
+        {
+          "description": "Existe una función llamada 'calcularPromedio'",
+          "expression": "typeof calcularPromedio === 'function'"
+        },
+        {
+          "description": "La variable 'miPromedio' existe",
+          "expression": "typeof miPromedio !== 'undefined'"
+        },
+        {
+          "description": "El promedio de 80, 90 y 70 es 80",
+          "expression": "miPromedio === 80"
+        },
+        {
+          "description": "La función retorna correctamente para cualquier nota",
+          "expression": "calcularPromedio(100, 100, 100) === 100"
+        }
+      ],
+      "hints": [
+        "La función recibe tres parámetros: `function calcularPromedio(nota1, nota2, nota3)`",
+        "Calcula la suma: `const suma = nota1 + nota2 + nota3;`",
+        "Divide entre 3: `return suma / 3;`",
+        "80 + 90 + 70 = 240. Dividido entre 3 = 80"
+      ]
+    },
+    {
+      "title": "Práctica: Validación",
+      "prompt": "Crea una función `esPositivo(n)` que:\n- Retorne `true` si `n` es mayor que cero\n- Retorne `false` en cualquier otro caso (cero o negativo)\n\nVerifica que funcione con distintos valores.",
+      "starterCode": "// Define esPositivo aquí\n\n// Pruebas\nconsole.log(esPositivo(5));   // true\nconsole.log(esPositivo(-3));  // false\nconsole.log(esPositivo(0));   // false\n",
+      "tests": [
+        {
+          "description": "esPositivo es una función",
+          "expression": "typeof esPositivo === 'function'"
+        },
+        {
+          "description": "esPositivo(5) retorna true",
+          "expression": "esPositivo(5) === true"
+        },
+        {
+          "description": "esPositivo(-3) retorna false",
+          "expression": "esPositivo(-3) === false"
+        },
+        {
+          "description": "esPositivo(0) retorna false (cero no es positivo)",
+          "expression": "esPositivo(0) === false"
+        }
+      ],
+      "hints": [
+        "`function esPositivo(n) { ... }`",
+        "Usa `if (n > 0) { return true; } return false;`",
+        "O más corto: `return n > 0;` — la comparación ya devuelve true/false"
+      ]
+    },
+    {
+      "title": "Aplicación: Conversor de unidades",
+      "prompt": "Crea una función `kmAMillas(km)` que convierta kilómetros a millas.\n\nLa fórmula es: `millas = km * 0.621371`\n\nLa función debe retornar el resultado. Guarda `kmAMillas(10)` en `resultado`.",
+      "starterCode": "// Define kmAMillas aquí\n\nconst resultado = kmAMillas(10);\nconsole.log(resultado);\n",
+      "tests": [
+        {
+          "description": "kmAMillas es una función",
+          "expression": "typeof kmAMillas === 'function'"
+        },
+        {
+          "description": "kmAMillas(10) está entre 6.2 y 6.3",
+          "expression": "kmAMillas(10) > 6.2 && kmAMillas(10) < 6.3"
+        },
+        {
+          "description": "kmAMillas(0) es 0",
+          "expression": "kmAMillas(0) === 0"
+        },
+        {
+          "description": "resultado existe",
+          "expression": "typeof resultado !== 'undefined'"
+        }
+      ],
+      "hints": [
+        "`function kmAMillas(km) { return km * 0.621371; }`",
+        "10 kilómetros son aproximadamente 6.21 millas",
+        "El resultado de `kmAMillas(10)` será 6.21371"
+      ]
+    }
+  ]
 }

@@ -15,24 +15,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Tienes el siguiente array de temperaturas de la semana:\n\n```javascript\nconst temperaturas = [24, 28, 31, 26, 22, 29, 30];\n```\n\nUsa un bucle `for...of` para:\n1. Sumar todas las temperaturas en una variable `suma`\n2. Calcular el promedio: `const promedio = suma / temperaturas.length`\n\nRedondea el promedio a entero usando `Math.round(promedio)` y guárdalo en `promedioFinal`.",
-    "starterCode": "const temperaturas = [24, 28, 31, 26, 22, 29, 30];\nlet suma = 0;\n\n// Recorre el array con for...of y acumula la suma\n\nconst promedio = suma / temperaturas.length;\nconst promedioFinal = Math.round(promedio);\nconsole.log(promedioFinal);\n",
-    "tests": [
-      {
-        "description": "La variable 'suma' tiene el total de temperaturas (190)",
-        "expression": "suma === 190"
-      },
-      {
-        "description": "El promedio final es 27",
-        "expression": "promedioFinal === 27"
-      }
-    ],
-    "hints": [
-      "Usa `for (const temp of temperaturas)` para recorrer el array",
-      "Dentro del bucle: `suma += temp;`",
-      "24+28+31+26+22+29+30 = 190. Dividido entre 7 = 27.14, redondeado = 27",
-      "Math.round(27.14) → 27"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: for...of en array",
+      "prompt": "Tienes el siguiente array de temperaturas de la semana:\n\n```javascript\nconst temperaturas = [24, 28, 31, 26, 22, 29, 30];\n```\n\nUsa un bucle `for...of` para:\n1. Sumar todas las temperaturas en una variable `suma`\n2. Calcular el promedio: `const promedio = suma / temperaturas.length`\n\nRedondea el promedio a entero usando `Math.round(promedio)` y guárdalo en `promedioFinal`.",
+      "starterCode": "const temperaturas = [24, 28, 31, 26, 22, 29, 30];\nlet suma = 0;\n\n// Recorre el array con for...of y acumula la suma\n\nconst promedio = suma / temperaturas.length;\nconst promedioFinal = Math.round(promedio);\nconsole.log(promedioFinal);\n",
+      "tests": [
+        {
+          "description": "La variable 'suma' tiene el total de temperaturas (190)",
+          "expression": "suma === 190"
+        },
+        {
+          "description": "El promedio final es 27",
+          "expression": "promedioFinal === 27"
+        }
+      ],
+      "hints": [
+        "Usa `for (const temp of temperaturas)` para recorrer el array",
+        "Dentro del bucle: `suma += temp;`",
+        "24+28+31+26+22+29+30 = 190. Dividido entre 7 = 27.14, redondeado = 27",
+        "Math.round(27.14) → 27"
+      ]
+    },
+    {
+      "title": "Práctica: Mayor de la lista",
+      "prompt": "Tienes `const numeros = [3, 7, 1, 9, 4]`.\n\nCrea `let mayor = numeros[0]`. Usa un `for...of` para recorrer el array: si algún número es mayor que `mayor`, actualiza `mayor`.\n\nAl final, `mayor` debe ser el número más grande del array.",
+      "starterCode": "const numeros = [3, 7, 1, 9, 4];\nlet mayor = numeros[0];\n\n// Usa for...of para encontrar el mayor\n",
+      "tests": [
+        {
+          "description": "mayor es 9",
+          "expression": "mayor === 9"
+        }
+      ],
+      "hints": [
+        "`for (const num of numeros)`",
+        "`if (num > mayor) { mayor = num; }`",
+        "Iniciamos `mayor` con el primer elemento y lo vamos actualizando"
+      ]
+    },
+    {
+      "title": "Aplicación: Filtrar positivos",
+      "prompt": "Tienes `const valores = [-2, 5, -1, 8, 0, 3]`.\n\nCrea `let positivos = []`. Usa un `for...of` para recorrer `valores`: si el número es mayor que 0, agrégalo a `positivos` con `positivos.push(num)`.\n\nAl final, `positivos` debe tener 3 elementos: `[5, 8, 3]`.",
+      "starterCode": "const valores = [-2, 5, -1, 8, 0, 3];\nlet positivos = [];\n\n// Usa for...of para filtrar los positivos\n",
+      "tests": [
+        {
+          "description": "positivos tiene 3 elementos",
+          "expression": "positivos.length === 3"
+        },
+        {
+          "description": "El primer positivo es 5",
+          "expression": "positivos[0] === 5"
+        }
+      ],
+      "hints": [
+        "`for (const num of valores)`",
+        "`if (num > 0) { positivos.push(num); }`",
+        "El 0 no es positivo, así que no se incluye"
+      ]
+    }
+  ]
 }

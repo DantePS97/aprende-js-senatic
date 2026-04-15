@@ -15,24 +15,59 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Usa un bucle `for` del 1 al 20 para encontrar la suma de todos los números **impares** entre 1 y 20.\n\n- Usa `continue` para saltarte los números pares\n- Guarda la suma en una variable `sumaImpares`\n\n(La suma de impares del 1 al 19 es 100)",
-    "starterCode": "let sumaImpares = 0;\n\n// Escribe tu bucle aquí\n// Usa continue para saltarte los pares\n",
-    "tests": [
-      {
-        "description": "La variable 'sumaImpares' existe",
-        "expression": "typeof sumaImpares !== 'undefined'"
-      },
-      {
-        "description": "La suma de los impares del 1 al 20 es 100",
-        "expression": "sumaImpares === 100"
-      }
-    ],
-    "hints": [
-      "Un número es par si `i % 2 === 0`. Si es par, usa `continue` para saltarlo",
-      "El bucle: `for (let i = 1; i <= 20; i++)`",
-      "Dentro: `if (i % 2 === 0) continue;` y luego `sumaImpares += i;`",
-      "Los impares del 1 al 19 son: 1+3+5+7+9+11+13+15+17+19 = 100"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: break y continue",
+      "prompt": "Usa un bucle `for` del 1 al 20 para encontrar la suma de todos los números **impares** entre 1 y 20.\n\n- Usa `continue` para saltarte los números pares\n- Guarda la suma en una variable `sumaImpares`\n\n(La suma de impares del 1 al 19 es 100)",
+      "starterCode": "let sumaImpares = 0;\n\n// Escribe tu bucle aquí\n// Usa continue para saltarte los pares\n",
+      "tests": [
+        {
+          "description": "La variable 'sumaImpares' existe",
+          "expression": "typeof sumaImpares !== 'undefined'"
+        },
+        {
+          "description": "La suma de los impares del 1 al 20 es 100",
+          "expression": "sumaImpares === 100"
+        }
+      ],
+      "hints": [
+        "Un número es par si `i % 2 === 0`. Si es par, usa `continue` para saltarlo",
+        "El bucle: `for (let i = 1; i <= 20; i++)`",
+        "Dentro: `if (i % 2 === 0) continue;` y luego `sumaImpares += i;`",
+        "Los impares del 1 al 19 son: 1+3+5+7+9+11+13+15+17+19 = 100"
+      ]
+    },
+    {
+      "title": "Práctica: Primer múltiplo de 7",
+      "prompt": "Crea `let resultado = 0`.\n\nUsa un `for` del 1 al 100. Cuando encuentres el primer número que sea múltiplo de 7 (`i % 7 === 0`), guárdalo en `resultado` y usa `break` para salir del bucle.",
+      "starterCode": "let resultado = 0;\n\n// Escribe tu bucle for aquí\n",
+      "tests": [
+        {
+          "description": "resultado es 7 (el primer múltiplo de 7)",
+          "expression": "resultado === 7"
+        }
+      ],
+      "hints": [
+        "`for (let i = 1; i <= 100; i++)`",
+        "`if (i % 7 === 0) { resultado = i; break; }`",
+        "El primer múltiplo de 7 mayor o igual a 1 es el 7 mismo"
+      ]
+    },
+    {
+      "title": "Aplicación: Suma sin múltiplos de 3",
+      "prompt": "Crea `let suma = 0`.\n\nUsa un `for` del 1 al 20. Si `i` es múltiplo de 3 (`i % 3 === 0`), usa `continue` para saltarlo. Suma todos los demás números.\n\n(La suma de los números del 1 al 20 que NO son múltiplos de 3 es 147)",
+      "starterCode": "let suma = 0;\n\n// Escribe tu bucle for aquí\n",
+      "tests": [
+        {
+          "description": "La suma de números del 1 al 20 que no son múltiplos de 3 es 147",
+          "expression": "suma === 147"
+        }
+      ],
+      "hints": [
+        "`for (let i = 1; i <= 20; i++)`",
+        "`if (i % 3 === 0) continue;` — salta los múltiplos de 3",
+        "Luego `suma += i;` para sumar los demás"
+      ]
+    }
+  ]
 }

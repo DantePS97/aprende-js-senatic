@@ -15,28 +15,71 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea tres variables:\n- `miNombre`: con tu nombre como texto\n- `miEdad`: con tu edad como número\n- `meGustaJS`: con el valor `true` (boolean)",
-    "starterCode": "// Crea tus tres variables aquí\n",
-    "tests": [
-      {
-        "description": "La variable 'miNombre' es un string",
-        "expression": "typeof miNombre === 'string' && miNombre.length > 0"
-      },
-      {
-        "description": "La variable 'miEdad' es un número",
-        "expression": "typeof miEdad === 'number' && miEdad > 0"
-      },
-      {
-        "description": "La variable 'meGustaJS' es true",
-        "expression": "meGustaJS === true"
-      }
-    ],
-    "hints": [
-      "Necesitas crear 3 variables usando `let`",
-      "Los textos van entre comillas: `let miNombre = 'Tu nombre';`",
-      "Los números van sin comillas: `let miEdad = 16;`",
-      "Los booleanos son literalmente `true` o `false`: `let meGustaJS = true;`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Identificar tipos",
+      "prompt": "Crea tres variables:\n- `miNombre`: con tu nombre como texto\n- `miEdad`: con tu edad como número\n- `meGustaJS`: con el valor `true` (boolean)",
+      "starterCode": "// Crea tus tres variables aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'miNombre' es un string",
+          "expression": "typeof miNombre === 'string' && miNombre.length > 0"
+        },
+        {
+          "description": "La variable 'miEdad' es un número",
+          "expression": "typeof miEdad === 'number' && miEdad > 0"
+        },
+        {
+          "description": "La variable 'meGustaJS' es true",
+          "expression": "meGustaJS === true"
+        }
+      ],
+      "hints": [
+        "Necesitas crear 3 variables usando `let`",
+        "Los textos van entre comillas: `let miNombre = 'Tu nombre';`",
+        "Los números van sin comillas: `let miEdad = 16;`",
+        "Los booleanos son literalmente `true` o `false`: `let meGustaJS = true;`"
+      ]
+    },
+    {
+      "title": "Práctica: Conversión",
+      "prompt": "Crea las siguientes variables:\n- `numString`: con el valor `'42'` (texto)\n- `numReal`: convierte `numString` a número usando `Number(numString)`\n- `texto`: convierte el número `100` a texto usando `String(100)`\n\nVerifica que las conversiones sean correctas.",
+      "starterCode": "// Crea las variables con las conversiones indicadas\n",
+      "tests": [
+        {
+          "description": "numReal es el número 42",
+          "expression": "numReal === 42"
+        },
+        {
+          "description": "texto es un string",
+          "expression": "typeof texto === 'string'"
+        }
+      ],
+      "hints": [
+        "`Number('42')` convierte el string `'42'` al número `42`",
+        "`String(100)` convierte el número `100` al string `'100'`",
+        "Puedes verificar con `typeof`: `typeof numReal === 'number'` debe ser `true`"
+      ]
+    },
+    {
+      "title": "Aplicación: Tipos mixtos",
+      "prompt": "Crea las siguientes variables:\n- `edad`: con el valor `20`\n- `esMayor`: booleano que sea `true` si `edad >= 18`, usando el operador de comparación directamente\n- `descripcion`: un string que diga `'Tengo ' + edad + ' años'`\n\nVerifica que los tipos sean correctos.",
+      "starterCode": "// Declara edad, esMayor y descripcion\n",
+      "tests": [
+        {
+          "description": "esMayor es true (edad 20 >= 18)",
+          "expression": "esMayor === true"
+        },
+        {
+          "description": "descripcion es un string",
+          "expression": "typeof descripcion === 'string'"
+        }
+      ],
+      "hints": [
+        "`let esMayor = edad >= 18;` — el resultado de una comparación es un booleano",
+        "`let descripcion = 'Tengo ' + edad + ' años';`",
+        "Con `edad = 20`, la condición `edad >= 18` es `true`"
+      ]
+    }
+  ]
 }

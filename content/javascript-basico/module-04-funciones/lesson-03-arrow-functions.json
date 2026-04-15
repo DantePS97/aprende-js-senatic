@@ -15,36 +15,95 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea las siguientes arrow functions:\n\n1. `cuadrado`: recibe un número `n` y devuelve `n * n`\n2. `saludo`: recibe un `nombre` y devuelve el string `'Bienvenido, ' + nombre`\n\nLuego:\n- Guarda `cuadrado(7)` en `resultado1`\n- Guarda `saludo('Sofía')` en `resultado2`",
-    "starterCode": "// Define cuadrado como arrow function\n\n// Define saludo como arrow function\n\n// Llama las funciones\nconst resultado1 = cuadrado(7);\nconst resultado2 = saludo('Sofía');\n\nconsole.log(resultado1);\nconsole.log(resultado2);\n",
-    "tests": [
-      {
-        "description": "cuadrado es una función",
-        "expression": "typeof cuadrado === 'function'"
-      },
-      {
-        "description": "cuadrado(7) devuelve 49",
-        "expression": "cuadrado(7) === 49"
-      },
-      {
-        "description": "saludo es una función",
-        "expression": "typeof saludo === 'function'"
-      },
-      {
-        "description": "saludo('Sofía') devuelve 'Bienvenido, Sofía'",
-        "expression": "saludo('Sofía') === 'Bienvenido, Sofía'"
-      },
-      {
-        "description": "resultado1 es 49",
-        "expression": "resultado1 === 49"
-      }
-    ],
-    "hints": [
-      "Para cuadrado: `const cuadrado = n => n * n;`",
-      "Para saludo: `const saludo = nombre => 'Bienvenido, ' + nombre;`",
-      "Las arrow functions de una sola expresión no necesitan llaves ni `return`",
-      "7 * 7 = 49"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Arrow function",
+      "prompt": "Crea las siguientes arrow functions:\n\n1. `cuadrado`: recibe un número `n` y devuelve `n * n`\n2. `saludo`: recibe un `nombre` y devuelve el string `'Bienvenido, ' + nombre`\n\nLuego:\n- Guarda `cuadrado(7)` en `resultado1`\n- Guarda `saludo('Sofía')` en `resultado2`",
+      "starterCode": "// Define cuadrado como arrow function\n\n// Define saludo como arrow function\n\n// Llama las funciones\nconst resultado1 = cuadrado(7);\nconst resultado2 = saludo('Sofía');\n\nconsole.log(resultado1);\nconsole.log(resultado2);\n",
+      "tests": [
+        {
+          "description": "cuadrado es una función",
+          "expression": "typeof cuadrado === 'function'"
+        },
+        {
+          "description": "cuadrado(7) devuelve 49",
+          "expression": "cuadrado(7) === 49"
+        },
+        {
+          "description": "saludo es una función",
+          "expression": "typeof saludo === 'function'"
+        },
+        {
+          "description": "saludo('Sofía') devuelve 'Bienvenido, Sofía'",
+          "expression": "saludo('Sofía') === 'Bienvenido, Sofía'"
+        },
+        {
+          "description": "resultado1 es 49",
+          "expression": "resultado1 === 49"
+        }
+      ],
+      "hints": [
+        "Para cuadrado: `const cuadrado = n => n * n;`",
+        "Para saludo: `const saludo = nombre => 'Bienvenido, ' + nombre;`",
+        "Las arrow functions de una sola expresión no necesitan llaves ni `return`",
+        "7 * 7 = 49"
+      ]
+    },
+    {
+      "title": "Práctica: Múltiples arrows",
+      "prompt": "Crea dos arrow functions:\n\n1. `esPar`: recibe un número `n` y retorna `true` si es par, `false` si es impar\n2. `triple`: recibe un número `n` y retorna `n * 3`\n\nUsa la sintaxis corta (sin llaves ni `return` explícito).",
+      "starterCode": "// Define esPar como arrow function\n\n// Define triple como arrow function\n\nconsole.log(esPar(4));   // true\nconsole.log(esPar(7));   // false\nconsole.log(triple(5));  // 15\n",
+      "tests": [
+        {
+          "description": "esPar(4) es true",
+          "expression": "esPar(4) === true"
+        },
+        {
+          "description": "esPar(7) es false",
+          "expression": "esPar(7) === false"
+        },
+        {
+          "description": "triple(5) es 15",
+          "expression": "triple(5) === 15"
+        },
+        {
+          "description": "triple(0) es 0",
+          "expression": "triple(0) === 0"
+        }
+      ],
+      "hints": [
+        "`const esPar = n => n % 2 === 0;` — el operador `%` da el resto de la división",
+        "`const triple = n => n * 3;`",
+        "Un número par tiene resto 0 al dividir entre 2"
+      ]
+    },
+    {
+      "title": "Aplicación: Conversor de temperatura",
+      "prompt": "Crea una arrow function `celsiusAFahrenheit` que convierta grados Celsius a Fahrenheit.\n\nFórmula: `F = (C * 9/5) + 32`\n\nUsa la sintaxis corta de arrow function (una sola expresión).",
+      "starterCode": "// Define celsiusAFahrenheit como arrow function\n\nconsole.log(celsiusAFahrenheit(0));    // 32\nconsole.log(celsiusAFahrenheit(100));  // 212\n",
+      "tests": [
+        {
+          "description": "celsiusAFahrenheit es una función",
+          "expression": "typeof celsiusAFahrenheit === 'function'"
+        },
+        {
+          "description": "0°C son 32°F",
+          "expression": "celsiusAFahrenheit(0) === 32"
+        },
+        {
+          "description": "100°C son 212°F",
+          "expression": "celsiusAFahrenheit(100) === 212"
+        },
+        {
+          "description": "37°C son aproximadamente 98.6°F",
+          "expression": "celsiusAFahrenheit(37) > 98 && celsiusAFahrenheit(37) < 99"
+        }
+      ],
+      "hints": [
+        "`const celsiusAFahrenheit = c => (c * 9/5) + 32;`",
+        "0 Celsius × 9/5 + 32 = 32 Fahrenheit",
+        "100 Celsius × 9/5 + 32 = 212 Fahrenheit"
+      ]
+    }
+  ]
 }

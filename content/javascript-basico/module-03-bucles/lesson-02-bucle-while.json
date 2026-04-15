@@ -15,28 +15,71 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Escribe un bucle `while` que:\n\n1. Empiece con `let contador = 1`\n2. Mientras `contador` sea menor o igual a 5, multiplique `contador` por 2 y guarde el resultado en una variable `resultado`\n3. Incremente `contador` en 1 en cada vuelta\n\nAl terminar el bucle, `resultado` debe tener el valor del último cálculo (`5 * 2 = 10`).",
-    "starterCode": "let contador = 1;\nlet resultado = 0;\n\n// Escribe tu bucle while aquí\n",
-    "tests": [
-      {
-        "description": "La variable 'contador' existe",
-        "expression": "typeof contador !== 'undefined'"
-      },
-      {
-        "description": "La variable 'resultado' existe",
-        "expression": "typeof resultado !== 'undefined'"
-      },
-      {
-        "description": "resultado es 10 (el último valor: 5 * 2)",
-        "expression": "resultado === 10"
-      }
-    ],
-    "hints": [
-      "La condición del while es: `while (contador <= 5)`",
-      "Dentro del while: `resultado = contador * 2;`",
-      "Luego incrementa: `contador++;`",
-      "El bucle se ejecuta 5 veces. En la última: contador=5, resultado=5*2=10"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: while simple",
+      "prompt": "Escribe un bucle `while` que:\n\n1. Empiece con `let contador = 1`\n2. Mientras `contador` sea menor o igual a 5, multiplique `contador` por 2 y guarde el resultado en una variable `resultado`\n3. Incremente `contador` en 1 en cada vuelta\n\nAl terminar el bucle, `resultado` debe tener el valor del último cálculo (`5 * 2 = 10`).",
+      "starterCode": "let contador = 1;\nlet resultado = 0;\n\n// Escribe tu bucle while aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'contador' existe",
+          "expression": "typeof contador !== 'undefined'"
+        },
+        {
+          "description": "La variable 'resultado' existe",
+          "expression": "typeof resultado !== 'undefined'"
+        },
+        {
+          "description": "resultado es 10 (el último valor: 5 * 2)",
+          "expression": "resultado === 10"
+        }
+      ],
+      "hints": [
+        "La condición del while es: `while (contador <= 5)`",
+        "Dentro del while: `resultado = contador * 2;`",
+        "Luego incrementa: `contador++;`",
+        "El bucle se ejecuta 5 veces. En la última: contador=5, resultado=5*2=10"
+      ]
+    },
+    {
+      "title": "Práctica: Contar regresivo",
+      "prompt": "Crea `let cuenta = 10` y `let pasos = 0`.\n\nUsa un `while` que mientras `cuenta > 0` reste 2 a `cuenta` e incremente `pasos` en 1.\n\nAl terminar, `pasos` debe ser `5` y `cuenta` debe ser `0`.",
+      "starterCode": "let cuenta = 10;\nlet pasos = 0;\n\n// Escribe tu bucle while aquí\n",
+      "tests": [
+        {
+          "description": "pasos es 5 al terminar",
+          "expression": "pasos === 5"
+        },
+        {
+          "description": "cuenta es 0 al terminar",
+          "expression": "cuenta === 0"
+        }
+      ],
+      "hints": [
+        "`while (cuenta > 0)`",
+        "Dentro: `cuenta -= 2;` y `pasos++;`",
+        "10 → 8 → 6 → 4 → 2 → 0: 5 pasos"
+      ]
+    },
+    {
+      "title": "Aplicación: Crecimiento doble",
+      "prompt": "Crea `let valor = 1` y `let iteraciones = 0`.\n\nUsa un `while` que mientras `valor < 100` duplique `valor` e incremente `iteraciones`.\n\n¿Cuántas veces hay que doblar 1 para llegar o superar 100?",
+      "starterCode": "let valor = 1;\nlet iteraciones = 0;\n\n// Escribe tu bucle while aquí\n",
+      "tests": [
+        {
+          "description": "valor es >= 100 al terminar",
+          "expression": "valor >= 100"
+        },
+        {
+          "description": "iteraciones es 7",
+          "expression": "iteraciones === 7"
+        }
+      ],
+      "hints": [
+        "`while (valor < 100)`",
+        "Dentro: `valor *= 2;` y `iteraciones++;`",
+        "1→2→4→8→16→32→64→128: 7 duplicaciones para llegar a 128 (>= 100)"
+      ]
+    }
+  ]
 }

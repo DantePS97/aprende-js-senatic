@@ -15,28 +15,63 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nUsa el operador ternario para crear una variable `clima` que sea:\n- `'Caliente'` si la temperatura es mayor a 30\n- `'Fresco'` si no\n\nImprime `clima` con `console.log`.",
-    "starterCode": "// Declara temperatura\n// Usa el operador ternario para asignar clima\n// Imprime clima\n",
-    "tests": [
-      {
-        "description": "La variable 'temperatura' existe y vale 35",
-        "expression": "typeof temperatura !== 'undefined' && temperatura === 35"
-      },
-      {
-        "description": "La variable 'clima' existe",
-        "expression": "typeof clima !== 'undefined'"
-      },
-      {
-        "description": "Con temperatura 35 el clima es 'Caliente'",
-        "expression": "clima === 'Caliente'"
-      }
-    ],
-    "hints": [
-      "Primero declara: `let temperatura = 35;`",
-      "La sintaxis del ternario es: `condicion ? valorSiTrue : valorSiFalse`",
-      "La condición es: `temperatura > 30`",
-      "Solución: `let clima = temperatura > 30 ? 'Caliente' : 'Fresco';`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Ternario simple",
+      "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nUsa el operador ternario para crear una variable `clima` que sea:\n- `'Caliente'` si la temperatura es mayor a 30\n- `'Fresco'` si no\n\nImprime `clima` con `console.log`.",
+      "starterCode": "// Declara temperatura\n// Usa el operador ternario para asignar clima\n// Imprime clima\n",
+      "tests": [
+        {
+          "description": "La variable 'temperatura' existe y vale 35",
+          "expression": "typeof temperatura !== 'undefined' && temperatura === 35"
+        },
+        {
+          "description": "La variable 'clima' existe",
+          "expression": "typeof clima !== 'undefined'"
+        },
+        {
+          "description": "Con temperatura 35 el clima es 'Caliente'",
+          "expression": "clima === 'Caliente'"
+        }
+      ],
+      "hints": [
+        "Primero declara: `let temperatura = 35;`",
+        "La sintaxis del ternario es: `condicion ? valorSiTrue : valorSiFalse`",
+        "La condición es: `temperatura > 30`",
+        "Solución: `let clima = temperatura > 30 ? 'Caliente' : 'Fresco';`"
+      ]
+    },
+    {
+      "title": "Práctica: Paridad",
+      "prompt": "Crea `let numero = 7`.\n\nUsa el operador ternario para crear `let tipo` que sea:\n- `'par'` si `numero % 2 === 0`\n- `'impar'` si no",
+      "starterCode": "let numero = 7;\n\n// Usa el ternario para asignar tipo\n",
+      "tests": [
+        {
+          "description": "Con numero 7, tipo es 'impar'",
+          "expression": "tipo === 'impar'"
+        }
+      ],
+      "hints": [
+        "El operador `%` da el residuo de la división",
+        "`7 % 2` es `1` (no es 0), por lo tanto 7 es impar",
+        "`let tipo = numero % 2 === 0 ? 'par' : 'impar';`"
+      ]
+    },
+    {
+      "title": "Aplicación: Descuento VIP",
+      "prompt": "Crea:\n- `const esVIP = true`\n- `const precioBase = 100000`\n- `const precioFinal`: usa el ternario para asignar `precioBase * 0.8` si `esVIP` es true, o `precioBase` si no.",
+      "starterCode": "const esVIP = true;\nconst precioBase = 100000;\n\n// Usa el ternario para calcular precioFinal\n",
+      "tests": [
+        {
+          "description": "precioFinal es 80000 (20% de descuento VIP)",
+          "expression": "precioFinal === 80000"
+        }
+      ],
+      "hints": [
+        "`const precioFinal = esVIP ? precioBase * 0.8 : precioBase;`",
+        "`100000 * 0.8 = 80000`",
+        "Si `esVIP` es `true`, la condición se evalúa como verdadera directamente"
+      ]
+    }
+  ]
 }

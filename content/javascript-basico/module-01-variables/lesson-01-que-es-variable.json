@@ -19,27 +19,78 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una variable llamada `ciudad` que contenga el nombre de tu ciudad como texto.",
-    "starterCode": "// Escribe tu código aquí\n",
-    "tests": [
-      {
-        "description": "La variable 'ciudad' existe",
-        "expression": "typeof ciudad !== 'undefined'"
-      },
-      {
-        "description": "La variable 'ciudad' contiene un texto (string)",
-        "expression": "typeof ciudad === 'string'"
-      },
-      {
-        "description": "La variable 'ciudad' no está vacía",
-        "expression": "ciudad.length > 0"
-      }
-    ],
-    "hints": [
-      "Usa la palabra clave `let` para crear una variable",
-      "La sintaxis es: `let nombreVariable = valor;`",
-      "Las cadenas de texto van entre comillas: `let ciudad = 'Bogotá';`"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Primera variable",
+      "prompt": "Crea una variable llamada `ciudad` que contenga el nombre de tu ciudad como texto.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'ciudad' existe",
+          "expression": "typeof ciudad !== 'undefined'"
+        },
+        {
+          "description": "La variable 'ciudad' contiene un texto (string)",
+          "expression": "typeof ciudad === 'string'"
+        },
+        {
+          "description": "La variable 'ciudad' no está vacía",
+          "expression": "ciudad.length > 0"
+        }
+      ],
+      "hints": [
+        "Usa la palabra clave `let` para crear una variable",
+        "La sintaxis es: `let nombreVariable = valor;`",
+        "Las cadenas de texto van entre comillas: `let ciudad = 'Bogotá';`"
+      ]
+    },
+    {
+      "title": "Práctica: Múltiples variables",
+      "prompt": "Declara tres variables:\n- `nombre`: con tu nombre como texto\n- `edad`: con tu edad como número\n- `ciudad`: con el nombre de tu ciudad como texto\n\nAsegúrate de que cada una tenga el tipo correcto.",
+      "starterCode": "// Declara las tres variables aquí\n",
+      "tests": [
+        {
+          "description": "La variable 'nombre' existe y es un string",
+          "expression": "typeof nombre === 'string' && nombre.length > 0"
+        },
+        {
+          "description": "La variable 'edad' existe y es un número",
+          "expression": "typeof edad === 'number' && edad > 0"
+        },
+        {
+          "description": "La variable 'ciudad' existe y es un string",
+          "expression": "typeof ciudad === 'string' && ciudad.length > 0"
+        }
+      ],
+      "hints": [
+        "Crea cada variable con `let`: `let nombre = 'Ana';`",
+        "Los números van sin comillas: `let edad = 17;`",
+        "Recuerda que hay tres variables distintas: nombre, edad y ciudad"
+      ]
+    },
+    {
+      "title": "Aplicación: Presentación",
+      "prompt": "Crea una variable `nombreCompleto` con tu nombre completo como texto.\n\nLuego crea una variable `saludo` que sea la concatenación de `'Hola, '` y `nombreCompleto`.\n\nEjemplo: si `nombreCompleto` es `'Ana Pérez'`, entonces `saludo` debe ser `'Hola, Ana Pérez'`.",
+      "starterCode": "// Declara nombreCompleto\n// Declara saludo usando nombreCompleto\n",
+      "tests": [
+        {
+          "description": "La variable 'nombreCompleto' existe y es un string",
+          "expression": "typeof nombreCompleto === 'string' && nombreCompleto.length > 0"
+        },
+        {
+          "description": "La variable 'saludo' existe",
+          "expression": "typeof saludo !== 'undefined'"
+        },
+        {
+          "description": "El saludo contiene la palabra 'Hola'",
+          "expression": "saludo.includes('Hola')"
+        }
+      ],
+      "hints": [
+        "Primero: `let nombreCompleto = 'Tu Nombre';`",
+        "Luego concatena: `let saludo = 'Hola, ' + nombreCompleto;`",
+        "El operador `+` une dos strings en JavaScript"
+      ]
+    }
+  ]
 }

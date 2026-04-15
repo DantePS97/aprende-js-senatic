@@ -15,23 +15,58 @@
       }
     ]
   },
-  "exercise": {
-    "prompt": "Crea una función llamada `presentarme` que:\n1. Guarde tu nombre en una variable `nombre` con el valor `'Ana'`\n2. Imprima el mensaje: `'Me llamo Ana'`\n\nLuego llama a la función dos veces.",
-    "starterCode": "// Define la función 'presentarme' aquí\n\n\n// Llama la función dos veces\n",
-    "tests": [
-      {
-        "description": "Existe una función llamada 'presentarme'",
-        "expression": "typeof presentarme === 'function'"
-      },
-      {
-        "description": "La función se puede llamar sin errores",
-        "expression": "(function() { try { presentarme(); return true; } catch(e) { return false; } })()"
-      }
-    ],
-    "hints": [
-      "La estructura es: `function presentarme() { ... }`",
-      "Dentro de la función: `const nombre = 'Ana';` y luego `console.log('Me llamo ' + nombre);`",
-      "Para llamarla: escribe `presentarme();` dos veces después de la función"
-    ]
-  }
+  "exercises": [
+    {
+      "title": "Básico: Primera función",
+      "prompt": "Crea una función llamada `presentarme` que:\n1. Guarde tu nombre en una variable `nombre` con el valor `'Ana'`\n2. Imprima el mensaje: `'Me llamo Ana'`\n\nLuego llama a la función dos veces.",
+      "starterCode": "// Define la función 'presentarme' aquí\n\n\n// Llama la función dos veces\n",
+      "tests": [
+        {
+          "description": "Existe una función llamada 'presentarme'",
+          "expression": "typeof presentarme === 'function'"
+        },
+        {
+          "description": "La función se puede llamar sin errores",
+          "expression": "(function() { try { presentarme(); return true; } catch(e) { return false; } })()"
+        }
+      ],
+      "hints": [
+        "La estructura es: `function presentarme() { ... }`",
+        "Dentro de la función: `const nombre = 'Ana';` y luego `console.log('Me llamo ' + nombre);`",
+        "Para llamarla: escribe `presentarme();` dos veces después de la función"
+      ]
+    },
+    {
+      "title": "Práctica: Función con return",
+      "prompt": "Crea una función llamada `cuadrado` que reciba un parámetro `n` y retorne `n * n`.\n\nLuego guarda el resultado de `cuadrado(5)` en una variable `resultado`.",
+      "starterCode": "// Define la función cuadrado aquí\n\nconst resultado = cuadrado(5);\nconsole.log(resultado);\n",
+      "tests": [
+        {
+          "description": "resultado es 25",
+          "expression": "resultado === 25"
+        }
+      ],
+      "hints": [
+        "`function cuadrado(n) { return n * n; }`",
+        "`5 * 5 = 25`",
+        "El `return` hace que la función devuelva el valor para guardarlo en una variable"
+      ]
+    },
+    {
+      "title": "Aplicación: Función descriptiva",
+      "prompt": "Crea una función `describir(nombre, edad)` que retorne el string:\n`'Me llamo ' + nombre + ' y tengo ' + edad + ' años'`\n\nVerifica que `describir('Ana', 20)` retorne `'Me llamo Ana y tengo 20 años'`.",
+      "starterCode": "// Define la función describir aquí\n\nconsole.log(describir('Ana', 20));\n",
+      "tests": [
+        {
+          "description": "describir('Ana', 20) retorna el string correcto",
+          "expression": "describir('Ana', 20) === 'Me llamo Ana y tengo 20 años'"
+        }
+      ],
+      "hints": [
+        "`function describir(nombre, edad) { return 'Me llamo ' + nombre + ' y tengo ' + edad + ' años'; }`",
+        "Concatena strings y el número con el operador `+`",
+        "El número `edad` se convierte automáticamente a string al concatenarlo"
+      ]
+    }
+  ]
 }
