@@ -1,0 +1,38 @@
+{
+  "id": "js-basico-m3-l1",
+  "title": "El bucle for",
+  "xpReward": 25,
+  "theory": {
+    "markdown": "## El bucle `for`: repite código N veces\n\nImagina que quieres imprimir los números del 1 al 100. Sin bucles necesitarías 100 líneas de código. Con `for`, son 3:\n\n```javascript\nfor (inicio; condicion; actualizacion) {\n  // código que se repite\n}\n```\n\n### Las tres partes del `for`\n\n```javascript\nfor (let i = 1; i <= 5; i++) {\n  console.log(i);\n}\n// Imprime: 1, 2, 3, 4, 5\n```\n\n| Parte | Código | ¿Qué hace? |\n|-------|--------|------------|\n| Inicio | `let i = 1` | Crea el contador, se ejecuta UNA vez |\n| Condición | `i <= 5` | El bucle corre mientras sea `true` |\n| Actualización | `i++` | Se ejecuta al final de cada repetición |\n\n### ¿Cómo funciona paso a paso?\n\n```\ni=1 → ¿1<=5? Sí → imprime 1 → i++ → i=2\ni=2 → ¿2<=5? Sí → imprime 2 → i++ → i=3\n...\ni=5 → ¿5<=5? Sí → imprime 5 → i++ → i=6\ni=6 → ¿6<=5? No → TERMINA\n```\n\n### Ejemplos útiles\n\n```javascript\n// Contar de 2 en 2\nfor (let i = 0; i <= 10; i += 2) {\n  console.log(i); // 0, 2, 4, 6, 8, 10\n}\n\n// Contar hacia atrás\nfor (let i = 5; i >= 1; i--) {\n  console.log(i); // 5, 4, 3, 2, 1\n}\n\n// Acumular una suma\nlet suma = 0;\nfor (let i = 1; i <= 10; i++) {\n  suma += i;  // suma = suma + i\n}\nconsole.log(suma); // 55 (1+2+3+...+10)\n```",
+    "examples": [
+      {
+        "code": "// Tabla de multiplicar del 5\nfor (let i = 1; i <= 10; i++) {\n  console.log('5 x ' + i + ' = ' + (5 * i));\n}",
+        "explanation": "El bucle for genera la tabla del 5 automáticamente"
+      },
+      {
+        "code": "let suma = 0;\nfor (let i = 1; i <= 100; i++) {\n  suma += i;\n}\nconsole.log(suma); // 5050",
+        "explanation": "Sumar todos los números del 1 al 100 con un bucle"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Usa un bucle `for` para calcular la suma de todos los números del 1 al 10.\n\nGuarda el resultado en una variable llamada `suma`.\n\nAl final, imprime el valor de `suma` con `console.log`.\n\n(El resultado debe ser 55)",
+    "starterCode": "let suma = 0;\n\n// Escribe tu bucle for aquí\n\nconsole.log(suma);\n",
+    "tests": [
+      {
+        "description": "La variable 'suma' existe",
+        "expression": "typeof suma !== 'undefined'"
+      },
+      {
+        "description": "La suma de 1 a 10 es 55",
+        "expression": "suma === 55"
+      }
+    ],
+    "hints": [
+      "Empieza el contador en 1: `for (let i = 1; ...)`",
+      "La condición para llegar hasta 10: `i <= 10`",
+      "En cada vuelta suma i a la variable: `suma += i;`",
+      "Solución: `for (let i = 1; i <= 10; i++) { suma += i; }`"
+    ]
+  }
+}

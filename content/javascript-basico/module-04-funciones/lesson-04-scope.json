@@ -1,0 +1,46 @@
+{
+  "id": "js-basico-m4-l4",
+  "title": "Scope: dónde viven las variables",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## Scope: el alcance de las variables\n\n**Scope** (alcance) determina desde dónde en tu código puedes acceder a una variable. Entenderlo evita muchos errores confusos.\n\n---\n\n## Scope global — visible en todas partes\n\nUna variable declarada **fuera** de cualquier función es global:\n\n```javascript\nconst APP = 'AprendeJS';  // Variable global\n\nfunction mostrar() {\n  console.log(APP);  // ✅ Puede accederla\n}\n\nmostrar();           // 'AprendeJS'\nconsole.log(APP);    // 'AprendeJS'\n```\n\n## Scope local — visible solo dentro de la función\n\nUna variable declarada **dentro** de una función solo existe ahí:\n\n```javascript\nfunction calcular() {\n  const resultado = 42;  // Variable local\n  console.log(resultado); // ✅ Funciona\n}\n\ncalcular();\nconsole.log(resultado); // ❌ Error: resultado is not defined\n```\n\n### Cada función tiene su propio scope\n\n```javascript\nfunction funcion1() {\n  const mensaje = 'Hola desde función 1';\n}\n\nfunction funcion2() {\n  const mensaje = 'Hola desde función 2'; // Variable diferente, mismo nombre\n  console.log(mensaje); // 'Hola desde función 2'\n}\n```\n\n## ¿Por qué importa?\n\n```javascript\nlet total = 0;  // Global: persiste entre llamadas\n\nfunction agregarPuntos(puntos) {\n  total += puntos;  // Modifica la global\n}\n\nagregarPuntos(10);\nagregarPuntos(25);\nconsole.log(total); // 35\n```\n\n## Buenas prácticas\n\n✅ **Prefiere variables locales**: son más seguras y predecibles.\n✅ **Las constantes globales** (que no cambian) está bien tenerlas globales: `const MAX_INTENTOS = 3`.\n❌ **Evita variables globales que se modifican** desde múltiples funciones — puede causar bugs difíciles de rastrear.\n\n```javascript\n// Bien: función pura (no usa ni modifica globales)\nfunction sumar(a, b) {\n  return a + b;\n}\n\n// Precaución: función que modifica global\nlet contador = 0;\nfunction incrementar() {\n  contador++;  // Modifica variable global\n}\n```",
+    "examples": [
+      {
+        "code": "const DESCUENTO = 0.1;  // Global: 10%\n\nfunction precioFinal(precio) {\n  const ahorro = precio * DESCUENTO;  // Usa global\n  return precio - ahorro;  // Retorna local\n}\n\nconsole.log(precioFinal(50000)); // 45000\nconsole.log(precioFinal(20000)); // 18000",
+        "explanation": "DESCUENTO es global (no cambia). ahorro es local (vive solo dentro de la función)"
+      },
+      {
+        "code": "let puntos = 0;  // Global\n\nfunction ganarPuntos(cantidad) {\n  puntos += cantidad;\n}\n\nfunction perderPuntos(cantidad) {\n  puntos -= cantidad;\n}\n\nganarPuntos(100);\nganarPuntos(50);\nperderPuntos(30);\nconsole.log(puntos); // 120",
+        "explanation": "Variable global compartida entre funciones (útil para estado del juego)"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea un mini sistema de puntuación:\n\n1. Declara una variable global `puntuacion` con valor `0`\n2. Crea una función `sumarPuntos(n)` que sume `n` a `puntuacion`\n3. Crea una función `obtenerPuntuacion()` que **retorne** el valor actual de `puntuacion`\n\nLuego:\n- Llama `sumarPuntos(50)`\n- Llama `sumarPuntos(30)`\n- Guarda `obtenerPuntuacion()` en `totalFinal`",
+    "starterCode": "// Variable global\nlet puntuacion = 0;\n\n// Función que suma puntos\n\n\n// Función que retorna la puntuación\n\n\n// Llama las funciones\nsumarPuntos(50);\nsumarPuntos(30);\nconst totalFinal = obtenerPuntuacion();\nconsole.log(totalFinal);\n",
+    "tests": [
+      {
+        "description": "sumarPuntos es una función",
+        "expression": "typeof sumarPuntos === 'function'"
+      },
+      {
+        "description": "obtenerPuntuacion es una función",
+        "expression": "typeof obtenerPuntuacion === 'function'"
+      },
+      {
+        "description": "totalFinal es 80 (50 + 30)",
+        "expression": "totalFinal === 80"
+      },
+      {
+        "description": "obtenerPuntuacion retorna un número",
+        "expression": "typeof obtenerPuntuacion() === 'number'"
+      }
+    ],
+    "hints": [
+      "`sumarPuntos`: `function sumarPuntos(n) { puntuacion += n; }`",
+      "`obtenerPuntuacion`: `function obtenerPuntuacion() { return puntuacion; }`",
+      "Las funciones pueden leer y modificar variables del scope externo (global)",
+      "50 + 30 = 80"
+    ]
+  }
+}

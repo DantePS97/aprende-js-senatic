@@ -1,0 +1,42 @@
+{
+  "id": "js-basico-m3-l2",
+  "title": "El bucle while",
+  "xpReward": 25,
+  "theory": {
+    "markdown": "## El bucle `while`: repite mientras algo sea verdad\n\nEl `while` es más simple que el `for`: solo necesita una condición.\n\n```javascript\nwhile (condicion) {\n  // código que se repite\n}\n```\n\nEl bucle continúa mientras la condición sea `true`. Cuando es `false`, se detiene.\n\n### Ejemplo básico\n\n```javascript\nlet vidas = 3;\n\nwhile (vidas > 0) {\n  console.log('Vidas restantes: ' + vidas);\n  vidas--;  // ⚠️ Muy importante: modificar la condición\n}\nconsole.log('Game over');\n```\n\n```\nVidas restantes: 3\nVidas restantes: 2\nVidas restantes: 1\nGame over\n```\n\n### ⚠️ Bucle infinito — el error más común\n\nSi nunca modificas la condición, el bucle **nunca termina** y congela el programa:\n\n```javascript\n// ❌ NUNCA hagas esto\nlet x = 1;\nwhile (x > 0) {\n  console.log(x);\n  // x nunca cambia → bucle infinito\n}\n```\n\n**Siempre** asegúrate de que la condición eventualmente se vuelva `false`.\n\n### ¿Cuándo usar `while` en vez de `for`?\n\n| Usa `for` cuando... | Usa `while` cuando... |\n|---------------------|----------------------|\n| Sabes cuántas veces repetir | No sabes cuántas veces repetir |\n| `for (let i = 0; i < 10; i++)` | `while (usuarioNoPierde)` |\n\n### `do...while` — ejecutar al menos una vez\n\n```javascript\nlet numero;\ndo {\n  numero = 5;  // se ejecuta PRIMERO\n} while (numero > 10);  // luego verifica: 5 > 10? No → termina\n\nconsole.log(numero); // 5\n```\n\nUsa `do...while` cuando el código debe ejecutarse **mínimo una vez** antes de verificar.",
+    "examples": [
+      {
+        "code": "let numero = 1;\n\nwhile (numero <= 5) {\n  console.log(numero);\n  numero++;\n}\n// Imprime: 1, 2, 3, 4, 5",
+        "explanation": "While equivalente a un for del 1 al 5"
+      },
+      {
+        "code": "let dinero = 100;\nlet precio = 30;\nlet compras = 0;\n\nwhile (dinero >= precio) {\n  dinero -= precio;\n  compras++;\n}\n\nconsole.log('Compras: ' + compras); // 3\nconsole.log('Dinero restante: ' + dinero); // 10",
+        "explanation": "¿Cuántas veces puedo comprar algo de $30 con $100?"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Escribe un bucle `while` que:\n\n1. Empiece con `let contador = 1`\n2. Mientras `contador` sea menor o igual a 5, multiplique `contador` por 2 y guarde el resultado en una variable `resultado`\n3. Incremente `contador` en 1 en cada vuelta\n\nAl terminar el bucle, `resultado` debe tener el valor del último cálculo (`5 * 2 = 10`).",
+    "starterCode": "let contador = 1;\nlet resultado = 0;\n\n// Escribe tu bucle while aquí\n",
+    "tests": [
+      {
+        "description": "La variable 'contador' existe",
+        "expression": "typeof contador !== 'undefined'"
+      },
+      {
+        "description": "La variable 'resultado' existe",
+        "expression": "typeof resultado !== 'undefined'"
+      },
+      {
+        "description": "resultado es 10 (el último valor: 5 * 2)",
+        "expression": "resultado === 10"
+      }
+    ],
+    "hints": [
+      "La condición del while es: `while (contador <= 5)`",
+      "Dentro del while: `resultado = contador * 2;`",
+      "Luego incrementa: `contador++;`",
+      "El bucle se ejecuta 5 veces. En la última: contador=5, resultado=5*2=10"
+    ]
+  }
+}

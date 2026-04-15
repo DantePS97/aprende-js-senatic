@@ -1,0 +1,50 @@
+{
+  "id": "js-basico-m4-l3",
+  "title": "Arrow functions: la forma moderna",
+  "xpReward": 35,
+  "theory": {
+    "markdown": "## Arrow functions: funciones con flecha\n\nJavaScript moderno tiene una forma más corta de escribir funciones, llamada **arrow function** (función flecha) por su símbolo `=>`.\n\n### Comparación\n\n```javascript\n// Función tradicional\nfunction sumar(a, b) {\n  return a + b;\n}\n\n// Arrow function equivalente\nconst sumar = (a, b) => {\n  return a + b;\n};\n```\n\n### Sintaxis progresiva (de más a menos)\n\n**1. Forma completa** (cuando hay varias líneas):\n```javascript\nconst calcular = (a, b) => {\n  const resultado = a * b;\n  return resultado;\n};\n```\n\n**2. Return implícito** (cuando el cuerpo es UNA sola expresión):\n```javascript\nconst sumar = (a, b) => a + b;  // return automático\n```\n\n**3. Un solo parámetro** (se pueden omitir los paréntesis):\n```javascript\nconst doble = n => n * 2;\nconsole.log(doble(5)); // 10\n```\n\n**4. Sin parámetros** (los paréntesis son obligatorios):\n```javascript\nconst saludar = () => 'Hola!';\nconsole.log(saludar()); // 'Hola!'\n```\n\n### Ejemplos de migración\n\n```javascript\n// Antes:\nfunction cuadrado(n) { return n * n; }\n\n// Después:\nconst cuadrado = n => n * n;\n\n// Antes:\nfunction esPar(n) { return n % 2 === 0; }\n\n// Después:\nconst esPar = n => n % 2 === 0;\n```\n\n### ¿Cuándo usar cada una?\n\n- **Arrow function**: para funciones cortas, cálculos simples\n- **function tradicional**: para funciones más complejas o cuando necesitas un nombre claro\n\nEn el código moderno, las arrow functions son muy populares porque son más concisas.",
+    "examples": [
+      {
+        "code": "const celsius = 100;\nconst fahrenheit = c => (c * 9/5) + 32;\nconsole.log(fahrenheit(celsius)); // 212",
+        "explanation": "Arrow function de un parámetro que convierte Celsius a Fahrenheit"
+      },
+      {
+        "code": "const saludar = nombre => 'Hola, ' + nombre + '!';\nconst despedir = nombre => 'Hasta luego, ' + nombre + '.';\n\nconsole.log(saludar('Ana'));   // 'Hola, Ana!'\nconsole.log(despedir('Ana'));  // 'Hasta luego, Ana.'",
+        "explanation": "Arrow functions cortas y expresivas"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea las siguientes arrow functions:\n\n1. `cuadrado`: recibe un número `n` y devuelve `n * n`\n2. `saludo`: recibe un `nombre` y devuelve el string `'Bienvenido, ' + nombre`\n\nLuego:\n- Guarda `cuadrado(7)` en `resultado1`\n- Guarda `saludo('Sofía')` en `resultado2`",
+    "starterCode": "// Define cuadrado como arrow function\n\n// Define saludo como arrow function\n\n// Llama las funciones\nconst resultado1 = cuadrado(7);\nconst resultado2 = saludo('Sofía');\n\nconsole.log(resultado1);\nconsole.log(resultado2);\n",
+    "tests": [
+      {
+        "description": "cuadrado es una función",
+        "expression": "typeof cuadrado === 'function'"
+      },
+      {
+        "description": "cuadrado(7) devuelve 49",
+        "expression": "cuadrado(7) === 49"
+      },
+      {
+        "description": "saludo es una función",
+        "expression": "typeof saludo === 'function'"
+      },
+      {
+        "description": "saludo('Sofía') devuelve 'Bienvenido, Sofía'",
+        "expression": "saludo('Sofía') === 'Bienvenido, Sofía'"
+      },
+      {
+        "description": "resultado1 es 49",
+        "expression": "resultado1 === 49"
+      }
+    ],
+    "hints": [
+      "Para cuadrado: `const cuadrado = n => n * n;`",
+      "Para saludo: `const saludo = nombre => 'Bienvenido, ' + nombre;`",
+      "Las arrow functions de una sola expresión no necesitan llaves ni `return`",
+      "7 * 7 = 49"
+    ]
+  }
+}

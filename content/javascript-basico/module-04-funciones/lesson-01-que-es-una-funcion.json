@@ -1,0 +1,37 @@
+{
+  "id": "js-basico-m4-l1",
+  "title": "¿Qué es una función?",
+  "xpReward": 30,
+  "theory": {
+    "markdown": "## Funciones: código reutilizable\n\nImagina que cada vez que quieres preparar un café tienes que escribir los mismos 10 pasos. Con funciones, escribes esos pasos UNA VEZ y los llamas cuantas veces quieras.\n\nUna **función** es un bloque de código con nombre que puedes ejecutar cuando lo necesites.\n\n### Crear (declarar) una función\n\n```javascript\nfunction saludar() {\n  console.log('¡Hola!');\n  console.log('Bienvenido a AprendeJS');\n}\n```\n\n### Llamar (invocar) una función\n\n```javascript\nsaludar();  // ← Los paréntesis la invocan\nsaludar();  // Puedes llamarla las veces que quieras\n```\n\n### ¿Por qué son útiles?\n\n```javascript\n// Sin funciones (código repetido):\nconsole.log('==========');\nconsole.log('Bienvenido');\nconsole.log('==========');\n// ... 20 líneas después ...\nconsole.log('==========');\nconsole.log('Bienvenido');\nconsole.log('==========');\n\n// Con funciones (reutilizable):\nfunction mostrarBienvenida() {\n  console.log('==========');\n  console.log('Bienvenido');\n  console.log('==========');\n}\n\nmostrarBienvenida(); // primera vez\nmostrarBienvenida(); // segunda vez\n```\n\n### Anatomía de una función\n\n```\nfunction   nombre   ()   {\n   ↑          ↑     ↑\nPalabra   El nombre  Paréntesis para\nclave     que eliges  los parámetros\n\n  // cuerpo de la función\n}\n```\n\n### Reglas de nombres\n- Usar camelCase: `calcularTotal`, `mostrarMensaje`\n- Empezar con verbo: describe QUÉ hace la función\n- Sin espacios ni caracteres especiales",
+    "examples": [
+      {
+        "code": "function mostrarSeparador() {\n  console.log('-------------------');\n}\n\nconsole.log('Reporte del día');\nmostrarSeparador();\nconsole.log('Ventas: $50.000');\nmostrarSeparador();\nconsole.log('Total: $50.000');",
+        "explanation": "La función mostrarSeparador se reutiliza dos veces sin repetir código"
+      },
+      {
+        "code": "function contarHastaTres() {\n  for (let i = 1; i <= 3; i++) {\n    console.log(i);\n  }\n}\n\ncontarHastaTres(); // 1, 2, 3\ncontarHastaTres(); // 1, 2, 3 (de nuevo)",
+        "explanation": "Una función puede contener bucles y cualquier otro tipo de código"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una función llamada `presentarme` que:\n1. Guarde tu nombre en una variable `nombre` con el valor `'Ana'`\n2. Imprima el mensaje: `'Me llamo Ana'`\n\nLuego llama a la función dos veces.",
+    "starterCode": "// Define la función 'presentarme' aquí\n\n\n// Llama la función dos veces\n",
+    "tests": [
+      {
+        "description": "Existe una función llamada 'presentarme'",
+        "expression": "typeof presentarme === 'function'"
+      },
+      {
+        "description": "La función se puede llamar sin errores",
+        "expression": "(function() { try { presentarme(); return true; } catch(e) { return false; } })()"
+      }
+    ],
+    "hints": [
+      "La estructura es: `function presentarme() { ... }`",
+      "Dentro de la función: `const nombre = 'Ana';` y luego `console.log('Me llamo ' + nombre);`",
+      "Para llamarla: escribe `presentarme();` dos veces después de la función"
+    ]
+  }
+}

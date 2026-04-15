@@ -13,6 +13,13 @@ import { seedAchievements } from '../services/gamification.service';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
+async function upsertLesson(moduleId: mongoose.Types.ObjectId, data: {
+  order: number; title: string; xpReward: number; contentId: string;
+}) {
+  const exists = await LessonModel.findOne({ moduleId, order: data.order });
+  if (!exists) await LessonModel.create({ moduleId, ...data });
+}
+
 async function seed() {
   if (!MONGODB_URI) {
     console.error('❌  MONGODB_URI no configurado');
@@ -37,7 +44,7 @@ async function seed() {
     console.log('✅  Curso "JavaScript Básico" creado');
   }
 
-  // ─── Módulo 1: Variables ──────────────────────────────────────────────────
+  // ─── Módulo 1: Variables y Tipos de Datos ────────────────────────────────
 
   let mod1 = await ModuleModel.findOne({ courseId: course._id, order: 1 });
   if (!mod1) {
@@ -47,22 +54,14 @@ async function seed() {
       title: 'Variables y Tipos de Datos',
       description: 'Aprende a almacenar y manejar información en JavaScript',
     });
-    console.log('✅  Módulo 1 creado');
   }
 
-  const mod1Lessons = [
-    { order: 1, title: '¿Qué es una variable?', xpReward: 15, contentId: 'javascript-basico/module-01-variables/lesson-01-que-es-variable' },
-    { order: 2, title: 'Tipos de datos', xpReward: 15, contentId: 'javascript-basico/module-01-variables/lesson-02-tipos-de-datos' },
-    { order: 3, title: 'let vs const', xpReward: 20, contentId: 'javascript-basico/module-01-variables/lesson-03-const-y-let' },
-  ];
-
-  for (const lessonData of mod1Lessons) {
-    const exists = await LessonModel.findOne({ moduleId: mod1._id, order: lessonData.order });
-    if (!exists) {
-      await LessonModel.create({ moduleId: mod1._id, ...lessonData });
-    }
-  }
-  console.log('✅  Lecciones del Módulo 1 creadas');
+  for (const l of [
+    { order: 1, title: '¿Qué es una variable?',  xpReward: 15, contentId: 'javascript-basico/module-01-variables/lesson-01-que-es-variable' },
+    { order: 2, title: 'Tipos de datos',          xpReward: 15, contentId: 'javascript-basico/module-01-variables/lesson-02-tipos-de-datos' },
+    { order: 3, title: 'let vs const',             xpReward: 20, contentId: 'javascript-basico/module-01-variables/lesson-03-const-y-let' },
+  ]) await upsertLesson(mod1._id, l);
+  console.log('✅  Módulo 1 listo (3 lecciones)');
 
   // ─── Módulo 2: Condicionales ──────────────────────────────────────────────
 
@@ -74,27 +73,64 @@ async function seed() {
       title: 'Condicionales',
       description: 'Enseña a tu programa a tomar decisiones con if, else y más',
     });
-    console.log('✅  Módulo 2 creado');
   }
 
-  const mod2Lessons = [
-    { order: 1, title: 'Condicionales: if y else', xpReward: 20, contentId: 'javascript-basico/module-02-condicionales/lesson-01-if-else' },
-    { order: 2, title: 'Múltiples condiciones: else if', xpReward: 25, contentId: 'javascript-basico/module-02-condicionales/lesson-02-else-if' },
-  ];
+  for (const l of [
+    { order: 1, title: 'Condicionales: if y else',          xpReward: 20, contentId: 'javascript-basico/module-02-condicionales/lesson-01-if-else' },
+    { order: 2, title: 'Múltiples condiciones: else if',    xpReward: 25, contentId: 'javascript-basico/module-02-condicionales/lesson-02-else-if' },
+    { order: 3, title: 'Operador ternario',                 xpReward: 25, contentId: 'javascript-basico/module-02-condicionales/lesson-03-operador-ternario' },
+    { order: 4, title: 'Switch: elegir entre muchas opciones', xpReward: 30, contentId: 'javascript-basico/module-02-condicionales/lesson-04-switch' },
+  ]) await upsertLesson(mod2._id, l);
+  console.log('✅  Módulo 2 listo (4 lecciones)');
 
-  for (const lessonData of mod2Lessons) {
-    const exists = await LessonModel.findOne({ moduleId: mod2._id, order: lessonData.order });
-    if (!exists) {
-      await LessonModel.create({ moduleId: mod2._id, ...lessonData });
-    }
+  // ─── Módulo 3: Bucles ─────────────────────────────────────────────────────
+
+  let mod3 = await ModuleModel.findOne({ courseId: course._id, order: 3 });
+  if (!mod3) {
+    mod3 = await ModuleModel.create({
+      courseId: course._id,
+      order: 3,
+      title: 'Bucles',
+      description: 'Haz que tu código se repita con for, while y más',
+    });
   }
-  console.log('✅  Lecciones del Módulo 2 creadas');
+
+  for (const l of [
+    { order: 1, title: 'El bucle for',           xpReward: 25, contentId: 'javascript-basico/module-03-bucles/lesson-01-bucle-for' },
+    { order: 2, title: 'El bucle while',          xpReward: 25, contentId: 'javascript-basico/module-03-bucles/lesson-02-bucle-while' },
+    { order: 3, title: 'break y continue',        xpReward: 30, contentId: 'javascript-basico/module-03-bucles/lesson-03-break-continue' },
+    { order: 4, title: 'Arrays y bucle for...of', xpReward: 35, contentId: 'javascript-basico/module-03-bucles/lesson-04-arrays-y-for-of' },
+  ]) await upsertLesson(mod3._id, l);
+  console.log('✅  Módulo 3 listo (4 lecciones)');
+
+  // ─── Módulo 4: Funciones ──────────────────────────────────────────────────
+
+  let mod4 = await ModuleModel.findOne({ courseId: course._id, order: 4 });
+  if (!mod4) {
+    mod4 = await ModuleModel.create({
+      courseId: course._id,
+      order: 4,
+      title: 'Funciones',
+      description: 'Organiza tu código en bloques reutilizables',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: '¿Qué es una función?',         xpReward: 30, contentId: 'javascript-basico/module-04-funciones/lesson-01-que-es-una-funcion' },
+    { order: 2, title: 'Parámetros y retorno',          xpReward: 35, contentId: 'javascript-basico/module-04-funciones/lesson-02-parametros-y-retorno' },
+    { order: 3, title: 'Arrow functions: la forma moderna', xpReward: 35, contentId: 'javascript-basico/module-04-funciones/lesson-03-arrow-functions' },
+    { order: 4, title: 'Scope: dónde viven las variables', xpReward: 40, contentId: 'javascript-basico/module-04-funciones/lesson-04-scope' },
+  ]) await upsertLesson(mod4._id, l);
+  console.log('✅  Módulo 4 listo (4 lecciones)');
 
   // ─── Logros ───────────────────────────────────────────────────────────────
 
   await seedAchievements();
 
-  console.log('\n🎉  Seed completado exitosamente!');
+  const totalLecciones = 3 + 4 + 4 + 4;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40;
+  console.log(`\n🎉  Seed completado!`);
+  console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();
 }
 

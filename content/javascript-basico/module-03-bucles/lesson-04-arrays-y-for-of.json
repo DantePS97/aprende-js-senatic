@@ -1,0 +1,38 @@
+{
+  "id": "js-basico-m3-l4",
+  "title": "Arrays y bucle for...of",
+  "xpReward": 35,
+  "theory": {
+    "markdown": "## Arrays: listas de valores\n\nUn **array** es una lista ordenada de valores. En lugar de crear 10 variables separadas, usas una sola:\n\n```javascript\n// Sin array (horrible):\nlet nota1 = 80;\nlet nota2 = 90;\nlet nota3 = 75;\n\n// Con array (genial):\nconst notas = [80, 90, 75];\n```\n\n### Crear y acceder a arrays\n\n```javascript\nconst frutas = ['manzana', 'banano', 'mango'];\n//               índice 0    índice 1   índice 2\n\nconsole.log(frutas[0]); // 'manzana'\nconsole.log(frutas[1]); // 'banano'\nconsole.log(frutas.length); // 3 (cantidad de elementos)\n```\n\n> Los índices empiezan en **0**, no en 1. Esto es así en casi todos los lenguajes.\n\n### Modificar arrays\n\n```javascript\nconst colores = ['rojo', 'verde'];\ncolores.push('azul');     // Agrega al final → ['rojo', 'verde', 'azul']\ncolores[0] = 'amarillo';  // Cambia el primero → ['amarillo', 'verde', 'azul']\nconsole.log(colores.length); // 3\n```\n\n---\n\n## El bucle `for...of`: recorrer arrays\n\nRecorrer un array con `for` clásico funciona pero es verboso:\n```javascript\nfor (let i = 0; i < frutas.length; i++) {\n  console.log(frutas[i]);\n}\n```\n\n`for...of` es mucho más limpio:\n```javascript\nconst frutas = ['manzana', 'banano', 'mango'];\n\nfor (const fruta of frutas) {\n  console.log(fruta);\n}\n// manzana\n// banano\n// mango\n```\n\n### Caso real: calcular promedio\n\n```javascript\nconst notas = [75, 85, 90, 80, 70];\nlet suma = 0;\n\nfor (const nota of notas) {\n  suma += nota;\n}\n\nconst promedio = suma / notas.length;\nconsole.log(promedio); // 80\n```",
+    "examples": [
+      {
+        "code": "const materias = ['Matemáticas', 'Español', 'Ciencias', 'Historia'];\n\nfor (const materia of materias) {\n  console.log('📚 ' + materia);\n}",
+        "explanation": "for...of recorre cada elemento del array, uno por uno"
+      },
+      {
+        "code": "const precios = [15000, 8000, 22000, 5000];\nlet total = 0;\n\nfor (const precio of precios) {\n  total += precio;\n}\n\nconsole.log('Total: $' + total); // Total: $50000",
+        "explanation": "Sumar todos los precios de una lista con for...of"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Tienes el siguiente array de temperaturas de la semana:\n\n```javascript\nconst temperaturas = [24, 28, 31, 26, 22, 29, 30];\n```\n\nUsa un bucle `for...of` para:\n1. Sumar todas las temperaturas en una variable `suma`\n2. Calcular el promedio: `const promedio = suma / temperaturas.length`\n\nRedondea el promedio a entero usando `Math.round(promedio)` y guárdalo en `promedioFinal`.",
+    "starterCode": "const temperaturas = [24, 28, 31, 26, 22, 29, 30];\nlet suma = 0;\n\n// Recorre el array con for...of y acumula la suma\n\nconst promedio = suma / temperaturas.length;\nconst promedioFinal = Math.round(promedio);\nconsole.log(promedioFinal);\n",
+    "tests": [
+      {
+        "description": "La variable 'suma' tiene el total de temperaturas (190)",
+        "expression": "suma === 190"
+      },
+      {
+        "description": "El promedio final es 27",
+        "expression": "promedioFinal === 27"
+      }
+    ],
+    "hints": [
+      "Usa `for (const temp of temperaturas)` para recorrer el array",
+      "Dentro del bucle: `suma += temp;`",
+      "24+28+31+26+22+29+30 = 190. Dividido entre 7 = 27.14, redondeado = 27",
+      "Math.round(27.14) → 27"
+    ]
+  }
+}

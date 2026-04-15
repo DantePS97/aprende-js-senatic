@@ -1,0 +1,46 @@
+{
+  "id": "js-basico-m4-l2",
+  "title": "Parámetros y retorno",
+  "xpReward": 35,
+  "theory": {
+    "markdown": "## Hacer funciones más poderosas\n\nLas funciones se vuelven mucho más útiles cuando pueden **recibir datos** (parámetros) y **devolver resultados** (return).\n\n---\n\n## Parámetros: datos de entrada\n\n```javascript\nfunction saludar(nombre) {  // 'nombre' es el parámetro\n  console.log('¡Hola, ' + nombre + '!');\n}\n\nsaludar('Ana');    // ¡Hola, Ana!\nsaludar('Carlos'); // ¡Hola, Carlos!\nsaludar('María');  // ¡Hola, María!\n```\n\nPuedes tener **múltiples parámetros**:\n\n```javascript\nfunction sumar(a, b) {\n  console.log(a + b);\n}\n\nsumar(3, 5);  // 8\nsumar(10, 20); // 30\n```\n\n---\n\n## Return: el resultado de la función\n\n`console.log` solo **imprime**. Para **usar** el resultado en otra parte del código, necesitas `return`:\n\n```javascript\nfunction sumar(a, b) {\n  return a + b;  // ← devuelve el valor\n}\n\nconst resultado = sumar(3, 5);  // resultado = 8\nconst doble = sumar(resultado, resultado); // doble = 16\n\nconsole.log(resultado); // 8\nconsole.log(doble);     // 16\n```\n\n### ⚠️ Return detiene la función\n\nTodo el código después de `return` en la misma ejecución **no se ejecuta**:\n\n```javascript\nfunction verificar(x) {\n  if (x < 0) {\n    return 'Negativo';  // ← Sale aquí si x < 0\n  }\n  return 'Positivo';    // ← Solo llega aquí si x >= 0\n}\n\nconsole.log(verificar(-5)); // 'Negativo'\nconsole.log(verificar(10)); // 'Positivo'\n```\n\n### Ejemplo práctico\n\n```javascript\nfunction calcularDescuento(precio, porcentaje) {\n  const descuento = precio * (porcentaje / 100);\n  return precio - descuento;\n}\n\nconst precioFinal = calcularDescuento(100000, 20);\nconsole.log(precioFinal); // 80000\n```",
+    "examples": [
+      {
+        "code": "function esMayorDeEdad(edad) {\n  return edad >= 18;\n}\n\nconsole.log(esMayorDeEdad(20)); // true\nconsole.log(esMayorDeEdad(15)); // false\n\nif (esMayorDeEdad(20)) {\n  console.log('Puede entrar');\n}",
+        "explanation": "Una función que devuelve true o false puede usarse directamente en un if"
+      },
+      {
+        "code": "function areaRectangulo(base, altura) {\n  return base * altura;\n}\n\nconst sala = areaRectangulo(5, 4);    // 20\nconst cocina = areaRectangulo(3, 3);  // 9\nconst total = sala + cocina;\nconsole.log('Área total: ' + total + ' m²'); // 29 m²",
+        "explanation": "El valor retornado se puede guardar en variables y usar en cálculos"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una función llamada `calcularPromedio` que:\n1. Reciba tres parámetros: `nota1`, `nota2`, `nota3`\n2. Calcule el promedio (suma dividida entre 3)\n3. Retorne el promedio (usa `return`)\n\nLuego llama a la función con los valores `80`, `90`, `70` y guarda el resultado en una variable `miPromedio`.",
+    "starterCode": "// Define la función calcularPromedio aquí\n\n\n// Llama la función con 80, 90, 70\nconst miPromedio = calcularPromedio(80, 90, 70);\nconsole.log(miPromedio);\n",
+    "tests": [
+      {
+        "description": "Existe una función llamada 'calcularPromedio'",
+        "expression": "typeof calcularPromedio === 'function'"
+      },
+      {
+        "description": "La variable 'miPromedio' existe",
+        "expression": "typeof miPromedio !== 'undefined'"
+      },
+      {
+        "description": "El promedio de 80, 90 y 70 es 80",
+        "expression": "miPromedio === 80"
+      },
+      {
+        "description": "La función retorna correctamente para cualquier nota",
+        "expression": "calcularPromedio(100, 100, 100) === 100"
+      }
+    ],
+    "hints": [
+      "La función recibe tres parámetros: `function calcularPromedio(nota1, nota2, nota3)`",
+      "Calcula la suma: `const suma = nota1 + nota2 + nota3;`",
+      "Divide entre 3: `return suma / 3;`",
+      "80 + 90 + 70 = 240. Dividido entre 3 = 80"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "js-basico-m3-l3",
+  "title": "break y continue",
+  "xpReward": 30,
+  "theory": {
+    "markdown": "## Controlar el flujo de un bucle\n\nDentro de cualquier bucle (`for` o `while`) tienes dos herramientas extra:\n\n| Palabra | ¿Qué hace? |\n|---------|------------|\n| `break` | **Sale** del bucle inmediatamente |\n| `continue` | **Salta** al siguiente ciclo (omite el resto del código de esa vuelta) |\n\n---\n\n## `break` — salir del bucle\n\n```javascript\nfor (let i = 1; i <= 10; i++) {\n  if (i === 5) {\n    break;  // ← Sale cuando i llega a 5\n  }\n  console.log(i);\n}\n// Imprime: 1, 2, 3, 4\n// El 5 nunca se imprime porque break sale antes\n```\n\n**Caso real**: buscar un elemento y parar cuando lo encuentras:\n\n```javascript\nlet buscar = 7;\nlet encontrado = false;\n\nfor (let i = 1; i <= 100; i++) {\n  if (i === buscar) {\n    encontrado = true;\n    break;  // No tiene sentido seguir buscando\n  }\n}\n\nconsole.log(encontrado); // true\n```\n\n---\n\n## `continue` — saltar una vuelta\n\n```javascript\nfor (let i = 1; i <= 10; i++) {\n  if (i % 2 === 0) {\n    continue;  // ← Salta los números pares\n  }\n  console.log(i);\n}\n// Imprime: 1, 3, 5, 7, 9\n```\n\n> `i % 2` es el **residuo** de dividir `i` entre 2. Si el residuo es 0, el número es par.\n\n**Caso real**: procesar solo los datos válidos:\n\n```javascript\nconst numeros = [1, -3, 5, -2, 8, -1];\nlet sumaPositivos = 0;\n\nfor (let i = 0; i < numeros.length; i++) {\n  if (numeros[i] < 0) {\n    continue;  // Salta los negativos\n  }\n  sumaPositivos += numeros[i];\n}\n\nconsole.log(sumaPositivos); // 14 (1+5+8)\n```",
+    "examples": [
+      {
+        "code": "// Encontrar el primer múltiplo de 7 mayor a 20\nlet multiplo = 0;\nfor (let i = 21; i <= 100; i++) {\n  if (i % 7 === 0) {\n    multiplo = i;\n    break;\n  }\n}\nconsole.log(multiplo); // 21",
+        "explanation": "break para dejar de buscar una vez que encontramos el resultado"
+      },
+      {
+        "code": "// Imprimir solo números impares del 1 al 10\nfor (let i = 1; i <= 10; i++) {\n  if (i % 2 === 0) continue;\n  console.log(i); // 1, 3, 5, 7, 9\n}",
+        "explanation": "continue para saltarse los pares y solo mostrar impares"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Usa un bucle `for` del 1 al 20 para encontrar la suma de todos los números **impares** entre 1 y 20.\n\n- Usa `continue` para saltarte los números pares\n- Guarda la suma en una variable `sumaImpares`\n\n(La suma de impares del 1 al 19 es 100)",
+    "starterCode": "let sumaImpares = 0;\n\n// Escribe tu bucle aquí\n// Usa continue para saltarte los pares\n",
+    "tests": [
+      {
+        "description": "La variable 'sumaImpares' existe",
+        "expression": "typeof sumaImpares !== 'undefined'"
+      },
+      {
+        "description": "La suma de los impares del 1 al 20 es 100",
+        "expression": "sumaImpares === 100"
+      }
+    ],
+    "hints": [
+      "Un número es par si `i % 2 === 0`. Si es par, usa `continue` para saltarlo",
+      "El bucle: `for (let i = 1; i <= 20; i++)`",
+      "Dentro: `if (i % 2 === 0) continue;` y luego `sumaImpares += i;`",
+      "Los impares del 1 al 19 son: 1+3+5+7+9+11+13+15+17+19 = 100"
+    ]
+  }
+}

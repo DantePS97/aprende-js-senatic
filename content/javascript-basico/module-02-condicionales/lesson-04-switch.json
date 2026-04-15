@@ -1,0 +1,42 @@
+{
+  "id": "js-basico-m2-l4",
+  "title": "Switch: elegir entre muchas opciones",
+  "xpReward": 30,
+  "theory": {
+    "markdown": "## Switch: múltiples opciones limpias\n\nCuando tienes muchos `else if` comparando el **mismo valor**, el `switch` es más claro:\n\n```javascript\nswitch (valor) {\n  case opcion1:\n    // código\n    break;\n  case opcion2:\n    // código\n    break;\n  default:\n    // si ningún caso coincide\n}\n```\n\n### Comparación\n\n**Con else if:**\n```javascript\nlet dia = 'lunes';\nif (dia === 'lunes') {\n  console.log('Inicio de semana');\n} else if (dia === 'viernes') {\n  console.log('¡Por fin viernes!');\n} else if (dia === 'sabado' || dia === 'domingo') {\n  console.log('Fin de semana');\n} else {\n  console.log('Día entre semana');\n}\n```\n\n**Con switch:**\n```javascript\nlet dia = 'lunes';\nswitch (dia) {\n  case 'lunes':\n    console.log('Inicio de semana');\n    break;\n  case 'viernes':\n    console.log('¡Por fin viernes!');\n    break;\n  case 'sabado':\n  case 'domingo':\n    console.log('Fin de semana');\n    break;\n  default:\n    console.log('Día entre semana');\n}\n```\n\n### ⚠️ El `break` es importante\n\nSin `break`, JavaScript sigue ejecutando los casos siguientes aunque no coincidan. Esto se llama **fall-through** y casi siempre es un error.\n\n```javascript\nlet x = 1;\nswitch (x) {\n  case 1:\n    console.log('uno');   // se ejecuta\n  case 2:\n    console.log('dos');   // también se ejecuta (¡sin break!)\n  case 3:\n    console.log('tres');  // también se ejecuta\n}\n// Imprime: 'uno', 'dos', 'tres'\n```\n\n### `default` — el caso por defecto\n\nEs como el `else`: se ejecuta si ningún `case` coincide. No lleva `break` (es el último).",
+    "examples": [
+      {
+        "code": "let semaforo = 'verde';\nlet accion;\n\nswitch (semaforo) {\n  case 'rojo':\n    accion = 'Detenerse';\n    break;\n  case 'amarillo':\n    accion = 'Precaución';\n    break;\n  case 'verde':\n    accion = 'Avanzar';\n    break;\n  default:\n    accion = 'Semáforo dañado';\n}\n\nconsole.log(accion); // 'Avanzar'",
+        "explanation": "Switch para manejar los estados de un semáforo"
+      },
+      {
+        "code": "let mes = 4;\nlet trimestre;\n\nswitch (mes) {\n  case 1: case 2: case 3:\n    trimestre = 'Q1';\n    break;\n  case 4: case 5: case 6:\n    trimestre = 'Q2';\n    break;\n  default:\n    trimestre = 'Q3/Q4';\n}\nconsole.log(trimestre); // 'Q2'",
+        "explanation": "Varios casos comparten el mismo resultado (mes 4, 5 y 6 son Q2)"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una variable `diaSemana` con el número `3` (donde 1=lunes, 7=domingo).\n\nUsa un `switch` para crear una variable `nombreDia` con el nombre del día:\n- 1 → 'Lunes'\n- 2 → 'Martes'\n- 3 → 'Miércoles'\n- 4 → 'Jueves'\n- 5 → 'Viernes'\n- 6 → 'Sábado'\n- 7 → 'Domingo'\n- default → 'Día inválido'",
+    "starterCode": "let diaSemana = 3;\nlet nombreDia;\n\n// Escribe tu switch aquí\n",
+    "tests": [
+      {
+        "description": "La variable 'diaSemana' existe y vale 3",
+        "expression": "typeof diaSemana !== 'undefined' && diaSemana === 3"
+      },
+      {
+        "description": "La variable 'nombreDia' existe",
+        "expression": "typeof nombreDia !== 'undefined'"
+      },
+      {
+        "description": "El día 3 corresponde a 'Miércoles'",
+        "expression": "nombreDia === 'Miércoles'"
+      }
+    ],
+    "hints": [
+      "Empieza con: `switch (diaSemana) {`",
+      "Cada caso sigue el patrón: `case 1: nombreDia = 'Lunes'; break;`",
+      "No olvides el `break` después de cada caso para evitar el fall-through",
+      "Agrega `default: nombreDia = 'Día inválido';` al final del switch"
+    ]
+  }
+}

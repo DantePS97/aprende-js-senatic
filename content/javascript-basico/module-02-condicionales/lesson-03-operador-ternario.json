@@ -1,0 +1,42 @@
+{
+  "id": "js-basico-m2-l3",
+  "title": "Operador ternario",
+  "xpReward": 25,
+  "theory": {
+    "markdown": "## El operador ternario: if en una sola línea\n\nA veces un `if / else` es tan corto que podemos escribirlo en una sola línea usando el **operador ternario** (`?:`):\n\n```javascript\ncondicion ? valorSiTrue : valorSiFalse\n```\n\n### Comparación\n\n**Con if/else (4 líneas):**\n```javascript\nlet edad = 20;\nlet acceso;\nif (edad >= 18) {\n  acceso = 'Permitido';\n} else {\n  acceso = 'Denegado';\n}\n```\n\n**Con ternario (1 línea):**\n```javascript\nlet edad = 20;\nlet acceso = edad >= 18 ? 'Permitido' : 'Denegado';\nconsole.log(acceso); // 'Permitido'\n```\n\n### ¿Cómo leerlo?\n\nLee el `?` como **\"entonces\"** y el `:` como **\"si no\"**:\n\n> `edad >= 18` → ¿Es cierto? → **entonces** `'Permitido'` → **si no** `'Denegado'`\n\n### Cuándo usarlo\n\n✅ Úsalo cuando la decisión es simple y cabe bien en una línea.\n❌ No lo uses para lógica compleja — un `if/else` es más claro en esos casos.\n\n```javascript\n// Bien: simple y claro\nconst saludo = hora < 12 ? 'Buenos días' : 'Buenas tardes';\n\n// Mal: demasiado complejo para una línea\nconst resultado = a > b ? (a > c ? 'a' : 'c') : (b > c ? 'b' : 'c'); // difícil de leer\n```",
+    "examples": [
+      {
+        "code": "let puntaje = 75;\nlet resultado = puntaje >= 60 ? 'Aprobado' : 'Reprobado';\nconsole.log(resultado); // 'Aprobado'",
+        "explanation": "Si el puntaje es 60 o más, resultado es 'Aprobado'; si no, 'Reprobado'"
+      },
+      {
+        "code": "let esWeekend = true;\nlet plan = esWeekend ? 'Descansar' : 'Estudiar';\nconsole.log(plan); // 'Descansar'",
+        "explanation": "Ternario con un booleano directamente como condición"
+      }
+    ]
+  },
+  "exercise": {
+    "prompt": "Crea una variable `temperatura` con el valor `35`.\n\nUsa el operador ternario para crear una variable `clima` que sea:\n- `'Caliente'` si la temperatura es mayor a 30\n- `'Fresco'` si no\n\nImprime `clima` con `console.log`.",
+    "starterCode": "// Declara temperatura\n// Usa el operador ternario para asignar clima\n// Imprime clima\n",
+    "tests": [
+      {
+        "description": "La variable 'temperatura' existe y vale 35",
+        "expression": "typeof temperatura !== 'undefined' && temperatura === 35"
+      },
+      {
+        "description": "La variable 'clima' existe",
+        "expression": "typeof clima !== 'undefined'"
+      },
+      {
+        "description": "Con temperatura 35 el clima es 'Caliente'",
+        "expression": "clima === 'Caliente'"
+      }
+    ],
+    "hints": [
+      "Primero declara: `let temperatura = 35;`",
+      "La sintaxis del ternario es: `condicion ? valorSiTrue : valorSiFalse`",
+      "La condición es: `temperatura > 30`",
+      "Solución: `let clima = temperatura > 30 ? 'Caliente' : 'Fresco';`"
+    ]
+  }
+}
