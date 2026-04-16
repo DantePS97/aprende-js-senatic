@@ -194,7 +194,35 @@ Redespliega la API en Railway para que el cambio surta efecto.
 
 ---
 
-## 8. Escalar a nuevos lenguajes (futuro)
+## 8. Crear el primer administrador
+
+Una vez que el usuario ya existe en la base de datos (haberse registrado normalmente), ejecuta:
+
+```bash
+cd apps/api
+npx tsx src/scripts/make-admin.ts user@example.com
+```
+
+El script busca al usuario por email y activa el flag `isAdmin`. Sale con código `2` si el usuario no existe.
+
+---
+
+## 9. Ejecutar la migración de contenido
+
+Después de desplegar la nueva versión de la API (con soporte al panel admin), ejecuta la migración una sola vez:
+
+```bash
+cd apps/api
+npx tsx src/scripts/migrate-content-to-db.ts
+```
+
+El script lee todos los archivos JSON de la carpeta `/content/`, los normaliza y los guarda en la colección `LessonContent` de MongoDB.
+
+El script es **idempotente** — es seguro ejecutarlo varias veces. Verifica la salida por cualquier línea con `❌`.
+
+---
+
+## 10. Escalar a nuevos lenguajes (futuro)
 
 El sistema está diseñado para escalar sin cambiar el frontend ni la gamificación:
 

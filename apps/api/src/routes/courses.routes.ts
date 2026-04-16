@@ -2,10 +2,24 @@ import { Router, Response } from 'express';
 import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
 import { LessonModel } from '../models/Lesson.model';
+import { LessonContentModel } from '../models/LessonContent.model';
 import { ProgressModel } from '../models/Progress.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import path from 'path';
 import fs from 'fs';
+
+/**
+ * Attempts to JSON.parse a raw tests string (stored as serialized JSON array
+ * in the DB after migration). Falls back to an empty array on any error.
+ */
+function safeParseTests(raw: string): unknown[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export const coursesRouter = Router();
 
@@ -114,14 +128,52 @@ coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, re
       return;
     }
 
-    // Leer el JSON de contenido
-    const contentPath = path.join(CONTENT_DIR, `${lesson.contentId}.json`);
-    if (!fs.existsSync(contentPath)) {
+    // ─── Dual-read: DB first, filesystem fallback ─────────────────────────────
+    // 1. Try the LessonContent collection (populated by migrate-content-to-db.ts)
+    // 2. Fall back to filesystem if not yet migrated (lesson.contentId present)
+    // 3. 404 if neither source has content
+
+    let content: unknown;
+
+    const dbContent = await LessonContentModel.findOne({ lessonId: lesson._id }).lean();
+
+    if (dbContent) {
+      // Adapt to the runtime shape the frontend expects.
+      // The DB stores startCode + tests:string; the runtime contract uses starterCode + tests:array.
+      content = {
+        id: lesson.contentId ?? String(lesson._id),
+        title: lesson.title,
+        xpReward: lesson.xpReward,
+        theory: dbContent.theory,
+        exercises: dbContent.exercises.map((ex) => ({
+          title: ex.title,
+          prompt: ex.prompt,
+          starterCode: ex.startCode,                                    // runtime contract field
+          tests: safeParseTests(ex.tests),                              // deserialize back to array
+          hints: ex.hints,
+        })),
+      };
+    } else if (lesson.contentId) {
+      // Fallback: read from filesystem (migration not yet run for this lesson)
+      console.warn(
+        `[dual-read] Falling back to filesystem for lesson ${lesson._id} (contentId: ${lesson.contentId})`
+      );
+      const contentPath = path.join(CONTENT_DIR, `${lesson.contentId}.json`);
+      if (!fs.existsSync(contentPath)) {
+        res.status(404).json({ success: false, error: 'Contenido de lección no disponible.' });
+        return;
+      }
+      try {
+        content = JSON.parse(fs.readFileSync(contentPath, 'utf-8'));
+      } catch {
+        res.status(500).json({ success: false, error: 'Error al leer el contenido de la lección.' });
+        return;
+      }
+    } else {
       res.status(404).json({ success: false, error: 'Contenido de lección no disponible.' });
       return;
     }
-
-    const content = JSON.parse(fs.readFileSync(contentPath, 'utf-8'));
+    // ──────────────────────────────────────────────────────────────────────────
 
     // Progreso del usuario para esta lección
     const progress = await ProgressModel.findOne({
