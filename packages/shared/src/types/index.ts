@@ -22,6 +22,7 @@ export interface User {
   level: number;
   streak: number;
   lastActiveDate: string; // ISO date string
+  isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
 }

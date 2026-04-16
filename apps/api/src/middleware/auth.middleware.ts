@@ -22,3 +22,15 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     res.status(401).json({ success: false, error: 'Token inválido o expirado.' });
   }
 }
+
+export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ success: false, error: 'No autenticado.' });
+    return;
+  }
+  if (req.user.isAdmin !== true) {
+    res.status(403).json({ success: false, error: 'FORBIDDEN' });
+    return;
+  }
+  next();
+}

@@ -19,3 +19,41 @@ export function validate(schema: ZodSchema) {
     }
   };
 }
+
+export function validateBody<T>(schema: ZodSchema<T>) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: 'VALIDATION_ERROR',
+        issues: result.error.issues.map((i) => ({
+          path: i.path.join('.'),
+          message: i.message,
+        })),
+      });
+      return;
+    }
+    req.body = result.data;
+    next();
+  };
+}
+
+export function validateQuery<T>(schema: ZodSchema<T>) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: 'VALIDATION_ERROR',
+        issues: result.error.issues.map((i) => ({
+          path: i.path.join('.'),
+          message: i.message,
+        })),
+      });
+      return;
+    }
+    (req as Request & { query: T }).query = result.data;
+    next();
+  };
+}

@@ -10,6 +10,7 @@ export interface IUser extends Document {
   level: number;
   streak: number;
   lastActiveDate: Date;
+  isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidate: string): Promise<boolean>;
@@ -57,6 +58,11 @@ const UserSchema = new Schema<IUser>(
     lastActiveDate: {
       type: Date,
       default: () => new Date(),
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
   {

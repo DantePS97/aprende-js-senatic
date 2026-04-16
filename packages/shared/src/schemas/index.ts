@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './admin';
+
 // ─── Auth schemas ─────────────────────────────────────────────────────────────
 
 export const registerSchema = z.object({

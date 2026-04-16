@@ -7,6 +7,7 @@ interface AuthState {
   user: User | null;
   tokens: AuthTokens | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   error: string | null;
 
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       tokens: null,
       isAuthenticated: false,
+      isAdmin: false,
       isLoading: false,
       error: null,
 
@@ -36,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
           localStorage.setItem('accessToken', tokens.accessToken);
           localStorage.setItem('refreshToken', tokens.refreshToken);
 
-          set({ user, tokens, isAuthenticated: true, isLoading: false });
+          set({ user, tokens, isAuthenticated: true, isAdmin: !!user.isAdmin, isLoading: false });
         } catch (err: unknown) {
           const message =
             (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
@@ -55,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
           localStorage.setItem('accessToken', tokens.accessToken);
           localStorage.setItem('refreshToken', tokens.refreshToken);
 
-          set({ user, tokens, isAuthenticated: true, isLoading: false });
+          set({ user, tokens, isAuthenticated: true, isAdmin: !!user.isAdmin, isLoading: false });
         } catch (err: unknown) {
           const message =
             (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        set({ user: null, tokens: null, isAuthenticated: false });
+        set({ user: null, tokens: null, isAuthenticated: false, isAdmin: false });
       },
 
       updateUser: (updates) => {
@@ -86,6 +88,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin,
       }),
     }
   )

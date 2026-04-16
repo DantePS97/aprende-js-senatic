@@ -8,6 +8,7 @@ const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '30d';
 export interface JwtPayload {
   userId: string;
   email: string;
+  isAdmin: boolean;
 }
 
 export function signAccessToken(payload: JwtPayload): string {
@@ -19,9 +20,19 @@ export function signRefreshToken(payload: JwtPayload): string {
 }
 
 export function verifyAccessToken(token: string): JwtPayload {
-  return jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+  const decoded = jwt.verify(token, ACCESS_SECRET) as Partial<JwtPayload> & { userId: string; email: string };
+  return {
+    userId: decoded.userId,
+    email: decoded.email,
+    isAdmin: decoded.isAdmin === true,
+  };
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {
-  return jwt.verify(token, REFRESH_SECRET) as JwtPayload;
+  const decoded = jwt.verify(token, REFRESH_SECRET) as Partial<JwtPayload> & { userId: string; email: string };
+  return {
+    userId: decoded.userId,
+    email: decoded.email,
+    isAdmin: decoded.isAdmin === true,
+  };
 }

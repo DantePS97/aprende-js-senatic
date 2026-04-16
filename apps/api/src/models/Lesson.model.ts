@@ -5,7 +5,11 @@ export interface ILesson extends Document {
   order: number;
   title: string;
   xpReward: number;
-  contentId: string; // ID que referencia el JSON en /content/
+  /**
+   * @deprecated — use LessonContent collection; kept for dual-read fallback
+   * during the transition window. New code MUST NOT write to this field.
+   */
+  contentId?: string | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -17,7 +21,8 @@ const LessonSchema = new Schema<ILesson>(
     order: { type: Number, required: true },
     title: { type: String, required: true, trim: true },
     xpReward: { type: Number, default: 15, min: 1 },
-    contentId: { type: String, required: true }, // ej: "js-basico-m1-l1"
+    // @deprecated — use LessonContent collection; kept for dual-read fallback
+    contentId: { type: String, required: false, default: null }, // ej: "js-basico-m1-l1"
     isPublished: { type: Boolean, default: true },
   },
   { timestamps: true, versionKey: false }

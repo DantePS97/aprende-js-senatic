@@ -35,7 +35,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), async (req: 
     });
     await user.save();
 
-    const payload = { userId: user._id.toString(), email: user.email };
+    const payload = { userId: user._id.toString(), email: user.email, isAdmin: user.isAdmin };
     const tokens = {
       accessToken: signAccessToken(payload),
       refreshToken: signRefreshToken(payload),
@@ -52,6 +52,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), async (req: 
           level: user.level,
           streak: user.streak,
           lastActiveDate: user.lastActiveDate,
+          isAdmin: user.isAdmin,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -85,7 +86,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
     // Actualizar racha al hacer login (usa UTC — mismo algoritmo que en /progress)
     const { streak: updatedStreak } = await updateStreak(user._id.toString());
 
-    const payload = { userId: user._id.toString(), email: user.email };
+    const payload = { userId: user._id.toString(), email: user.email, isAdmin: user.isAdmin };
     const tokens = {
       accessToken: signAccessToken(payload),
       refreshToken: signRefreshToken(payload),
@@ -102,6 +103,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
           level: user.level,
           streak: updatedStreak,
           lastActiveDate: new Date().toISOString(),
+          isAdmin: user.isAdmin,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -127,7 +129,7 @@ authRouter.post('/refresh', validate(refreshTokenSchema), async (req: Request, r
       return;
     }
 
-    const newPayload = { userId: user._id.toString(), email: user.email };
+    const newPayload = { userId: user._id.toString(), email: user.email, isAdmin: user.isAdmin };
     res.json({
       success: true,
       data: {
@@ -160,6 +162,7 @@ authRouter.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
         level: user.level,
         streak: user.streak,
         lastActiveDate: user.lastActiveDate,
+        isAdmin: user.isAdmin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
