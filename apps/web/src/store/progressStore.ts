@@ -68,6 +68,20 @@ export const useProgressStore = create<ProgressState>()(
 
           set((state) => ({
             progressMap: { ...state.progressMap, [lessonId]: progress },
+            // Actualizar stats en tiempo real para que courses/page muestre el streak correcto
+            // sin esperar a que fetchStats haga otro round-trip al servidor
+            stats: state.stats
+              ? {
+                  ...state.stats,
+                  ...(newStreak !== undefined ? { streak: newStreak } : {}),
+                  ...(xpEarned > 0
+                    ? {
+                        totalXp: state.stats.totalXp + xpEarned,
+                        completedLessons: state.stats.completedLessons + 1,
+                      }
+                    : {}),
+                }
+              : state.stats,
           }));
 
           return { xpEarned, leveledUp, newLevel, newStreak, newAchievements: newAchievements ?? [] };

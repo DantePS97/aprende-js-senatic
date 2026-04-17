@@ -28,9 +28,10 @@ export function calculateLevel(xp: number): number {
  * Usa fechas UTC para evitar problemas de zona horaria del servidor.
  *
  * Reglas:
- * - diffDays === 0 → mismo día, no modificar racha
- * - diffDays === 1 → día siguiente consecutivo, incrementar
- * - diffDays  > 1 → se saltó días, resetear a 1
+ * - diffDays === 0 + streak > 0 → mismo día, ya contado, no modificar
+ * - diffDays === 0 + streak = 0 → primer día activo, iniciar racha en 1
+ * - diffDays === 1              → día consecutivo, incrementar
+ * - diffDays  > 1              → racha rota, resetear a 1
  */
 export async function updateStreak(
   userId: string
@@ -56,8 +57,15 @@ export async function updateStreak(
     streakIncremented = true;
   } else if (diffDays > 1) {
     user.streak = 1; // racha rota
+  } else {
+    // diffDays === 0 → mismo día
+    // Si el streak nunca se inició (usuario nuevo o reseteado), arrancarlo en 1
+    if (user.streak === 0) {
+      user.streak = 1;
+      streakIncremented = true;
+    }
+    // Si ya tiene racha activa, no modificar — ya se contó hoy
   }
-  // diffDays === 0 → mismo día, la racha no cambia
 
   user.lastActiveDate = new Date();
   await user.save();
