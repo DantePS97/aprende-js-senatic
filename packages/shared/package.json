@@ -6,10 +6,15 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "@vitest/coverage-v8": "^2",
+    "typescript": "^5.7.2",
+    "vitest": "^2"
   },
   "dependencies": {
     "zod": "^3.23.8"

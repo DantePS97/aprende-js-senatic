@@ -2,29 +2,9 @@ import { Router, Response } from 'express';
 import { ProgressModel } from '../models/Progress.model';
 import { UserModel } from '../models/User.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
+import { getWeekBounds } from '../lib/week-bounds';
 
 export const leaderboardRouter = Router();
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Devuelve el inicio (lunes 00:00 UTC) y fin (próximo lunes 00:00 UTC)
- * de la semana calendario actual.
- */
-function getWeekBounds(): { start: Date; end: Date } {
-  const now = new Date();
-  const dayOfWeek = now.getUTCDay(); // 0=Dom, 1=Lun … 6=Sáb
-  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-  const start = new Date(now);
-  start.setUTCDate(now.getUTCDate() - daysFromMonday);
-  start.setUTCHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setUTCDate(start.getUTCDate() + 7); // lunes siguiente
-
-  return { start, end };
-}
 
 /**
  * Fórmula de puntuación semanal:
