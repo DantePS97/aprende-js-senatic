@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ThumbsUp, MessageSquare, Tag, Send, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -18,6 +18,8 @@ export default function ForumThreadPage() {
   const [upvoted, setUpvoted] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(0);
   const [upvoting, setUpvoting] = useState(false);
+  // replyId → { upvoted, count, loading }
+  const [replyVotes, setReplyVotes] = useState<Record<string, { upvoted: boolean; count: number; loading: boolean }>>({});
 
   const [replyBody, setReplyBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -28,12 +30,25 @@ export default function ForumThreadPage() {
     api
       .get(`/forum/posts/${postId}`)
       .then(({ data }) => {
-        setPost(data.data.post);
-        setReplies(data.data.replies);
-        setUpvoteCount(data.data.post.upvotes);
+        const { post: p, replies: r } = data.data;
+        setPost(p);
+        setReplies(r);
+        setUpvoteCount(p.upvotes);
+        setUpvoted(p.hasUpvoted ?? false);
+        // Inicializar estado de votos de cada reply desde el servidor
+        const initialVotes: typeof replyVotes = {};
+        for (const reply of r as ForumReply[]) {
+          initialVotes[reply._id as string] = {
+            upvoted: reply.hasUpvoted ?? false,
+            count: reply.upvotes,
+            loading: false,
+          };
+        }
+        setReplyVotes(initialVotes);
       })
       .catch(() => router.push('/forum'))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, router]);
 
   const handleUpvote = async () => {
@@ -50,6 +65,30 @@ export default function ForumThreadPage() {
       setUpvoting(false);
     }
   };
+
+  const handleReplyUpvote = useCallback(async (replyId: string) => {
+    setReplyVotes((prev) => ({
+      ...prev,
+      [replyId]: { ...prev[replyId], loading: true },
+    }));
+    try {
+      const { data } = await api.post(`/forum/posts/${postId}/replies/${replyId}/upvote`);
+      const didUpvote: boolean = data.data.upvoted;
+      setReplyVotes((prev) => ({
+        ...prev,
+        [replyId]: {
+          upvoted: didUpvote,
+          count: prev[replyId].count + (didUpvote ? 1 : -1),
+          loading: false,
+        },
+      }));
+    } catch {
+      setReplyVotes((prev) => ({
+        ...prev,
+        [replyId]: { ...prev[replyId], loading: false },
+      }));
+    }
+  }, [postId]);
 
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +132,7 @@ export default function ForumThreadPage() {
 
   if (!post) return null;
 
-  const isOwnPost = user?.displayName === post.author?.displayName;
+  const isOwnPost = !!user && user._id === (post.author?._id as unknown as string);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
@@ -173,23 +212,45 @@ export default function ForumThreadPage() {
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
             Respuestas ({replies.length})
           </h2>
-          {replies.map((reply) => (
-            <div key={reply._id as string} className="card space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center
-                                text-xs font-bold text-slate-300 shrink-0">
-                  {reply.author?.displayName?.[0]?.toUpperCase() ?? '?'}
+          {replies.map((reply) => {
+            const rid = reply._id as string;
+            const vote = replyVotes[rid] ?? { upvoted: false, count: reply.upvotes, loading: false };
+            return (
+              <div key={rid} className="card space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center
+                                  text-xs font-bold text-slate-300 shrink-0">
+                    {reply.author?.displayName?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-white">{reply.author?.displayName}</p>
+                    <p className="text-xs text-slate-600">{formatDate(reply.createdAt)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-white">{reply.author?.displayName}</p>
-                  <p className="text-xs text-slate-600">{formatDate(reply.createdAt)}</p>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed pl-10">
+                  {reply.body}
+                </p>
+                <div className="pl-10">
+                  <button
+                    onClick={() => handleReplyUpvote(rid)}
+                    disabled={vote.loading}
+                    className={`flex items-center gap-1 text-xs transition-colors ${
+                      vote.upvoted
+                        ? 'text-primary-400'
+                        : 'text-slate-600 hover:text-primary-400'
+                    } disabled:opacity-50`}
+                  >
+                    {vote.loading ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <ThumbsUp className="w-3 h-3" />
+                    )}
+                    <span>{vote.count}</span>
+                  </button>
                 </div>
               </div>
-              <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed pl-10">
-                {reply.body}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
 

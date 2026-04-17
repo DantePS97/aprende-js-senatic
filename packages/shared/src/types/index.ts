@@ -183,6 +183,7 @@ export interface ForumPost {
   tags: string[];
   upvotes: number;
   replyCount: number;
+  hasUpvoted?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -193,6 +194,7 @@ export interface ForumReply {
   author: UserPublic;
   body: string;
   upvotes: number;
+  hasUpvoted?: boolean;
   createdAt: string;
 }
 

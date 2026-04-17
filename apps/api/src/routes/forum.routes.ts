@@ -105,6 +105,7 @@ forumRouter.post('/posts', requireAuth, validate(createPostSchema), async (req: 
 
 forumRouter.get('/posts/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user!.userId);
     const post = await ForumPostModel.findById(req.params.id);
     if (!post) {
       res.status(404).json({ success: false, error: 'Publicación no encontrada.' });
@@ -122,6 +123,7 @@ forumRouter.get('/posts/:id', requireAuth, async (req: AuthRequest, res: Respons
           author: await getAuthorPublic(r.userId),
           body: r.body,
           upvotes: r.upvotes,
+          hasUpvoted: r.upvotedBy.some((id) => id.equals(userId)),
           createdAt: r.createdAt.toISOString(),
         }))
       ),
@@ -138,6 +140,7 @@ forumRouter.get('/posts/:id', requireAuth, async (req: AuthRequest, res: Respons
           tags: post.tags,
           upvotes: post.upvotes,
           replyCount: post.replyCount,
+          hasUpvoted: post.upvotedBy.some((id) => id.equals(userId)),
           createdAt: post.createdAt.toISOString(),
           updatedAt: post.updatedAt.toISOString(),
         },
@@ -184,6 +187,41 @@ forumRouter.post('/posts/:id/replies', requireAuth, validate(createReplySchema),
   } catch (err) {
     console.error('[forum/create-reply]', err);
     res.status(500).json({ success: false, error: 'Error al crear respuesta.' });
+  }
+});
+
+// ─── POST /api/forum/posts/:id/replies/:replyId/upvote ───────────────────────
+
+forumRouter.post('/posts/:id/replies/:replyId/upvote', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user!.userId);
+    const reply = await ForumReplyModel.findOne({
+      _id: req.params.replyId,
+      postId: req.params.id,
+    });
+    if (!reply) {
+      res.status(404).json({ success: false, error: 'Respuesta no encontrada.' });
+      return;
+    }
+
+    const alreadyUpvoted = reply.upvotedBy.some((id) => id.equals(userId));
+
+    if (alreadyUpvoted) {
+      await ForumReplyModel.findByIdAndUpdate(reply._id, {
+        $pull: { upvotedBy: userId },
+        $inc: { upvotes: -1 },
+      });
+    } else {
+      await ForumReplyModel.findByIdAndUpdate(reply._id, {
+        $addToSet: { upvotedBy: userId },
+        $inc: { upvotes: 1 },
+      });
+    }
+
+    res.json({ success: true, data: { upvoted: !alreadyUpvoted } });
+  } catch (err) {
+    console.error('[forum/upvote-reply]', err);
+    res.status(500).json({ success: false, error: 'Error al votar la respuesta.' });
   }
 });
 
