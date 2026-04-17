@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, AlertCircle, CheckCircle, Plus, Trash2 } from 'lucide-react';
+// XSS-safe: react-markdown sanitizes by default; rehype-raw not enabled
+import { Loader2, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { adminApi } from '@/lib/admin-api';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { ExerciseFieldset } from '@/components/admin/ExerciseFieldset';
+import { useToastStore } from '@/store/toastStore';
 import type { ExerciseData } from '@/components/admin/ExerciseFieldset';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,48 +23,6 @@ interface ContentState {
   theoryMarkdown: string;
   examples: ExampleData[];
   exercises: ExerciseData[];
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-type ToastType = 'success' | 'error' | 'warning';
-
-interface ToastState {
-  message: string;
-  type: ToastType;
-}
-
-function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 4000);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
-  const colors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800',
-  };
-
-  const Icon = toast.type === 'success' ? CheckCircle : AlertCircle;
-
-  return (
-    <div
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3
-                  border rounded-xl shadow-lg text-sm max-w-sm
-                  animate-in slide-in-from-bottom-4 ${colors[toast.type]}`}
-    >
-      <Icon className="w-4 h-4 shrink-0" />
-      <span>{toast.message}</span>
-      <button
-        type="button"
-        onClick={onClose}
-        className="ml-auto text-current opacity-60 hover:opacity-100"
-      >
-        ✕
-      </button>
-    </div>
-  );
 }
 
 // ─── Example fieldset ─────────────────────────────────────────────────────────
@@ -195,6 +155,7 @@ export default function LessonContentPage() {
     lessonId: string;
   }>();
   const router = useRouter();
+  const addToast = useToastStore((s) => s.addToast);
 
   const [content, setContent] = useState<ContentState>({
     theoryMarkdown: '',
@@ -203,54 +164,62 @@ export default function LessonContentPage() {
   });
   const [previewMarkdown, setPreviewMarkdown] = useState('');
   const [serverUpdatedAt, setServerUpdatedAt] = useState('');
+  const [stale, setStale] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<ToastState | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch existing content
-  useEffect(() => {
+  // ─── Fetch helpers ────────────────────────────────────────────────────────────
+
+  type RawContent = {
+    theory?: { markdown?: string; examples?: ExampleData[] };
+    exercises?: Array<{
+      title?: string;
+      prompt?: string;
+      startCode?: string;
+      tests?: string;
+      hints?: string[];
+    }>;
+    updatedAt?: string;
+  };
+
+  const applyContent = useCallback((c: RawContent) => {
+    const exercises: ExerciseData[] = (c.exercises ?? []).map((ex) => ({
+      title: ex.title ?? '',
+      prompt: ex.prompt ?? '',
+      startCode: ex.startCode ?? '',
+      tests: typeof ex.tests === 'string'
+        ? ex.tests
+        : JSON.stringify(ex.tests ?? [], null, 2),
+      hints: ex.hints ?? [],
+    }));
+
+    const loaded: ContentState = {
+      theoryMarkdown: c.theory?.markdown ?? '',
+      examples: c.theory?.examples ?? [],
+      exercises: exercises.length > 0 ? exercises : [{ ...DEFAULT_EXERCISE }],
+    };
+
+    setContent(loaded);
+    setPreviewMarkdown(loaded.theoryMarkdown);
+    if (c.updatedAt) setServerUpdatedAt(c.updatedAt);
+  }, []);
+
+  const reloadContent = useCallback(() => {
+    setLoading(true);
+    setStale(false);
     adminApi.lessons.content.get(lessonId)
-      .then((data) => {
-        const c = data as {
-          theory?: { markdown?: string; examples?: ExampleData[] };
-          exercises?: Array<{
-            title?: string;
-            prompt?: string;
-            startCode?: string;
-            tests?: string;
-            hints?: string[];
-          }>;
-          updatedAt?: string;
-        };
-
-        const exercises: ExerciseData[] = (c.exercises ?? []).map((ex) => ({
-          title: ex.title ?? '',
-          prompt: ex.prompt ?? '',
-          startCode: ex.startCode ?? '',
-          tests: typeof ex.tests === 'string'
-            ? ex.tests
-            : JSON.stringify(ex.tests ?? [], null, 2),
-          hints: ex.hints ?? [],
-        }));
-
-        const loaded: ContentState = {
-          theoryMarkdown: c.theory?.markdown ?? '',
-          examples: c.theory?.examples ?? [],
-          exercises: exercises.length > 0 ? exercises : [{ ...DEFAULT_EXERCISE }],
-        };
-
-        setContent(loaded);
-        setPreviewMarkdown(loaded.theoryMarkdown);
-        if (c.updatedAt) setServerUpdatedAt(c.updatedAt);
-      })
+      .then((data) => applyContent(data as RawContent))
       .catch(() => {
         // Content may not exist yet — that's OK
       })
       .finally(() => setLoading(false));
-  }, [lessonId]);
+  }, [lessonId, applyContent]);
+
+  // Fetch existing content on mount
+  useEffect(() => { reloadContent(); }, [reloadContent]);
 
   // Debounced markdown preview
   const handleMarkdownChange = (value: string) => {
@@ -289,10 +258,6 @@ export default function LessonContentPage() {
     }));
   };
 
-  const showToast = useCallback((message: string, type: ToastType) => {
-    setToast({ message, type });
-  }, []);
-
   const handleSave = async () => {
     setSaving(true);
 
@@ -315,19 +280,18 @@ export default function LessonContentPage() {
 
     try {
       await adminApi.lessons.content.update(lessonId, payload);
-      showToast('Guardado con éxito ✓', 'success');
+      addToast('success', 'Contenido guardado ✓');
+      setStale(false);
       // Update the updatedAt after successful save
       const fresh = (await adminApi.lessons.content.get(lessonId)) as { updatedAt?: string };
       if (fresh.updatedAt) setServerUpdatedAt(fresh.updatedAt);
     } catch (err: unknown) {
-      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
-        showToast(
-          'Otro administrador guardó cambios. Recarga la página para ver los últimos cambios.',
-          'warning'
-        );
+        addToast('warning', 'El contenido fue modificado por otro admin. Recarga para ver los cambios.');
+        setStale(true);
       } else {
-        showToast('No se pudo guardar. Intenta de nuevo.', 'error');
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
       }
     } finally {
       setSaving(false);
@@ -373,6 +337,17 @@ export default function LessonContentPage() {
           >
             Volver
           </button>
+          {stale && (
+            <button
+              type="button"
+              onClick={reloadContent}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700
+                         bg-amber-50 border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Recargar
+            </button>
+          )}
           <button
             type="button"
             onClick={handleSave}
@@ -496,9 +471,6 @@ export default function LessonContentPage() {
           )}
         </div>
       </div>
-
-      {/* Toast */}
-      {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
 
       {/* Hidden updatedAt — kept in state for optimistic locking */}
       <input type="hidden" value={serverUpdatedAt} readOnly />

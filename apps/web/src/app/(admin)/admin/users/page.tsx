@@ -20,11 +20,11 @@ export default function UsersPage() {
   const [result, setResult] = useState<ResultState>(null);
 
   const resolveError = (err: unknown, defaultMsg: string): string => {
-    const code = (err as { response?: { data?: { code?: string; error?: string } } })?.response?.data;
-    if (code?.code === 'LAST_ADMIN') {
+    const apiErr = err as { code?: string; details?: { error?: string } };
+    if (apiErr.code === 'LAST_ADMIN') {
       return 'No puedes degradar al único administrador de la plataforma.';
     }
-    if (code?.code === 'USER_NOT_FOUND' || code?.error?.includes('not found')) {
+    if (apiErr.code === 'NOT_FOUND' || apiErr.details?.error?.includes('not found')) {
       return `Usuario "${email}" no encontrado.`;
     }
     return defaultMsg;

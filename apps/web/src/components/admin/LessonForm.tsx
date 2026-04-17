@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, FileText } from 'lucide-react';
 import { adminApi } from '@/lib/admin-api';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
+import { SkeletonList } from './SkeletonRow';
+import { useToastStore } from '@/store/toastStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,6 +32,7 @@ interface LessonFormProps {
 export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormProps) {
   const router = useRouter();
   const isEdit = mode === 'edit';
+  const addToast = useToastStore((s) => s.addToast);
 
   const [title, setTitle] = useState('');
   const [xpReward, setXpReward] = useState(50);
@@ -67,6 +70,7 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
           isPublished,
           updatedAt: existingUpdatedAt,
         });
+        addToast('success', 'Lección guardada correctamente.');
         router.push(`/admin/courses/${courseId}/modules/${moduleId}`);
       } else {
         const created = (await adminApi.lessons.create({
@@ -75,14 +79,17 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
           xpReward,
           isPublished,
         })) as LessonDoc;
+        addToast('success', 'Lección creada correctamente.');
         // Redirect to edit page so the admin can add content
         router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/${created._id}`);
       }
     } catch (err: unknown) {
-      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
         setError('Otro administrador modificó esta lección. Recarga la página para ver los últimos cambios.');
+        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
       } else {
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
         setError('No se pudo guardar la lección. Intenta de nuevo.');
       }
     } finally {
@@ -91,11 +98,7 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-      </div>
-    );
+    return <SkeletonList rows={4} />;
   }
 
   return (

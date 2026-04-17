@@ -7,6 +7,8 @@ import { adminApi } from '@/lib/admin-api';
 import { EntityList } from './EntityList';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
+import { SkeletonList } from './SkeletonRow';
+import { useToastStore } from '@/store/toastStore';
 import type { CourseCreateInput } from '@senatic/shared';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -54,6 +56,7 @@ function toSlug(title: string): string {
 export function CourseForm({ mode, courseId }: CourseFormProps) {
   const router = useRouter();
   const isEdit = mode === 'edit';
+  const addToast = useToastStore((s) => s.addToast);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -130,12 +133,15 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
       } else {
         await adminApi.courses.create(payload);
       }
+      addToast('success', 'Curso guardado correctamente.');
       router.push('/admin/courses');
     } catch (err: unknown) {
-      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
         setError('Otro administrador modificó este curso. Recarga la página para ver los últimos cambios.');
+        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
       } else {
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
         setError('No se pudo guardar el curso. Intenta de nuevo.');
       }
     } finally {
@@ -181,11 +187,7 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-      </div>
-    );
+    return <SkeletonList rows={5} />;
   }
 
   return (
@@ -346,9 +348,7 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
           </div>
 
           {loadingModules ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-6 flex justify-center animate-pulse">
-              <div className="w-32 h-4 bg-gray-200 rounded" />
-            </div>
+            <SkeletonList rows={3} />
           ) : (
             <EntityList
               items={modules}

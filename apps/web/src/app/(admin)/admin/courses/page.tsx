@@ -8,6 +8,7 @@ import { adminApi } from '@/lib/admin-api';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { EntityList } from '@/components/admin/EntityList';
 import { ConfirmDeleteModal } from '@/components/admin/ConfirmDeleteModal';
+import { useToastStore } from '@/store/toastStore';
 
 interface CourseDoc {
   _id: string;
@@ -42,6 +43,7 @@ function ListSkeleton() {
 
 export default function CoursesPage() {
   const router = useRouter();
+  const addToast = useToastStore((s) => s.addToast);
   const [courses, setCourses] = useState<CourseDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export default function CoursesPage() {
       await adminApi.courses.reorder(id, direction);
       await fetchCourses();
     } catch {
+      addToast('error', 'Error inesperado. Intenta de nuevo.');
       setError('No se pudo reordenar. Intenta de nuevo.');
     } finally {
       setPendingReorder(null);
@@ -88,12 +91,19 @@ export default function CoursesPage() {
         isPublished: !current,
         updatedAt: course.updatedAt,
       });
+      addToast('success', 'Guardado correctamente.');
       await fetchCourses();
-    } catch {
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
       // Revert
       setCourses((prev) =>
         prev.map((c) => (c._id === id ? { ...c, isPublished: current } : c))
       );
+      if (code === 'STALE_ENTITY') {
+        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
+      } else {
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
+      }
       setError('No se pudo actualizar la publicación.');
     }
   };
@@ -103,10 +113,18 @@ export default function CoursesPage() {
     setDeleting(true);
     try {
       await adminApi.courses.delete(deleteTarget._id);
+      addToast('success', 'Curso eliminado correctamente.');
       setDeleteTarget(null);
       await fetchCourses();
-    } catch {
-      setError('No se pudo eliminar el curso.');
+    } catch (err: unknown) {
+      const details = (err as { details?: { count?: number; error?: string } })?.details;
+      if (details?.count !== undefined) {
+        // Soft-block: show inline message with count info (not toast — it has count details)
+        setError(details.error ?? 'No se puede eliminar: el curso tiene módulos asociados.');
+      } else {
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
+        setError('No se pudo eliminar el curso.');
+      }
     } finally {
       setDeleting(false);
     }

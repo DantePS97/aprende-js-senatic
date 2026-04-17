@@ -4,7 +4,7 @@
 // is needed here.
 
 import { api } from '@/lib/api';
-import type { AxiosResponse } from 'axios';
+import type { AxiosResponse, AxiosError } from 'axios';
 import type {
   CourseCreateInput,
   CourseUpdateInput,
@@ -15,83 +15,124 @@ import type {
   LessonContentInput,
 } from '@senatic/shared';
 
+// ─── Structured error ─────────────────────────────────────────────────────────
+// All admin-api calls throw this shape on non-2xx responses.
+// Catch blocks can switch on `err.code` without casting to raw Axios types.
+
+export interface AdminApiError {
+  code: string;
+  status: number;
+  details: unknown;
+}
+
+function normalizeError(err: unknown): never {
+  const axiosErr = err as AxiosError<{ error?: string; code?: string }>;
+  const status = axiosErr.response?.status ?? 0;
+  const body = axiosErr.response?.data;
+
+  let code: string;
+  if (status === 409) {
+    code = body?.error ?? body?.code ?? 'CONFLICT';
+  } else if (status === 404) {
+    code = 'NOT_FOUND';
+  } else if (status >= 400 && status < 500) {
+    code = body?.error ?? body?.code ?? 'CLIENT_ERROR';
+  } else if (status >= 500) {
+    code = 'SERVER_ERROR';
+  } else {
+    code = 'NETWORK_ERROR';
+  }
+
+  throw { code, status, details: body } satisfies AdminApiError;
+}
+
 // ─── Generic response unwrapper ───────────────────────────────────────────────
 
 function unwrap<T>(response: AxiosResponse<{ success: boolean; data: T }>): T {
   return response.data.data;
 }
 
+async function call<T>(promise: Promise<AxiosResponse<{ success: boolean; data: T }>>): Promise<T> {
+  try {
+    return unwrap(await promise);
+  } catch (err) {
+    // If the error was already normalized (re-thrown from a nested call), pass through.
+    if (err && typeof err === 'object' && 'code' in err && 'status' in err) throw err;
+    normalizeError(err);
+  }
+}
+
 // ─── Courses ──────────────────────────────────────────────────────────────────
 
 const courses = {
   list: () =>
-    api.get('/admin/courses').then(unwrap),
+    call(api.get('/admin/courses')),
 
   create: (data: CourseCreateInput) =>
-    api.post('/admin/courses', data).then(unwrap),
+    call(api.post('/admin/courses', data)),
 
   get: (id: string) =>
-    api.get(`/admin/courses/${id}`).then(unwrap),
+    call(api.get(`/admin/courses/${id}`)),
 
   update: (id: string, data: CourseUpdateInput) =>
-    api.put(`/admin/courses/${id}`, data).then(unwrap),
+    call(api.put(`/admin/courses/${id}`, data)),
 
   delete: (id: string) =>
-    api.delete(`/admin/courses/${id}`).then(unwrap),
+    call(api.delete(`/admin/courses/${id}`)),
 
   reorder: (id: string, direction: 'up' | 'down') =>
-    api.post(`/admin/courses/${id}/reorder`, { direction }).then(unwrap),
+    call(api.post(`/admin/courses/${id}/reorder`, { direction })),
 };
 
 // ─── Modules ──────────────────────────────────────────────────────────────────
 
 const modules = {
   list: (courseId: string) =>
-    api.get('/admin/modules', { params: { courseId } }).then(unwrap),
+    call(api.get('/admin/modules', { params: { courseId } })),
 
   create: (data: ModuleCreateInput) =>
-    api.post('/admin/modules', data).then(unwrap),
+    call(api.post('/admin/modules', data)),
 
   get: (id: string) =>
-    api.get(`/admin/modules/${id}`).then(unwrap),
+    call(api.get(`/admin/modules/${id}`)),
 
   update: (id: string, data: ModuleUpdateInput) =>
-    api.put(`/admin/modules/${id}`, data).then(unwrap),
+    call(api.put(`/admin/modules/${id}`, data)),
 
   delete: (id: string) =>
-    api.delete(`/admin/modules/${id}`).then(unwrap),
+    call(api.delete(`/admin/modules/${id}`)),
 
   reorder: (id: string, direction: 'up' | 'down') =>
-    api.post(`/admin/modules/${id}/reorder`, { direction }).then(unwrap),
+    call(api.post(`/admin/modules/${id}/reorder`, { direction })),
 };
 
 // ─── Lessons ──────────────────────────────────────────────────────────────────
 
 const lessons = {
   list: (moduleId: string) =>
-    api.get('/admin/lessons', { params: { moduleId } }).then(unwrap),
+    call(api.get('/admin/lessons', { params: { moduleId } })),
 
   create: (data: LessonCreateInput) =>
-    api.post('/admin/lessons', data).then(unwrap),
+    call(api.post('/admin/lessons', data)),
 
   get: (id: string) =>
-    api.get(`/admin/lessons/${id}`).then(unwrap),
+    call(api.get(`/admin/lessons/${id}`)),
 
   update: (id: string, data: LessonUpdateInput) =>
-    api.put(`/admin/lessons/${id}`, data).then(unwrap),
+    call(api.put(`/admin/lessons/${id}`, data)),
 
   delete: (id: string) =>
-    api.delete(`/admin/lessons/${id}`).then(unwrap),
+    call(api.delete(`/admin/lessons/${id}`)),
 
   reorder: (id: string, direction: 'up' | 'down') =>
-    api.post(`/admin/lessons/${id}/reorder`, { direction }).then(unwrap),
+    call(api.post(`/admin/lessons/${id}/reorder`, { direction })),
 
   content: {
     get: (id: string) =>
-      api.get(`/admin/lessons/${id}/content`).then(unwrap),
+      call(api.get(`/admin/lessons/${id}/content`)),
 
     update: (id: string, data: LessonContentInput) =>
-      api.put(`/admin/lessons/${id}/content`, data).then(unwrap),
+      call(api.put(`/admin/lessons/${id}/content`, data)),
   },
 };
 
@@ -99,10 +140,10 @@ const lessons = {
 
 const users = {
   promote: (email: string) =>
-    api.post('/admin/users/promote', { email }).then(unwrap),
+    call(api.post('/admin/users/promote', { email })),
 
   demote: (email: string) =>
-    api.post('/admin/users/demote', { email }).then(unwrap),
+    call(api.post('/admin/users/demote', { email })),
 };
 
 // ─── Audit ────────────────────────────────────────────────────────────────────

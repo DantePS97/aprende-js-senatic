@@ -7,6 +7,8 @@ import { adminApi } from '@/lib/admin-api';
 import { EntityList } from './EntityList';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
+import { SkeletonList } from './SkeletonRow';
+import { useToastStore } from '@/store/toastStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,7 @@ interface ModuleFormProps {
 export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
   const router = useRouter();
   const isEdit = mode === 'edit';
+  const addToast = useToastStore((s) => s.addToast);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -99,16 +102,20 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
           isPublished,
           updatedAt: existingUpdatedAt,
         });
+        addToast('success', 'Módulo guardado correctamente.');
         router.push(`/admin/courses/${courseId}`);
       } else {
         await adminApi.modules.create({ courseId, title, description, isPublished });
+        addToast('success', 'Módulo creado correctamente.');
         router.push(`/admin/courses/${courseId}`);
       }
     } catch (err: unknown) {
-      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
         setError('Otro administrador modificó este módulo. Recarga la página para ver los últimos cambios.');
+        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
       } else {
+        addToast('error', 'Error inesperado. Intenta de nuevo.');
         setError('No se pudo guardar el módulo. Intenta de nuevo.');
       }
     } finally {
@@ -153,11 +160,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-      </div>
-    );
+    return <SkeletonList rows={5} />;
   }
 
   return (
@@ -274,9 +277,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
           </div>
 
           {loadingLessons ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-6 flex justify-center animate-pulse">
-              <div className="w-32 h-4 bg-gray-200 rounded" />
-            </div>
+            <SkeletonList rows={3} />
           ) : (
             <EntityList
               items={lessons}

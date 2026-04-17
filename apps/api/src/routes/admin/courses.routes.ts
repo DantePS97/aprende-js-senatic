@@ -104,7 +104,7 @@ router.put('/:id', validateBody(CourseUpdateSchema), async (req: AuthRequest, re
       return;
     }
 
-    // Strip slug — immutable
+    // slug is immutable post-create — stripped server-side even if Zod already omits it
     const { slug: _slug, updatedAt: _updatedAt, ...updateData } = body;
 
     Object.assign(course, updateData);
