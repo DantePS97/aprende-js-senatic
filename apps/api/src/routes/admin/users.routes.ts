@@ -56,7 +56,8 @@ router.post('/demote', validateBody(PromoteDemoteSchema), async (req: AuthReques
     if (adminCount <= 1) {
       res.status(409).json({
         success: false,
-        error: 'No puedes demote al único administrador.',
+        error: 'LAST_ADMIN',
+        message: 'No puedes degradar al único administrador.',
       });
       return;
     }
