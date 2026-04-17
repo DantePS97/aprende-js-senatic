@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
 import { LessonModel } from '../models/Lesson.model';
-import { LessonContentModel } from '../models/LessonContent.model';
+import { LessonContentModel, ILessonContent } from '../models/LessonContent.model';
 import { ProgressModel } from '../models/Progress.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import path from 'path';
@@ -135,7 +135,7 @@ coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, re
 
     let content: unknown;
 
-    const dbContent = await LessonContentModel.findOne({ lessonId: lesson._id }).lean();
+    const dbContent = await LessonContentModel.findOne({ lessonId: lesson._id }).lean<ILessonContent>();
 
     if (dbContent) {
       // Adapt to the runtime shape the frontend expects.

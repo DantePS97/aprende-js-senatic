@@ -53,7 +53,7 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
       });
       return;
     }
-    (req as Request & { query: T }).query = result.data;
+    req.query = result.data as unknown as typeof req.query;
     next();
   };
 }

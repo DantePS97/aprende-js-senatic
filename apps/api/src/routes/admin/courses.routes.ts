@@ -167,8 +167,9 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
 
 router.post('/:id/reorder', validateBody(ReorderSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const { direction } = req.body;
-    const result = await reorderEntity(CourseModel, req.params.id, direction, {});
+    const id = String(req.params.id);
+    const { direction } = req.body as { direction: 'up' | 'down' };
+    const result = await reorderEntity(CourseModel, id, direction, {});
 
     if (result === null) {
       res.status(400).json({ success: false, error: 'Ya está en el límite.' });
@@ -179,7 +180,7 @@ router.post('/:id/reorder', validateBody(ReorderSchema), async (req: AuthRequest
       adminId: req.user!.userId,
       action: 'reorder',
       entityType: 'course',
-      entityId: req.params.id,
+      entityId: id,
       metadata: { direction },
     });
 

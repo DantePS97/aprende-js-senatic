@@ -176,8 +176,9 @@ router.post('/:id/reorder', validateBody(ReorderSchema), async (req: AuthRequest
       return;
     }
 
-    const { direction } = req.body;
-    const result = await reorderEntity(LessonModel, req.params.id, direction, {
+    const id = String(req.params.id);
+    const { direction } = req.body as { direction: 'up' | 'down' };
+    const result = await reorderEntity(LessonModel, id, direction, {
       moduleId: lesson.moduleId,
     });
 
@@ -190,7 +191,7 @@ router.post('/:id/reorder', validateBody(ReorderSchema), async (req: AuthRequest
       adminId: req.user!.userId,
       action: 'reorder',
       entityType: 'lesson',
-      entityId: req.params.id,
+      entityId: id,
       metadata: { direction, moduleId: lesson.moduleId.toString() },
     });
 
