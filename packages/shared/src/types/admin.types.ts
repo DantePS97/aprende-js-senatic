@@ -14,14 +14,16 @@ import type {
   AuditQuerySchema,
 } from '../schemas/admin';
 
-export type CourseCreateInput = z.infer<typeof CourseCreateSchema>;
-export type CourseUpdateInput = z.infer<typeof CourseUpdateSchema>;
+// z.input gives the type BEFORE defaults are applied (order?, isPublished? are optional)
+// z.infer gives the type AFTER defaults are applied (all fields required) — wrong for form payloads
+export type CourseCreateInput = z.input<typeof CourseCreateSchema>;
+export type CourseUpdateInput = z.input<typeof CourseUpdateSchema>;
 
-export type ModuleCreateInput = z.infer<typeof ModuleCreateSchema>;
-export type ModuleUpdateInput = z.infer<typeof ModuleUpdateSchema>;
+export type ModuleCreateInput = z.input<typeof ModuleCreateSchema>;
+export type ModuleUpdateInput = z.input<typeof ModuleUpdateSchema>;
 
-export type LessonCreateInput = z.infer<typeof LessonCreateSchema>;
-export type LessonUpdateInput = z.infer<typeof LessonUpdateSchema>;
+export type LessonCreateInput = z.input<typeof LessonCreateSchema>;
+export type LessonUpdateInput = z.input<typeof LessonUpdateSchema>;
 
 export type ExampleInput = z.infer<typeof ExampleSchema>;
 export type ExerciseInput = z.infer<typeof ExerciseSchema>;
