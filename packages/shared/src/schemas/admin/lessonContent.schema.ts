@@ -21,5 +21,7 @@ export const LessonContentSchema = z.object({
     examples: z.array(ExampleSchema).max(20, 'Máximo 20 ejemplos por lección'),
   }),
   exercises: z.array(ExerciseSchema).max(30, 'Máximo 30 ejercicios por lección'),
+  /** ISO string sent by the client for optimistic concurrency detection */
+  updatedAt: z.string().optional(),
 });
 

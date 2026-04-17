@@ -231,6 +231,20 @@ router.put('/:id/content', validateBody(LessonContentSchema), async (req: AuthRe
   try {
     const body = req.body;
 
+    // Optimistic concurrency: if client sends updatedAt, verify it matches
+    // the server's current value before overwriting (last-write-wins otherwise)
+    if (body.updatedAt) {
+      const current = await LessonContentModel.findOne({ lessonId: req.params.id }).select('updatedAt');
+      if (current && current.updatedAt.toISOString() !== body.updatedAt) {
+        res.status(409).json({
+          success: false,
+          error: 'STALE_ENTITY',
+          serverUpdatedAt: current.updatedAt,
+        });
+        return;
+      }
+    }
+
     const content = await LessonContentModel.findOneAndUpdate(
       { lessonId: req.params.id },
       {

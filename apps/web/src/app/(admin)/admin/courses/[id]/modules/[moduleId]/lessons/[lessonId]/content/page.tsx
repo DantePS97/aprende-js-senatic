@@ -9,6 +9,8 @@ import { Loader2, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { adminApi } from '@/lib/admin-api';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { ExerciseFieldset } from '@/components/admin/ExerciseFieldset';
+import { CodeTextarea } from '@/components/admin/CodeTextarea';
+import { UnsavedChangesGuard } from '@/components/admin/UnsavedChangesGuard';
 import { useToastStore } from '@/store/toastStore';
 import type { ExerciseData } from '@/components/admin/ExerciseFieldset';
 
@@ -54,13 +56,12 @@ function ExampleFieldset({
 
       <div className="space-y-1">
         <label className="block text-xs font-medium text-gray-600">Código</label>
-        <textarea
+        <CodeTextarea
           value={data.code}
-          onChange={(e) => onChange(index, { ...data, code: e.target.value })}
+          onChange={(code) => onChange(index, { ...data, code })}
           rows={3}
           placeholder="// Código del ejemplo"
-          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-mono resize-y
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          language="javascript"
         />
       </div>
 
@@ -166,6 +167,7 @@ export default function LessonContentPage() {
   const [serverUpdatedAt, setServerUpdatedAt] = useState('');
   const [stale, setStale] = useState(false);
 
+  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -205,6 +207,7 @@ export default function LessonContentPage() {
     setContent(loaded);
     setPreviewMarkdown(loaded.theoryMarkdown);
     if (c.updatedAt) setServerUpdatedAt(c.updatedAt);
+    setDirty(false);
   }, []);
 
   const reloadContent = useCallback(() => {
@@ -224,6 +227,7 @@ export default function LessonContentPage() {
   // Debounced markdown preview
   const handleMarkdownChange = (value: string) => {
     setContent((prev) => ({ ...prev, theoryMarkdown: value }));
+    setDirty(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setPreviewMarkdown(value), 300);
   };
@@ -234,6 +238,7 @@ export default function LessonContentPage() {
       examples[i] = updated;
       return { ...prev, examples };
     });
+    setDirty(true);
   };
 
   const handleExampleRemove = (i: number) => {
@@ -241,6 +246,7 @@ export default function LessonContentPage() {
       ...prev,
       examples: prev.examples.filter((_, idx) => idx !== i),
     }));
+    setDirty(true);
   };
 
   const handleExerciseChange = (i: number, updated: ExerciseData) => {
@@ -249,6 +255,7 @@ export default function LessonContentPage() {
       exercises[i] = updated;
       return { ...prev, exercises };
     });
+    setDirty(true);
   };
 
   const handleExerciseRemove = (i: number) => {
@@ -256,6 +263,7 @@ export default function LessonContentPage() {
       ...prev,
       exercises: prev.exercises.filter((_, idx) => idx !== i),
     }));
+    setDirty(true);
   };
 
   const handleSave = async () => {
@@ -276,15 +284,17 @@ export default function LessonContentPage() {
         examples: content.examples,
       },
       exercises,
+      // Send current serverUpdatedAt so backend can detect concurrent edits
+      updatedAt: serverUpdatedAt || undefined,
     };
 
     try {
-      await adminApi.lessons.content.update(lessonId, payload);
+      const saved = (await adminApi.lessons.content.update(lessonId, payload)) as { updatedAt?: string };
       addToast('success', 'Contenido guardado ✓');
       setStale(false);
-      // Update the updatedAt after successful save
-      const fresh = (await adminApi.lessons.content.get(lessonId)) as { updatedAt?: string };
-      if (fresh.updatedAt) setServerUpdatedAt(fresh.updatedAt);
+      setDirty(false);
+      // Use the PUT response directly — no extra GET needed
+      if (saved?.updatedAt) setServerUpdatedAt(saved.updatedAt);
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
@@ -308,6 +318,7 @@ export default function LessonContentPage() {
 
   return (
     <div className="space-y-4 h-full">
+      <UnsavedChangesGuard dirty={dirty} />
       <AdminBreadcrumbs
         items={[
           { label: 'Cursos', href: '/admin/courses' },
@@ -368,14 +379,12 @@ export default function LessonContentPage() {
           {/* Theory section */}
           <section className="space-y-3">
             <h2 className="text-base font-semibold text-gray-800">Teoría (Markdown)</h2>
-            <textarea
+            <CodeTextarea
               value={content.theoryMarkdown}
-              onChange={(e) => handleMarkdownChange(e.target.value)}
+              onChange={handleMarkdownChange}
               rows={14}
               placeholder="# Título de la lección&#10;&#10;Escribe la teoría en Markdown..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono resize-y
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                         leading-relaxed"
+              language="markdown"
             />
           </section>
 
