@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, MessageSquare, User } from 'lucide-react';
+import { Home, MessageSquare, Trophy, User } from 'lucide-react';
 
 const navItems = [
   { href: '/courses', label: 'Inicio', Icon: Home },
   { href: '/forum', label: 'Foro', Icon: MessageSquare },
+  { href: '/leaderboard', label: 'Ranking', Icon: Trophy },
   { href: '/profile', label: 'Perfil', Icon: User },
 ];
 

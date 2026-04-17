@@ -10,6 +10,7 @@ import { coursesRouter } from './routes/courses.routes';
 import { progressRouter } from './routes/progress.routes';
 import { achievementsRouter } from './routes/achievements.routes';
 import { forumRouter } from './routes/forum.routes';
+import { leaderboardRouter } from './routes/leaderboard.routes';
 import { syncRouter } from './routes/sync.routes';
 import adminRouter from './routes/admin/index';
 
@@ -55,6 +56,7 @@ app.use('/api/courses', coursesRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/achievements', achievementsRouter);
 app.use('/api/forum', forumRouter);
+app.use('/api/leaderboard', leaderboardRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/admin', adminRouter);
 
