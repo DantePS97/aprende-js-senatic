@@ -11,6 +11,7 @@ import { progressRouter } from './routes/progress.routes';
 import { achievementsRouter } from './routes/achievements.routes';
 import { forumRouter } from './routes/forum.routes';
 import { syncRouter } from './routes/sync.routes';
+import adminRouter from './routes/admin/index';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -55,6 +56,7 @@ app.use('/api/progress', progressRouter);
 app.use('/api/achievements', achievementsRouter);
 app.use('/api/forum', forumRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/admin', adminRouter);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 
