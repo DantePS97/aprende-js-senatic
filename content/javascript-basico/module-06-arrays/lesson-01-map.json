@@ -1,0 +1,108 @@
+{
+  "id": "js-basico-m6-l1",
+  "title": "Transformar arrays con map",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## Transformar arrays con `map`\n\n`map` es uno de los métodos más usados en JavaScript. Crea un **nuevo array** aplicando una función a cada elemento del array original. El original **nunca se modifica**.\n\n### Sintaxis\n\n```js\nconst nuevo = array.map(elemento => transformacion);\n```\n\nPiensa en `map` como una **receta que se aplica a cada ingrediente**: si tienes 5 manzanas y las conviertes en jugo, obtienes 5 jugos — el mismo número de elementos, pero transformados.\n\n### Características clave\n\n- Siempre retorna un array del **mismo tamaño** que el original\n- No modifica el array original\n- La función que le pasas recibe el elemento actual (y opcionalmente el índice y el array)\n\n```js\nconst numeros = [1, 2, 3];\nconst dobles = numeros.map(n => n * 2); // [2, 4, 6]\nconsole.log(numeros); // [1, 2, 3] — sin cambios\n```\n\n### ¿Cuándo usar map?\n\nSiempre que necesites **transformar** cada elemento de un array en algo diferente:\n- Aplicar un cálculo (precios con IVA)\n- Extraer una propiedad de objetos\n- Convertir formatos (minúsculas → mayúsculas)",
+    "examples": [
+      {
+        "code": "const numeros = [1, 2, 3, 4, 5];\n\nconst dobles = numeros.map(n => n * 2);\nconsole.log(dobles); // [2, 4, 6, 8, 10]\n\nconst cuadrados = numeros.map(n => n ** 2);\nconsole.log(cuadrados); // [1, 4, 9, 16, 25]",
+        "explanation": "map aplica la misma operación a cada elemento. El array original queda intacto y se retorna uno nuevo con los resultados."
+      },
+      {
+        "code": "const productos = [\n  { nombre: 'Camisa', precio: 50000 },\n  { nombre: 'Pantalón', precio: 80000 },\n  { nombre: 'Zapatos', precio: 120000 }\n];\n\n// Extraer solo los nombres\nconst nombres = productos.map(p => p.nombre);\nconsole.log(nombres); // ['Camisa', 'Pantalón', 'Zapatos']\n\n// Calcular precios con descuento del 10%\nconst conDescuento = productos.map(p => ({\n  ...p,\n  precio: p.precio * 0.9\n}));\nconsole.log(conDescuento[0].precio); // 45000",
+        "explanation": "Cuando el array contiene objetos, map puede extraer una propiedad específica o transformar los objetos devolviendo nuevos objetos modificados."
+      },
+      {
+        "code": "const frutas = ['manzana', 'banana', 'naranja'];\n\nconst enMayusculas = frutas.map(f => f.toUpperCase());\nconsole.log(enMayusculas); // ['MANZANA', 'BANANA', 'NARANJA']\n\nconst conLongitud = frutas.map(f => ({ nombre: f, letras: f.length }));\nconsole.log(conLongitud[0]); // { nombre: 'manzana', letras: 7 }",
+        "explanation": "map no está limitado a números. Puede transformar strings, y también puede cambiar el tipo del resultado — aquí convertimos strings en objetos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Precios con IVA",
+      "prompt": "Dado el array `precios`:\n\n```js\nconst precios = [100, 200, 300, 400];\n```\n\nUsa `map` para crear `preciosConIva`, donde cada precio tiene un 19% de impuesto aplicado (`precio * 1.19`).",
+      "starterCode": "const precios = [100, 200, 300, 400];\n\n// Crea preciosConIva usando map\n",
+      "tests": [
+        {
+          "description": "preciosConIva es un array",
+          "expression": "Array.isArray(preciosConIva)"
+        },
+        {
+          "description": "preciosConIva tiene 4 elementos",
+          "expression": "preciosConIva.length === 4"
+        },
+        {
+          "description": "El primer elemento es 119 (100 * 1.19)",
+          "expression": "preciosConIva[0] === 119"
+        },
+        {
+          "description": "El último elemento es 476 (400 * 1.19)",
+          "expression": "preciosConIva[3] === 476"
+        }
+      ],
+      "hints": [
+        "Usa el método `map` sobre el array: `const preciosConIva = precios.map(precio => ...);`",
+        "Dentro de la función, multiplica cada precio por 1.19 para aplicar el 19% de IVA.",
+        "Solución: `const preciosConIva = precios.map(precio => precio * 1.19);`"
+      ]
+    },
+    {
+      "title": "Práctica: Extraer nombres",
+      "prompt": "Dado el array de personas:\n\n```js\nconst personas = [\n  { nombre: 'Ana', edad: 17 },\n  { nombre: 'Luis', edad: 22 },\n  { nombre: 'Marta', edad: 15 }\n];\n```\n\nUsa `map` para crear `nombres`, un array que contenga solo los nombres de cada persona.",
+      "starterCode": "const personas = [\n  { nombre: 'Ana', edad: 17 },\n  { nombre: 'Luis', edad: 22 },\n  { nombre: 'Marta', edad: 15 }\n];\n\n// Crea nombres usando map\n",
+      "tests": [
+        {
+          "description": "nombres es un array",
+          "expression": "Array.isArray(nombres)"
+        },
+        {
+          "description": "nombres tiene 3 elementos",
+          "expression": "nombres.length === 3"
+        },
+        {
+          "description": "El primer nombre es 'Ana'",
+          "expression": "nombres[0] === 'Ana'"
+        },
+        {
+          "description": "El array incluye 'Luis'",
+          "expression": "nombres.includes('Luis')"
+        }
+      ],
+      "hints": [
+        "Cada elemento del array es un objeto. En map, accede a la propiedad que necesitas: `persona => persona.nombre`",
+        "También puedes usar destructuring en el parámetro: `({ nombre }) => nombre`",
+        "Solución: `const nombres = personas.map(persona => persona.nombre);`"
+      ]
+    },
+    {
+      "title": "Aplicación: Palabras en mayúsculas",
+      "prompt": "Dado el array:\n\n```js\nconst palabras = ['hola', 'mundo', 'javascript'];\n```\n\nUsa `map` para crear `mayusculas`, un array con cada palabra convertida a mayúsculas. Recuerda: los strings tienen el método `.toUpperCase()`.",
+      "starterCode": "const palabras = ['hola', 'mundo', 'javascript'];\n\n// Crea mayusculas usando map\n",
+      "tests": [
+        {
+          "description": "mayusculas es un array",
+          "expression": "Array.isArray(mayusculas)"
+        },
+        {
+          "description": "El primer elemento es 'HOLA'",
+          "expression": "mayusculas[0] === 'HOLA'"
+        },
+        {
+          "description": "El tercer elemento es 'JAVASCRIPT'",
+          "expression": "mayusculas[2] === 'JAVASCRIPT'"
+        },
+        {
+          "description": "El array tiene 3 elementos",
+          "expression": "mayusculas.length === 3"
+        }
+      ],
+      "hints": [
+        "Los strings tienen el método `.toUpperCase()` que los convierte a mayúsculas: `'hola'.toUpperCase()` → `'HOLA'`",
+        "En el callback de map, llama ese método sobre cada elemento: `palabra => palabra.toUpperCase()`",
+        "Solución: `const mayusculas = palabras.map(palabra => palabra.toUpperCase());`"
+      ]
+    }
+  ]
+}

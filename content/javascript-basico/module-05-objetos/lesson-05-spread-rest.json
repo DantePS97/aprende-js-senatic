@@ -1,0 +1,100 @@
+{
+  "id": "js-basico-m5-l5",
+  "title": "Spread y rest en objetos",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Spread y rest en objetos\n\nDos operaciones muy parecidas en sintaxis pero opuestas en propósito: **spread** expande un objeto, **rest** recoge lo que sobra.\n\n### Spread (`...`): copiar y fusionar objetos\n\nEl operador spread `...` toma todas las propiedades de un objeto y las \"derrama\" en otro:\n\n```js\nconst original = { a: 1, b: 2 };\nconst copia = { ...original }; // { a: 1, b: 2 }\n```\n\nLa copia es **independiente** del original — cambiar uno no afecta el otro.\n\nTambién sirve para **fusionar** dos objetos:\n\n```js\nconst base = { color: 'azul' };\nconst extra = { tamaño: 'L', precio: 50 };\nconst completo = { ...base, ...extra };\n// { color: 'azul', tamaño: 'L', precio: 50 }\n```\n\nSi hay propiedades con el mismo nombre, **gana la última**:\n\n```js\nconst resultado = { color: 'azul', ...{ color: 'rojo' } };\n// { color: 'rojo' }\n```\n\n### Rest (`...rest`): capturar el resto\n\nEn destructuring, el operador rest recoge todas las propiedades que **no** extrajiste:\n\n```js\nconst persona = { nombre: 'Ana', edad: 28, ciudad: 'Bogotá', pais: 'Colombia' };\n\nconst { nombre, ...resto } = persona;\n// nombre = 'Ana'\n// resto = { edad: 28, ciudad: 'Bogotá', pais: 'Colombia' }\n```\n\n`...rest` SIEMPRE va al final del destructuring.",
+    "examples": [
+      {
+        "code": "const original = { x: 10, y: 20, z: 30 };\n\n// Clonar con spread\nconst copia = { ...original };\ncopia.x = 99;\n\nconsole.log(original.x); // 10 — no se afectó\nconsole.log(copia.x);    // 99",
+        "explanation": "El spread crea una copia superficial del objeto. Modificar la copia no afecta al original. Importante: es copia 'superficial' — si hay objetos anidados, se comparte la referencia."
+      },
+      {
+        "code": "const datosBase = { nombre: 'Luis', activo: true };\nconst datosExtra = { edad: 30, ciudad: 'Cali' };\n\nconst perfil = { ...datosBase, ...datosExtra };\nconsole.log(perfil);\n// { nombre: 'Luis', activo: true, edad: 30, ciudad: 'Cali' }",
+        "explanation": "Fusionar objetos con spread es una de sus usos más comunes. Se pueden combinar múltiples objetos en uno solo. También puedes agregar propiedades adicionales inline: { ...obj, nuevaPropiedad: valor }."
+      },
+      {
+        "code": "const config = {\n  debug: false,\n  version: '2.0',\n  autor: 'María',\n  fecha: '2025-01-01'\n};\n\n// Extraemos debug y version, el resto va a 'meta'\nconst { debug, version, ...meta } = config;\n\nconsole.log(debug);   // false\nconsole.log(version); // '2.0'\nconsole.log(meta);    // { autor: 'María', fecha: '2025-01-01' }",
+        "explanation": "El rest en destructuring captura todo lo que no se extrajo explícitamente. Es muy útil cuando quieres separar algunas propiedades importantes del resto de la data."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Clonar un objeto con spread",
+      "prompt": "Dado el objeto `base`:\n\n```js\nconst base = { color: 'rojo', tamaño: 'M' };\n```\n\nCrea una variable `copia` que sea una copia del objeto usando el operador spread `...`.\n\nLa copia debe tener las mismas propiedades pero ser un objeto diferente (no la misma referencia).",
+      "starterCode": "const base = { color: 'rojo', tamaño: 'M' };\n\n// Crea la copia con spread\n",
+      "tests": [
+        {
+          "description": "copia.color es 'rojo'",
+          "expression": "copia.color === 'rojo'"
+        },
+        {
+          "description": "copia.tamaño es 'M'",
+          "expression": "copia.tamaño === 'M'"
+        },
+        {
+          "description": "copia es un objeto diferente a base (no la misma referencia)",
+          "expression": "copia !== base"
+        }
+      ],
+      "hints": [
+        "El spread se usa dentro de llaves: `const copia = { ...base };`",
+        "Los tres puntos `...` antes del nombre del objeto significan: 'copia todas las propiedades de este objeto aquí'.",
+        "Solución: `const copia = { ...base };`"
+      ]
+    },
+    {
+      "title": "Práctica: Fusionar objetos",
+      "prompt": "Tienes dos objetos:\n\n```js\nconst info = { nombre: 'Luis' };\nconst extra = { edad: 30, ciudad: 'Medellín' };\n```\n\nCrea una variable `perfil` que combine ambos objetos usando spread. El resultado debe tener las tres propiedades: `nombre`, `edad` y `ciudad`.",
+      "starterCode": "const info = { nombre: 'Luis' };\nconst extra = { edad: 30, ciudad: 'Medellín' };\n\n// Crea perfil fusionando ambos objetos\n",
+      "tests": [
+        {
+          "description": "perfil.nombre es 'Luis'",
+          "expression": "perfil.nombre === 'Luis'"
+        },
+        {
+          "description": "perfil.edad es 30",
+          "expression": "perfil.edad === 30"
+        },
+        {
+          "description": "perfil.ciudad es 'Medellín'",
+          "expression": "perfil.ciudad === 'Medellín'"
+        }
+      ],
+      "hints": [
+        "Puedes hacer spread de múltiples objetos dentro de uno nuevo: `const perfil = { ...obj1, ...obj2 };`",
+        "El orden importa si hay propiedades con el mismo nombre — el último gana.",
+        "Solución: `const perfil = { ...info, ...extra };`"
+      ]
+    },
+    {
+      "title": "Aplicación: Rest en destructuring",
+      "prompt": "Dado el objeto `config`:\n\n```js\nconst config = { debug: true, version: '1.0', autor: 'Ana', fecha: '2025' };\n```\n\nUsa destructuring para extraer `debug` y `version`, y recoge las propiedades restantes en una variable llamada `meta`.",
+      "starterCode": "const config = { debug: true, version: '1.0', autor: 'Ana', fecha: '2025' };\n\n// Usa destructuring con rest\n",
+      "tests": [
+        {
+          "description": "debug es true",
+          "expression": "debug === true"
+        },
+        {
+          "description": "version es '1.0'",
+          "expression": "version === '1.0'"
+        },
+        {
+          "description": "meta es un objeto",
+          "expression": "typeof meta === 'object' && meta !== null"
+        },
+        {
+          "description": "meta.autor es 'Ana'",
+          "expression": "meta.autor === 'Ana'"
+        }
+      ],
+      "hints": [
+        "El rest en destructuring usa `...` antes del nombre de la variable que recogerá lo que sobra.",
+        "El rest DEBE ir al final: `const { debug, version, ...meta } = config;`",
+        "Solución: `const { debug, version, ...meta } = config;`"
+      ]
+    }
+  ]
+}

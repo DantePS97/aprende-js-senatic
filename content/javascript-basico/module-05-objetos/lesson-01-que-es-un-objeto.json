@@ -1,0 +1,104 @@
+{
+  "id": "js-basico-m5-l1",
+  "title": "¿Qué es un objeto?",
+  "xpReward": 35,
+  "theory": {
+    "markdown": "## ¿Qué es un objeto?\n\nUn **objeto** en JavaScript es una colección de propiedades relacionadas. Cada propiedad tiene un **nombre** (clave) y un **valor**. Piensa en un objeto como una **ficha de datos**: así como una ficha de una persona tiene nombre, edad y ciudad, un objeto agrupa toda esa información en un solo lugar.\n\n### Sintaxis literal `{}`\n\nCreamos objetos usando llaves `{}`. Dentro, escribimos pares `clave: valor` separados por comas:\n\n```js\nconst persona = {\n  nombre: 'Laura',\n  edad: 28,\n  ciudad: 'Bogotá'\n};\n```\n\n### ¿Por qué usar objetos?\n\nSin objetos tendrías que usar variables sueltas:\n\n```js\nlet nombre = 'Laura';\nlet edad = 28;\nlet ciudad = 'Bogotá';\n```\n\nEso es difícil de manejar cuando tienes muchos datos. El objeto los **agrupa con sentido**: todo lo de `persona` vive junto.\n\n### Tipos de valores\n\nLas propiedades de un objeto pueden ser de **cualquier tipo**: string, number, boolean, array, incluso otro objeto.",
+    "examples": [
+      {
+        "code": "const persona = {\n  nombre: 'Carlos',\n  edad: 30,\n  ciudad: 'Medellín'\n};\n\nconsole.log(persona.nombre); // 'Carlos'\nconsole.log(persona.edad);   // 30",
+        "explanation": "Una ficha de persona con tres propiedades. Se accede a cada una con punto (.) seguido del nombre de la propiedad."
+      },
+      {
+        "code": "const auto = {\n  marca: 'Renault',\n  modelo: 'Logan',\n  año: 2022,\n  encendido: false\n};\n\nconsole.log(auto.marca);     // 'Renault'\nconsole.log(auto.encendido); // false",
+        "explanation": "Un objeto auto que mezcla strings, números y un boolean. Cada tipo de dato es válido como valor de una propiedad."
+      },
+      {
+        "code": "const producto = {\n  nombre: 'Audífonos',\n  precio: 85000,\n  disponible: true,\n  categorias: ['electrónica', 'audio']\n};\n\nconsole.log(producto.precio);        // 85000\nconsole.log(producto.categorias[0]); // 'electrónica'",
+        "explanation": "Un objeto producto que incluye hasta un array como valor. Los objetos pueden contener cualquier tipo de dato, incluso otros arrays u objetos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Crea tu primer objeto",
+      "prompt": "Crea un objeto llamado `libro` con las siguientes propiedades:\n- `titulo`: el título del libro (string)\n- `paginas`: número de páginas (number)\n- `disponible`: si está disponible en biblioteca (boolean)\n\nPuedes usar los valores que quieras para cada propiedad.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "libro es un objeto",
+          "expression": "typeof libro === 'object' && libro !== null"
+        },
+        {
+          "description": "libro.titulo es un string",
+          "expression": "typeof libro.titulo === 'string'"
+        },
+        {
+          "description": "libro.paginas es un número",
+          "expression": "typeof libro.paginas === 'number'"
+        },
+        {
+          "description": "libro.disponible es un boolean",
+          "expression": "typeof libro.disponible === 'boolean'"
+        }
+      ],
+      "hints": [
+        "Un objeto se crea con llaves: `const libro = { ... };`",
+        "Dentro de las llaves escribe pares clave-valor separados por comas: `titulo: 'El Principito', paginas: 96`",
+        "Un boolean es `true` o `false` (sin comillas). Ejemplo completo: `const libro = { titulo: 'El Principito', paginas: 96, disponible: true };`"
+      ]
+    },
+    {
+      "title": "Práctica: Ficha de estudiante",
+      "prompt": "Crea un objeto llamado `estudiante` con las siguientes propiedades:\n- `nombre`: nombre del estudiante (string)\n- `edad`: edad en años (number)\n- `promedio`: nota promedio entre 0 y 10 (number)\n- `activo`: si está matriculado actualmente (boolean)\n\nAsegúrate de que `promedio` esté entre 0 y 10.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "estudiante.nombre es un string",
+          "expression": "typeof estudiante.nombre === 'string'"
+        },
+        {
+          "description": "estudiante.edad es un número",
+          "expression": "typeof estudiante.edad === 'number'"
+        },
+        {
+          "description": "estudiante.promedio es un número entre 0 y 10",
+          "expression": "typeof estudiante.promedio === 'number' && estudiante.promedio >= 0 && estudiante.promedio <= 10"
+        },
+        {
+          "description": "estudiante.activo es un boolean",
+          "expression": "typeof estudiante.activo === 'boolean'"
+        }
+      ],
+      "hints": [
+        "El objeto necesita exactamente cuatro propiedades: nombre, edad, promedio y activo.",
+        "Recuerda que `promedio` debe ser un número entre 0 y 10 — por ejemplo `7.5`.",
+        "Ejemplo: `const estudiante = { nombre: 'Ana', edad: 20, promedio: 8.5, activo: true };`"
+      ]
+    },
+    {
+      "title": "Aplicación: Área de un rectángulo",
+      "prompt": "Crea un objeto llamado `rectangulo` con dos propiedades numéricas: `base` y `altura`.\n\nLuego crea una variable `area` que sea igual a `rectangulo.base * rectangulo.altura`.\n\nUsa los valores que quieras para base y altura.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "rectangulo es un objeto",
+          "expression": "typeof rectangulo === 'object' && rectangulo !== null"
+        },
+        {
+          "description": "area es un número",
+          "expression": "typeof area === 'number'"
+        },
+        {
+          "description": "area es correctamente el producto de base por altura",
+          "expression": "area === rectangulo.base * rectangulo.altura"
+        }
+      ],
+      "hints": [
+        "Primero crea el objeto: `const rectangulo = { base: 5, altura: 3 };`",
+        "Luego calcula el área accediendo a las propiedades con punto: `const area = rectangulo.base * rectangulo.altura;`",
+        "Puedes usar cualquier número positivo para base y altura. Lo importante es que `area` use las propiedades del objeto, no valores escritos a mano."
+      ]
+    }
+  ]
+}

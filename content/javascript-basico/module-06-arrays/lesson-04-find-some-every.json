@@ -1,0 +1,96 @@
+{
+  "id": "js-basico-m6-l4",
+  "title": "find, some y every",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## `find`, `some` y `every`\n\nTres métodos que **buscan o verifican** elementos en un array. Ninguno modifica el array original. Cada uno tiene un propósito claro y diferente.\n\n### `find` — el primero que cumpla\n\nRetorna el **primer elemento** que pasa la prueba. Si ninguno la pasa, retorna `undefined`:\n\n```js\nconst numeros = [3, 7, 12, 5, 20];\nconst primeroMayor10 = numeros.find(n => n > 10);\nconsole.log(primeroMayor10); // 12\n```\n\n### `some` — ¿al menos uno cumple?\n\nRetorna `true` si **al menos un elemento** pasa la prueba, `false` si ninguno:\n\n```js\nconst hayMayores = numeros.some(n => n > 10);\nconsole.log(hayMayores); // true\n\nconst hayNegativos = numeros.some(n => n < 0);\nconsole.log(hayNegativos); // false\n```\n\n### `every` — ¿todos cumplen?\n\nRetorna `true` solo si **todos los elementos** pasan la prueba:\n\n```js\nconst todosMayorQueCero = numeros.every(n => n > 0);\nconsole.log(todosMayorQueCero); // true\n\nconst todosMayorQue10 = numeros.every(n => n > 10);\nconsole.log(todosMayorQue10); // false\n```\n\n### Resumen visual\n\n| Método | ¿Qué retorna? | ¿Cuándo para? |\n|--------|--------------|---------------|\n| `find` | El elemento o `undefined` | Al encontrar el primero |\n| `some` | `true` o `false` | Al encontrar el primero |\n| `every` | `true` o `false` | Al encontrar el primero que falla |\n\nLos tres son **eficientes**: paran de recorrer el array en cuanto tienen respuesta.",
+    "examples": [
+      {
+        "code": "const usuarios = [\n  { id: 1, nombre: 'Ana' },\n  { id: 2, nombre: 'Luis' },\n  { id: 3, nombre: 'Marta' }\n];\n\nconst usuario = usuarios.find(u => u.id === 2);\nconsole.log(usuario); // { id: 2, nombre: 'Luis' }\n\nconst noExiste = usuarios.find(u => u.id === 99);\nconsole.log(noExiste); // undefined",
+        "explanation": "find es ideal para buscar un elemento por ID u otra propiedad única. Retorna el objeto completo, no solo el valor. Si no existe, retorna undefined — siempre verifica antes de usar el resultado."
+      },
+      {
+        "code": "const productos = [\n  { nombre: 'A', stock: 0 },\n  { nombre: 'B', stock: 5 },\n  { nombre: 'C', stock: 0 }\n];\n\nconst hayEnStock = productos.some(p => p.stock > 0);\nconsole.log(hayEnStock); // true\n\nconst todosSinStock = productos.every(p => p.stock === 0);\nconsole.log(todosSinStock); // false",
+        "explanation": "some verifica si existe al menos uno con stock. every verifica si todos tienen stock cero. Son preguntas opuestas: 'hay alguno que...' vs 'todos son...'"
+      },
+      {
+        "code": "const edades = [20, 22, 18, 25, 30];\n\nconst menorDeEdad = edades.find(edad => edad < 18);\nconsole.log(menorDeEdad); // undefined (no hay ninguno)\n\nconst todosMayores = edades.every(edad => edad >= 18);\nconsole.log(todosMayores); // true\n\nconst hayMayorDe28 = edades.some(edad => edad > 28);\nconsole.log(hayMayorDe28); // true",
+        "explanation": "Los tres métodos en acción con el mismo array. find busca, some pregunta si alguno cumple, every pregunta si todos cumplen. Aprende a elegir el correcto según la pregunta que necesitas responder."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: find, some y every con números",
+      "prompt": "Dado el array:\n\n```js\nconst numeros = [4, 9, 16, 25, 36];\n```\n\nCrea tres variables:\n- `primeroMayor20`: el primer número mayor que 20 (usa `find`)\n- `hayNegativos`: si hay algún número negativo (usa `some`)\n- `todosPares`: si todos los números son pares (usa `every`)",
+      "starterCode": "const numeros = [4, 9, 16, 25, 36];\n\n// Crea las tres variables\n",
+      "tests": [
+        {
+          "description": "primeroMayor20 es 25",
+          "expression": "primeroMayor20 === 25"
+        },
+        {
+          "description": "hayNegativos es false",
+          "expression": "hayNegativos === false"
+        },
+        {
+          "description": "todosPares es false (9 y 25 son impares)",
+          "expression": "todosPares === false"
+        }
+      ],
+      "hints": [
+        "Usa `numeros.find(n => n > 20)` para el primero mayor que 20.",
+        "Usa `numeros.some(n => n < 0)` para verificar si hay negativos.",
+        "Usa `numeros.every(n => n % 2 === 0)` para verificar si todos son pares."
+      ]
+    },
+    {
+      "title": "Práctica: Búsqueda en usuarios",
+      "prompt": "Dado el array:\n\n```js\nconst usuarios = [\n  { nombre: 'Ana', activo: true },\n  { nombre: 'Luis', activo: false },\n  { nombre: 'Marta', activo: true }\n];\n```\n\nCrea:\n- `usuarioActivo`: el primer usuario con `activo: true` (usa `find`)\n- `hayInactivos`: si hay algún usuario inactivo (usa `some`)\n- `todosActivos`: si todos los usuarios están activos (usa `every`)",
+      "starterCode": "const usuarios = [\n  { nombre: 'Ana', activo: true },\n  { nombre: 'Luis', activo: false },\n  { nombre: 'Marta', activo: true }\n];\n\n// Crea las tres variables\n",
+      "tests": [
+        {
+          "description": "usuarioActivo.nombre es 'Ana'",
+          "expression": "usuarioActivo.nombre === 'Ana'"
+        },
+        {
+          "description": "hayInactivos es true",
+          "expression": "hayInactivos === true"
+        },
+        {
+          "description": "todosActivos es false",
+          "expression": "todosActivos === false"
+        }
+      ],
+      "hints": [
+        "Para find: busca el primer usuario donde `u.activo === true` (o simplemente `u.activo`)",
+        "Para some: busca si alguno tiene `u.activo === false` (o `!u.activo`)",
+        "Para every: verifica que todos tengan `u.activo === true`. Solución: `const usuarioActivo = usuarios.find(u => u.activo);`"
+      ]
+    },
+    {
+      "title": "Aplicación: Análisis de notas",
+      "prompt": "Dado el array de notas:\n\n```js\nconst notas = [6.5, 8.0, 5.5, 9.0, 7.5];\n```\n\nCrea:\n- `primeraAprobada`: la primera nota mayor o igual a `6.0` (usa `find`)\n- `todasAprobadas`: si todas las notas son >= `6.0` (usa `every`)\n- `algunaExcelente`: si alguna nota es >= `9.0` (usa `some`)",
+      "starterCode": "const notas = [6.5, 8.0, 5.5, 9.0, 7.5];\n\n// Crea las tres variables\n",
+      "tests": [
+        {
+          "description": "primeraAprobada es 6.5",
+          "expression": "primeraAprobada === 6.5"
+        },
+        {
+          "description": "todasAprobadas es false (5.5 no aprueba)",
+          "expression": "todasAprobadas === false"
+        },
+        {
+          "description": "algunaExcelente es true (9.0 >= 9.0)",
+          "expression": "algunaExcelente === true"
+        }
+      ],
+      "hints": [
+        "Para `primeraAprobada`: `notas.find(n => n >= 6.0)` — retorna el primer valor que cumpla, que es 6.5.",
+        "Para `todasAprobadas`: `notas.every(n => n >= 6.0)` — debe ser false porque 5.5 está en el array.",
+        "Para `algunaExcelente`: `notas.some(n => n >= 9.0)` — debe ser true porque 9.0 está en el array."
+      ]
+    }
+  ]
+}

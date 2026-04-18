@@ -1,0 +1,92 @@
+{
+  "id": "js-basico-m5-l4",
+  "title": "Destructuring de objetos",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Destructuring de objetos\n\nEl **destructuring** es una forma de \"desempacar\" las propiedades de un objeto en variables independientes. En lugar de acceder a cada propiedad una por una, lo haces todo de golpe.\n\n### Sintaxis básica\n\n```js\nconst persona = { nombre: 'Ana', edad: 22, ciudad: 'Cali' };\n\n// Sin destructuring (verboso)\nconst nombre = persona.nombre;\nconst edad = persona.edad;\n\n// Con destructuring (compacto)\nconst { nombre, edad } = persona;\n```\n\nLas variables reciben el mismo nombre que las propiedades.\n\n### Renombrar variables\n\nSi necesitas otro nombre para la variable, usa `: nuevoNombre`:\n\n```js\nconst { nombre: nombreCompleto, ciudad: ubicacion } = persona;\nconsole.log(nombreCompleto); // 'Ana'\nconsole.log(ubicacion);      // 'Cali'\n```\n\n### Valores por defecto\n\nSi la propiedad no existe en el objeto, puedes darle un valor por defecto con `=`:\n\n```js\nconst { nombre, pais = 'Colombia' } = persona;\nconsole.log(pais); // 'Colombia' (no estaba en el objeto)\n```\n\n### ¿Por qué es útil?\n\nEl destructuring aparece en todos lados: parámetros de funciones, respuestas de APIs, componentes de React. Es una de las características más usadas del JavaScript moderno.",
+    "examples": [
+      {
+        "code": "const libro = {\n  titulo: 'El Aleph',\n  autor: 'Borges',\n  paginas: 196\n};\n\nconst { titulo, autor, paginas } = libro;\n\nconsole.log(titulo);  // 'El Aleph'\nconsole.log(autor);   // 'Borges'\nconsole.log(paginas); // 196",
+        "explanation": "Destructuring básico: extraemos tres propiedades del objeto en tres variables con el mismo nombre. Es equivalente a escribir tres líneas de const titulo = libro.titulo, etc."
+      },
+      {
+        "code": "const config = {\n  host: 'localhost',\n  puerto: 3000\n};\n\n// Renombramos 'puerto' a 'numeroPuerto'\nconst { host, puerto: numeroPuerto } = config;\n\nconsole.log(host);        // 'localhost'\nconsole.log(numeroPuerto); // 3000\n// console.log(puerto);   // ❌ Error: puerto no existe como variable",
+        "explanation": "Para renombrar, la sintaxis es { clave: nombreVariable }. La propiedad 'puerto' se extrae pero se guarda en la variable 'numeroPuerto'. El nombre original 'puerto' no queda como variable."
+      },
+      {
+        "code": "const usuario = { nombre: 'Pedro', email: 'pedro@mail.com' };\n\n// 'rol' no existe en el objeto, usamos 'visitante' como defecto\nconst { nombre, email, rol = 'visitante' } = usuario;\n\nconsole.log(nombre); // 'Pedro'\nconsole.log(email);  // 'pedro@mail.com'\nconsole.log(rol);    // 'visitante'",
+        "explanation": "Los valores por defecto se asignan solo si la propiedad no existe (o es undefined). Si la propiedad existe, el valor del objeto toma precedencia sobre el defecto."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Desempacar un producto",
+      "prompt": "Dado el objeto `producto`, usa destructuring para extraer sus propiedades en variables:\n\n```js\nconst producto = { nombre: 'Teclado', precio: 80000, stock: 5 };\n```\n\nDebes crear las variables `nombre`, `precio` y `stock` usando destructuring.",
+      "starterCode": "const producto = { nombre: 'Teclado', precio: 80000, stock: 5 };\n\n// Usa destructuring aquí\n",
+      "tests": [
+        {
+          "description": "nombre es 'Teclado'",
+          "expression": "nombre === 'Teclado'"
+        },
+        {
+          "description": "precio es 80000",
+          "expression": "precio === 80000"
+        },
+        {
+          "description": "stock es 5",
+          "expression": "stock === 5"
+        }
+      ],
+      "hints": [
+        "El destructuring se hace con llaves al lado izquierdo de la asignación: `const { ... } = producto;`",
+        "Dentro de las llaves escribe los nombres de las propiedades que quieres extraer, separados por comas.",
+        "Solución: `const { nombre, precio, stock } = producto;`"
+      ]
+    },
+    {
+      "title": "Práctica: Destructuring con renombre",
+      "prompt": "Dado el objeto `usuario`:\n\n```js\nconst usuario = { email: 'ana@mail.com', rol: 'admin', activo: true };\n```\n\nUsa destructuring para extraer:\n- `email` → en variable `email`\n- `rol` → en variable `tipoRol` (renombrada)\n- `activo` → en variable `activo`",
+      "starterCode": "const usuario = { email: 'ana@mail.com', rol: 'admin', activo: true };\n\n// Usa destructuring con renombre aquí\n",
+      "tests": [
+        {
+          "description": "email es 'ana@mail.com'",
+          "expression": "email === 'ana@mail.com'"
+        },
+        {
+          "description": "tipoRol es 'admin'",
+          "expression": "tipoRol === 'admin'"
+        },
+        {
+          "description": "activo es true",
+          "expression": "activo === true"
+        }
+      ],
+      "hints": [
+        "Para renombrar una propiedad en destructuring usa la sintaxis `propiedadOriginal: nuevoNombre`.",
+        "Puedes mezclar propiedades normales y renombradas en la misma línea.",
+        "Solución: `const { email, rol: tipoRol, activo } = usuario;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Destructuring en parámetros",
+      "prompt": "Escribe una función llamada `mostrarProducto` que reciba un objeto `producto` como parámetro.\n\nLa función debe usar **destructuring en los parámetros** para obtener `nombre` y `precio`, y retornar el string:\n\n`nombre + ': $' + precio`\n\nEjemplo: `mostrarProducto({ nombre: 'Mouse', precio: 25000 })` → `'Mouse: $25000'`",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "mostrarProducto es una función",
+          "expression": "typeof mostrarProducto === 'function'"
+        },
+        {
+          "description": "mostrarProducto({nombre:'Mouse', precio:25000}) retorna 'Mouse: $25000'",
+          "expression": "mostrarProducto({nombre:'Mouse', precio:25000}) === 'Mouse: $25000'"
+        }
+      ],
+      "hints": [
+        "El destructuring en parámetros se hace directamente en la firma de la función: `function mostrarProducto({ nombre, precio }) { ... }`",
+        "Dentro de la función ya tienes `nombre` y `precio` disponibles como variables locales.",
+        "Solución: `function mostrarProducto({ nombre, precio }) { return nombre + ': $' + precio; }`"
+      ]
+    }
+  ]
+}

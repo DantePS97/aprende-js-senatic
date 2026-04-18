@@ -1,0 +1,76 @@
+{
+  "id": "js-basico-m6-l3",
+  "title": "Reducir arrays con reduce",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Reducir arrays con `reduce`\n\n`reduce` es el método más poderoso y flexible de los arrays. Procesa cada elemento y va **acumulando** un resultado único. Ese resultado puede ser un número, un string, un objeto, otro array — lo que necesites.\n\n### Sintaxis\n\n```js\nconst resultado = array.reduce((acumulador, elemento) => {\n  // lógica\n  return nuevoAcumulador;\n}, valorInicial);\n```\n\n- **acumulador**: el valor que va acumulando el resultado en cada iteración\n- **elemento**: el elemento actual del array\n- **valorInicial**: el valor con el que empieza el acumulador\n\n### ¿Cómo funciona paso a paso?\n\n```js\nconst nums = [1, 2, 3, 4];\nconst suma = nums.reduce((acc, n) => acc + n, 0);\n```\n\n| Iteración | acc | n | resultado |\n|-----------|-----|---|----------|\n| 1 | 0 | 1 | 1 |\n| 2 | 1 | 2 | 3 |\n| 3 | 3 | 3 | 6 |\n| 4 | 6 | 4 | **10** |\n\n### Regla de oro\n\nEl `return` dentro de reduce define cuál será el **próximo acumulador**. Si olvidas el `return`, el acumulador se vuelve `undefined`.\n\n### ¿Cuándo usar reduce?\n\n- Sumar o promediar números\n- Contar ocurrencias\n- Agrupar datos por categoría\n- Construir un objeto a partir de un array",
+    "examples": [
+      {
+        "code": "const numeros = [5, 10, 15, 20];\n\nconst suma = numeros.reduce((acc, n) => acc + n, 0);\nconsole.log(suma); // 50\n\nconst producto = numeros.reduce((acc, n) => acc * n, 1);\nconsole.log(producto); // 15000",
+        "explanation": "Para sumar, el valor inicial es 0 (neutro de la suma). Para multiplicar, el valor inicial es 1 (neutro del producto). El valor inicial importa porque es con lo que empieza el acumulador."
+      },
+      {
+        "code": "const palabras = ['Hola', ' ', 'mundo', '!'];\n\nconst frase = palabras.reduce((acc, palabra) => acc + palabra, '');\nconsole.log(frase); // 'Hola mundo!'",
+        "explanation": "reduce no está limitado a números. Aquí concatenamos strings. El valor inicial es un string vacío ''. Cada iteración agrega la siguiente palabra al acumulador."
+      },
+      {
+        "code": "const calificaciones = [85, 90, 78, 92, 88];\n\nconst total = calificaciones.reduce((acc, nota) => acc + nota, 0);\nconst promedio = total / calificaciones.length;\n\nconsole.log(total);    // 433\nconsole.log(promedio); // 86.6",
+        "explanation": "Un patrón muy común: usar reduce para obtener la suma, y luego dividir por la longitud para el promedio. reduce retorna el total, y luego hacemos el cálculo adicional con ese resultado."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Suma de un array",
+      "prompt": "Dado el array:\n\n```js\nconst numeros = [10, 20, 30, 40, 50];\n```\n\nUsa `reduce` para crear la variable `suma` que contenga la suma de todos los números.\n\nEl resultado debe ser `150`.",
+      "starterCode": "const numeros = [10, 20, 30, 40, 50];\n\n// Calcula suma usando reduce\n",
+      "tests": [
+        {
+          "description": "suma es 150",
+          "expression": "suma === 150"
+        }
+      ],
+      "hints": [
+        "Usa `numeros.reduce((acumulador, numero) => ..., valorInicial)`",
+        "El valor inicial para una suma debe ser `0`. En cada iteración suma el acumulador más el número actual.",
+        "Solución: `const suma = numeros.reduce((acc, n) => acc + n, 0);`"
+      ]
+    },
+    {
+      "title": "Práctica: Total y promedio de ventas",
+      "prompt": "Dado el array de ventas:\n\n```js\nconst ventas = [1500, 3200, 800, 4100, 2200];\n```\n\nCalcula:\n- `totalVentas`: la suma de todas las ventas (usa `reduce`)\n- `promedioVentas`: el total dividido entre el número de ventas\n\nEsperados: `totalVentas === 11800`, `promedioVentas === 2360`",
+      "starterCode": "const ventas = [1500, 3200, 800, 4100, 2200];\n\n// Calcula totalVentas y promedioVentas\n",
+      "tests": [
+        {
+          "description": "totalVentas es 11800",
+          "expression": "totalVentas === 11800"
+        },
+        {
+          "description": "promedioVentas es 2360",
+          "expression": "promedioVentas === 2360"
+        }
+      ],
+      "hints": [
+        "Primero calcula `totalVentas` con reduce: `const totalVentas = ventas.reduce((acc, v) => acc + v, 0);`",
+        "Luego calcula el promedio dividiendo el total entre la longitud: `const promedioVentas = totalVentas / ventas.length;`",
+        "Solución: usa las dos líneas anteriores en ese orden."
+      ]
+    },
+    {
+      "title": "Aplicación: Total del carrito",
+      "prompt": "Dado el array de items:\n\n```js\nconst items = [\n  { producto: 'A', cantidad: 3, precio: 1000 },\n  { producto: 'B', cantidad: 2, precio: 2500 },\n  { producto: 'C', cantidad: 5, precio: 500 }\n];\n```\n\nUsa `reduce` para calcular `totalCarrito`: la suma de `cantidad * precio` para cada item.\n\nEsperado: `totalCarrito === 10500` (3×1000 + 2×2500 + 5×500 = 3000 + 5000 + 2500).",
+      "starterCode": "const items = [\n  { producto: 'A', cantidad: 3, precio: 1000 },\n  { producto: 'B', cantidad: 2, precio: 2500 },\n  { producto: 'C', cantidad: 5, precio: 500 }\n];\n\n// Calcula totalCarrito usando reduce\n",
+      "tests": [
+        {
+          "description": "totalCarrito es 10500",
+          "expression": "totalCarrito === 10500"
+        }
+      ],
+      "hints": [
+        "En cada iteración de reduce, necesitas calcular el subtotal del item: `item.cantidad * item.precio`",
+        "Ese subtotal lo sumas al acumulador: `acc + item.cantidad * item.precio`",
+        "Solución: `const totalCarrito = items.reduce((acc, item) => acc + item.cantidad * item.precio, 0);`"
+      ]
+    }
+  ]
+}

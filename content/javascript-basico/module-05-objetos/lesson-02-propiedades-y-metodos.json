@@ -1,0 +1,88 @@
+{
+  "id": "js-basico-m5-l2",
+  "title": "Propiedades y métodos",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## Propiedades y métodos\n\nYa sabes crear objetos. Ahora veremos cómo **leer**, **modificar** y **agregar** propiedades, y cómo definir **métodos** (funciones dentro de un objeto).\n\n### Acceso con notación de punto\n\nEs la forma más común. Escribes el objeto, un punto, y el nombre de la propiedad:\n\n```js\nconst perro = { nombre: 'Rex', raza: 'Labrador' };\nconsole.log(perro.nombre); // 'Rex'\n```\n\n### Acceso con notación de corchetes\n\nÚtil cuando el nombre de la propiedad está en una variable o tiene espacios:\n\n```js\nconst clave = 'raza';\nconsole.log(perro[clave]); // 'Labrador'\n```\n\n### Agregar y modificar propiedades\n\nPuedes agregar propiedades nuevas o cambiar las existentes en cualquier momento:\n\n```js\nperro.edad = 3;        // nueva propiedad\nperro.nombre = 'Max'; // modificar existente\n```\n\n### Métodos: funciones dentro de objetos\n\nCuando una propiedad de un objeto es una función, se llama **método**. Se define igual que una propiedad, pero con `function` o una función flecha como valor. Para llamarlo, usas paréntesis:\n\n```js\nconst gato = {\n  nombre: 'Luna',\n  maullar: function() {\n    return '¡Miau!';\n  }\n};\n\nconsole.log(gato.maullar()); // '¡Miau!'\n```",
+    "examples": [
+      {
+        "code": "const ciudad = {\n  nombre: 'Cali',\n  pais: 'Colombia',\n  poblacion: 2200000\n};\n\nconsole.log(ciudad.nombre);     // 'Cali'\nconsole.log(ciudad.poblacion);  // 2200000\n\n// Modificar una propiedad existente\nciudad.poblacion = 2300000;\nconsole.log(ciudad.poblacion);  // 2300000",
+        "explanation": "Acceso con notación de punto. También se puede modificar el valor asignando directamente a la propiedad."
+      },
+      {
+        "code": "const libro = { titulo: 'Cien años de soledad', autor: 'García Márquez' };\n\n// Acceso dinámico con variable\nconst propiedad = 'autor';\nconsole.log(libro[propiedad]); // 'García Márquez'\n\n// Agregar propiedad nueva\nlibro['paginas'] = 471;\nconsole.log(libro.paginas); // 471",
+        "explanation": "La notación de corchetes permite acceder a propiedades usando una variable como clave. También sirve para agregar propiedades nuevas."
+      },
+      {
+        "code": "const temperatura = {\n  celsius: 25,\n  aFahrenheit: function() {\n    return this.celsius * 9/5 + 32;\n  }\n};\n\nconsole.log(temperatura.celsius);      // 25\nconsole.log(temperatura.aFahrenheit()); // 77",
+        "explanation": "Un método es una función como valor de propiedad. Se llama con paréntesis. Nota el uso de `this` para acceder a otras propiedades del mismo objeto."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Lee propiedades de un objeto",
+      "prompt": "Ya tienes definido el objeto `gato`:\n\n```js\nconst gato = { nombre: 'Michi', vidas: 9 };\n```\n\nAccede a sus propiedades y guárdalas en variables:\n- `nombreGato` debe ser igual a `gato.nombre`\n- `vidasGato` debe ser igual a `gato.vidas`",
+      "starterCode": "const gato = { nombre: 'Michi', vidas: 9 };\n\n// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "nombreGato es 'Michi'",
+          "expression": "nombreGato === 'Michi'"
+        },
+        {
+          "description": "vidasGato es 9",
+          "expression": "vidasGato === 9"
+        }
+      ],
+      "hints": [
+        "Para leer una propiedad usa la notación de punto: `objeto.propiedad`",
+        "Crea una variable con `const` y asígnale el valor: `const nombreGato = gato.nombre;`",
+        "Repite lo mismo para vidas: `const vidasGato = gato.vidas;`"
+      ]
+    },
+    {
+      "title": "Práctica: Objeto con método",
+      "prompt": "Crea un objeto llamado `calculadora` con:\n- Una propiedad `a` (number)\n- Una propiedad `b` (number)\n- Un método `sumar` que retorne la suma de `a` y `b`\n\nEl método debe usar las propiedades del objeto (puedes usar `this.a` y `this.b`, o accederlas directamente).",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "calculadora.sumar es una función",
+          "expression": "typeof calculadora.sumar === 'function'"
+        },
+        {
+          "description": "calculadora.sumar() retorna la suma de a y b",
+          "expression": "calculadora.sumar() === calculadora.a + calculadora.b"
+        }
+      ],
+      "hints": [
+        "Define el objeto con tres propiedades: `a`, `b` y `sumar`. Ejemplo: `const calculadora = { a: 5, b: 3, sumar: function() { ... } };`",
+        "Dentro del método, usa `this.a` y `this.b` para acceder a los valores del mismo objeto.",
+        "El método debe tener un `return`: `sumar: function() { return this.a + this.b; }`"
+      ]
+    },
+    {
+      "title": "Aplicación: Contador con métodos",
+      "prompt": "Crea un objeto llamado `contador` con:\n- Una propiedad `valor` que empiece en `0`\n- Un método `incrementar` que sume 1 a `valor`\n- Un método `reiniciar` que devuelva `valor` a `0`\n\nLos métodos no necesitan retornar nada, solo modificar `valor`.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "contador.incrementar es una función",
+          "expression": "typeof contador.incrementar === 'function'"
+        },
+        {
+          "description": "Después de llamar incrementar(), valor es 1",
+          "expression": "(contador.valor = 0, contador.incrementar(), contador.valor === 1)"
+        },
+        {
+          "description": "Después de llamar reiniciar(), valor vuelve a 0",
+          "expression": "(contador.incrementar(), contador.reiniciar(), contador.valor === 0)"
+        }
+      ],
+      "hints": [
+        "El objeto tiene tres propiedades: `valor`, `incrementar` y `reiniciar`. Comienza con `valor: 0`.",
+        "En `incrementar` usa `this.valor += 1;` para sumar 1 al valor actual.",
+        "En `reiniciar` usa `this.valor = 0;` para resetear. Ejemplo completo: `const contador = { valor: 0, incrementar: function() { this.valor += 1; }, reiniciar: function() { this.valor = 0; } };`"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "id": "js-basico-m6-l2",
+  "title": "Filtrar arrays con filter",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## Filtrar arrays con `filter`\n\n`filter` crea un **nuevo array** con solo los elementos que **pasan una prueba**. Si la función que le pasas retorna `true` para un elemento, ese elemento entra al nuevo array. Si retorna `false`, se descarta.\n\n### Sintaxis\n\n```js\nconst resultado = array.filter(elemento => condicion);\n```\n\nPiensa en `filter` como un **colador o cedazo**: pasas todos los elementos por él, y solo los que cumplen la condición pasan al otro lado.\n\n### Características clave\n\n- El array resultante puede ser **más pequeño** (nunca más grande) que el original\n- El original **no se modifica**\n- Los elementos que pasan el filtro llegan **sin transformar** — son los mismos del original\n\n```js\nconst numeros = [1, 2, 3, 4, 5, 6];\nconst pares = numeros.filter(n => n % 2 === 0);\nconsole.log(pares); // [2, 4, 6]\n```\n\n### `map` vs `filter`\n\n- `map`: transforma cada elemento → mismo número de elementos\n- `filter`: selecciona algunos elementos → igual o menos elementos\n\nPueden **encadenarse**:\n\n```js\nconst resultado = numeros\n  .filter(n => n > 2)       // [3, 4, 5, 6]\n  .map(n => n * 10);        // [30, 40, 50, 60]\n```",
+    "examples": [
+      {
+        "code": "const edades = [14, 22, 17, 31, 16, 25];\n\nconst mayoresDeEdad = edades.filter(edad => edad >= 18);\nconsole.log(mayoresDeEdad); // [22, 31, 25]",
+        "explanation": "filter retorna solo los elementos que cumplen la condición. Aquí solo las edades mayores o iguales a 18 pasan el filtro."
+      },
+      {
+        "code": "const inventario = [\n  { producto: 'Camisa', stock: 0 },\n  { producto: 'Pantalón', stock: 5 },\n  { producto: 'Zapatos', stock: 0 },\n  { producto: 'Gorra', stock: 12 }\n];\n\nconst disponibles = inventario.filter(item => item.stock > 0);\nconsole.log(disponibles.length); // 2\nconsole.log(disponibles[0].producto); // 'Pantalón'",
+        "explanation": "filter funciona con arrays de objetos. Aquí filtramos los productos que tienen stock mayor a 0. Los objetos en el resultado son los mismos del array original, sin modificar."
+      },
+      {
+        "code": "const palabras = ['sol', 'mariposa', 'luz', 'programación', 'mar'];\n\nconst largas = palabras.filter(p => p.length > 4);\nconsole.log(largas); // ['mariposa', 'programación']\n\n// Encadenar filter + map\nconst largasEnMayus = palabras\n  .filter(p => p.length > 4)\n  .map(p => p.toUpperCase());\nconsole.log(largasEnMayus); // ['MARIPOSA', 'PROGRAMACIÓN']",
+        "explanation": "filter con strings usa las propiedades del string como length. También se puede encadenar con map para filtrar y luego transformar los resultados."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Filtrar números pares",
+      "prompt": "Dado el array:\n\n```js\nconst numeros = [3, 7, 2, 8, 1, 9, 4, 6];\n```\n\nUsa `filter` para crear `pares`, un array que contenga solo los números pares.\n\nRecuerda: un número es par si `n % 2 === 0`.",
+      "starterCode": "const numeros = [3, 7, 2, 8, 1, 9, 4, 6];\n\n// Crea pares usando filter\n",
+      "tests": [
+        {
+          "description": "pares es un array",
+          "expression": "Array.isArray(pares)"
+        },
+        {
+          "description": "Todos los elementos de pares son pares",
+          "expression": "pares.every(n => n % 2 === 0)"
+        },
+        {
+          "description": "pares tiene 4 elementos (2, 8, 4 y 6)",
+          "expression": "pares.length === 4"
+        },
+        {
+          "description": "pares incluye el número 8",
+          "expression": "pares.includes(8)"
+        }
+      ],
+      "hints": [
+        "Usa el método `filter` sobre el array: `const pares = numeros.filter(n => ...);`",
+        "La condición para que un número sea par es que el residuo al dividir por 2 sea 0: `n % 2 === 0`",
+        "Solución: `const pares = numeros.filter(n => n % 2 === 0);`"
+      ]
+    },
+    {
+      "title": "Práctica: Productos caros",
+      "prompt": "Dado el array de productos:\n\n```js\nconst productos = [\n  { nombre: 'A', precio: 50000 },\n  { nombre: 'B', precio: 120000 },\n  { nombre: 'C', precio: 80000 },\n  { nombre: 'D', precio: 200000 }\n];\n```\n\nUsa `filter` para crear `caros`, un array con solo los productos cuyo `precio` sea mayor a `90000`.",
+      "starterCode": "const productos = [\n  { nombre: 'A', precio: 50000 },\n  { nombre: 'B', precio: 120000 },\n  { nombre: 'C', precio: 80000 },\n  { nombre: 'D', precio: 200000 }\n];\n\n// Crea caros usando filter\n",
+      "tests": [
+        {
+          "description": "caros es un array",
+          "expression": "Array.isArray(caros)"
+        },
+        {
+          "description": "caros tiene 2 elementos",
+          "expression": "caros.length === 2"
+        },
+        {
+          "description": "Todos los productos en caros tienen precio mayor a 90000",
+          "expression": "caros.every(p => p.precio > 90000)"
+        }
+      ],
+      "hints": [
+        "Cada elemento del array es un objeto. En el callback accede a la propiedad precio: `producto => producto.precio > 90000`",
+        "Usa destructuring si prefieres: `({ precio }) => precio > 90000`",
+        "Solución: `const caros = productos.filter(p => p.precio > 90000);`"
+      ]
+    },
+    {
+      "title": "Aplicación: Palabras largas",
+      "prompt": "Dado el array:\n\n```js\nconst palabras = ['sol', 'mariposa', 'mar', 'extraordinario', 'luz', 'programacion'];\n```\n\nUsa `filter` para crear `largas`, un array con las palabras que tengan **más de 4 caracteres**.\n\nLos strings tienen la propiedad `.length` para conocer su longitud.",
+      "starterCode": "const palabras = ['sol', 'mariposa', 'mar', 'extraordinario', 'luz', 'programacion'];\n\n// Crea largas usando filter\n",
+      "tests": [
+        {
+          "description": "largas es un array",
+          "expression": "Array.isArray(largas)"
+        },
+        {
+          "description": "Todas las palabras en largas tienen más de 4 caracteres",
+          "expression": "largas.every(p => p.length > 4)"
+        },
+        {
+          "description": "largas incluye 'mariposa'",
+          "expression": "largas.includes('mariposa')"
+        },
+        {
+          "description": "largas NO incluye 'sol'",
+          "expression": "!largas.includes('sol')"
+        }
+      ],
+      "hints": [
+        "La propiedad `.length` de un string indica cuántos caracteres tiene: `'hola'.length === 4`",
+        "La condición que necesitas es `palabra.length > 4`",
+        "Solución: `const largas = palabras.filter(p => p.length > 4);`"
+      ]
+    }
+  ]
+}

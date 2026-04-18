@@ -1,0 +1,92 @@
+{
+  "id": "js-basico-m5-l3",
+  "title": "this en objetos",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## `this` en objetos\n\nCuando escribes un método dentro de un objeto, a veces necesitas acceder a **otras propiedades del mismo objeto**. Para eso existe `this`.\n\n### ¿Qué es `this`?\n\n`this` es una palabra clave que **hace referencia al objeto actual** — el objeto que contiene el método que se está ejecutando:\n\n```js\nconst persona = {\n  nombre: 'Luis',\n  saludar: function() {\n    return 'Hola, soy ' + this.nombre;\n  }\n};\n\nconsole.log(persona.saludar()); // 'Hola, soy Luis'\n```\n\nDentro de `saludar`, `this` es `persona`. Entonces `this.nombre` es `persona.nombre`.\n\n### ¿Por qué no usar el nombre del objeto directamente?\n\nPodrías escribir `persona.nombre` dentro del método, pero si renombras el objeto o lo reutilizas, se rompe. `this` siempre apunta al objeto correcto.\n\n### Cuidado con las funciones flecha en métodos\n\nLas funciones flecha (`=>`) NO tienen su propio `this`. Si usas una función flecha como método, `this` no será el objeto — será `undefined` (en modo estricto) o el contexto global:\n\n```js\nconst animal = {\n  tipo: 'perro',\n  // ❌ Esto NO funciona bien\n  hablar: () => 'Soy un ' + this.tipo\n};\n\n// ✅ Esto SÍ funciona\nconst animal2 = {\n  tipo: 'perro',\n  hablar: function() { return 'Soy un ' + this.tipo; }\n};\n```\n\n**Regla**: si el método necesita acceder a propiedades del objeto, usa `function`, no `=>`.",
+    "examples": [
+      {
+        "code": "const empleado = {\n  nombre: 'Sofía',\n  cargo: 'Desarrolladora',\n  presentarse: function() {\n    return this.nombre + ' - ' + this.cargo;\n  }\n};\n\nconsole.log(empleado.presentarse()); // 'Sofía - Desarrolladora'",
+        "explanation": "this.nombre y this.cargo acceden a las propiedades del mismo objeto desde dentro del método. Si cambias el valor de nombre, el método refleja el cambio automáticamente."
+      },
+      {
+        "code": "const rectangulo = {\n  base: 8,\n  altura: 5,\n  area: function() {\n    return this.base * this.altura;\n  },\n  perimetro: function() {\n    return 2 * (this.base + this.altura);\n  }\n};\n\nconsole.log(rectangulo.area());      // 40\nconsole.log(rectangulo.perimetro()); // 26",
+        "explanation": "Un objeto puede tener múltiples métodos que todos usan this para acceder a las propiedades base y altura. Cada método calcula algo diferente con los mismos datos."
+      },
+      {
+        "code": "const obj = {\n  valor: 42,\n  // ✅ function tiene su propio this\n  conFunction: function() {\n    return this.valor; // 42\n  },\n  // ❌ arrow NO tiene su propio this\n  conArrow: () => {\n    return typeof this; // 'undefined' en módulos\n  }\n};\n\nconsole.log(obj.conFunction()); // 42\nconsole.log(obj.conArrow());    // 'undefined'",
+        "explanation": "La diferencia clave: function() tiene su propio this que apunta al objeto. Las funciones flecha heredan el this del contexto donde fueron escritas, que en un módulo es undefined."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Método que usa this",
+      "prompt": "Crea un objeto llamado `persona` con:\n- `nombre`: `'Carlos'`\n- `edad`: `25`\n- Método `presentarse` que retorne el string `'Me llamo ' + this.nombre`\n\nEl método debe usar `this.nombre`, no el string `'Carlos'` escrito directamente.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "persona.presentarse es una función",
+          "expression": "typeof persona.presentarse === 'function'"
+        },
+        {
+          "description": "persona.presentarse() retorna 'Me llamo Carlos'",
+          "expression": "persona.presentarse() === 'Me llamo Carlos'"
+        },
+        {
+          "description": "El resultado incluye el valor de persona.nombre",
+          "expression": "persona.presentarse().includes(persona.nombre)"
+        }
+      ],
+      "hints": [
+        "Define el objeto con `nombre`, `edad` y un método `presentarse`: `const persona = { nombre: 'Carlos', edad: 25, presentarse: function() { ... } };`",
+        "Dentro del método, usa `this.nombre` para acceder al nombre del objeto.",
+        "El método debe retornar el string concatenado: `return 'Me llamo ' + this.nombre;`"
+      ]
+    },
+    {
+      "title": "Práctica: Área usando this",
+      "prompt": "Crea un objeto llamado `circulo` con:\n- `radio`: un número mayor que 0\n- Método `area` que retorne el área del círculo usando `Math.PI * this.radio * this.radio`\n\nEl radio puede ser cualquier número positivo.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "circulo.area es una función",
+          "expression": "typeof circulo.area === 'function'"
+        },
+        {
+          "description": "circulo.area() calcula correctamente π * r²",
+          "expression": "Math.abs(circulo.area() - Math.PI * circulo.radio ** 2) < 0.001"
+        }
+      ],
+      "hints": [
+        "El objeto necesita una propiedad `radio` (número > 0) y un método `area`.",
+        "Usa `function` para el método (no flecha) para que `this` funcione correctamente.",
+        "El método debe retornar: `return Math.PI * this.radio * this.radio;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Carrito de compras",
+      "prompt": "Crea un objeto llamado `carrito` con:\n- `productos`: un array vacío `[]`\n- `total`: `0`\n- Método `agregar(precio)` que:\n  1. Agregue `precio` al array `this.productos`\n  2. Sume `precio` a `this.total`\n\nDespués de llamar `carrito.agregar(100)`, `total` debe ser `100`. Después de llamar `carrito.agregar(50)`, `total` debe ser `150`.",
+      "starterCode": "// Escribe tu código aquí\n",
+      "tests": [
+        {
+          "description": "carrito.agregar es una función",
+          "expression": "typeof carrito.agregar === 'function'"
+        },
+        {
+          "description": "Después de agregar(100), total es 100",
+          "expression": "(carrito.total = 0, carrito.productos = [], carrito.agregar(100), carrito.total === 100)"
+        },
+        {
+          "description": "Después de agregar(100) y agregar(50), total es 150",
+          "expression": "(carrito.total = 0, carrito.productos = [], carrito.agregar(100), carrito.agregar(50), carrito.total === 150)"
+        }
+      ],
+      "hints": [
+        "El método `agregar` recibe un parámetro `precio`. Dentro, usa `this.productos.push(precio)` para agregarlo al array.",
+        "Para sumar al total usa `this.total += precio;`",
+        "Ejemplo: `agregar: function(precio) { this.productos.push(precio); this.total += precio; }`"
+      ]
+    }
+  ]
+}

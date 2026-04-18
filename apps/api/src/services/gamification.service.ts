@@ -1,6 +1,8 @@
 import { UserModel, IUser } from '../models/User.model';
 import { AchievementModel, UserAchievementModel } from '../models/Achievement.model';
 import { ProgressModel } from '../models/Progress.model';
+import { LessonModel } from '../models/Lesson.model';
+import { ModuleModel } from '../models/Module.model';
 import type { Achievement } from '@senatic/shared';
 
 // ─── XP → Level mapping ───────────────────────────────────────────────────────
@@ -117,6 +119,21 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
 
   // Progreso del usuario
   const completedCount = await ProgressModel.countDocuments({ userId, status: 'completed' });
+  const noHintsCount = await ProgressModel.countDocuments({ userId, status: 'completed', hintsUsed: 0 });
+
+  // Módulos completados: módulos donde todas sus lecciones están completadas
+  const allModules = await ModuleModel.find({}, '_id');
+  let completedModulesCount = 0;
+  for (const mod of allModules) {
+    const totalLessons = await LessonModel.countDocuments({ moduleId: mod._id, isPublished: true });
+    if (totalLessons === 0) continue;
+    const completedInModule = await ProgressModel.countDocuments({
+      userId,
+      status: 'completed',
+      lessonId: { $in: await LessonModel.find({ moduleId: mod._id, isPublished: true }, '_id').then(ls => ls.map(l => l._id)) },
+    });
+    if (completedInModule >= totalLessons) completedModulesCount++;
+  }
 
   const newAchievements: Achievement[] = [];
 
@@ -136,14 +153,12 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
       case 'xp':
         earned = user.xp >= threshold;
         break;
-      case 'no_hints': {
-        // Se maneja en el controller de progress directamente
+      case 'no_hints':
+        earned = noHintsCount >= threshold;
         break;
-      }
-      case 'module_completed': {
-        // Se chequea en el controller de progress
+      case 'module_completed':
+        earned = completedModulesCount >= threshold;
         break;
-      }
     }
 
     if (earned) {
@@ -218,6 +233,62 @@ export async function seedAchievements(): Promise<void> {
       description: 'Alcanzaste 500 XP',
       iconEmoji: '🟣',
       condition: { type: 'xp', threshold: 500 },
+    },
+    {
+      key: 'xp_1000',
+      title: 'Alto Rendimiento',
+      description: 'Alcanzaste 1000 XP',
+      iconEmoji: '💎',
+      condition: { type: 'xp', threshold: 1000 },
+    },
+    {
+      key: 'xp_2000',
+      title: 'Leyenda',
+      description: 'Alcanzaste 2000 XP',
+      iconEmoji: '👑',
+      condition: { type: 'xp', threshold: 2000 },
+    },
+    {
+      key: 'streak_14',
+      title: 'Dos Semanas',
+      description: '14 días seguidos de aprendizaje',
+      iconEmoji: '🌟',
+      condition: { type: 'streak', threshold: 14 },
+    },
+    {
+      key: 'streak_30',
+      title: 'Mes Imparable',
+      description: '30 días seguidos de aprendizaje',
+      iconEmoji: '🏆',
+      condition: { type: 'streak', threshold: 30 },
+    },
+    {
+      key: 'no_hints_1',
+      title: 'Sin Pistas',
+      description: 'Completaste una lección sin usar ninguna pista',
+      iconEmoji: '🧠',
+      condition: { type: 'no_hints', threshold: 1 },
+    },
+    {
+      key: 'no_hints_3',
+      title: 'Cerebro Frío',
+      description: 'Completaste 3 lecciones sin usar ninguna pista',
+      iconEmoji: '🧊',
+      condition: { type: 'no_hints', threshold: 3 },
+    },
+    {
+      key: 'module_completed_1',
+      title: 'Módulo Completo',
+      description: 'Completaste todas las lecciones de un módulo',
+      iconEmoji: '📦',
+      condition: { type: 'module_completed', threshold: 1 },
+    },
+    {
+      key: 'module_completed_3',
+      title: 'Maestro de Módulos',
+      description: 'Completaste todas las lecciones de 3 módulos',
+      iconEmoji: '🎓',
+      condition: { type: 'module_completed', threshold: 3 },
     },
   ];
 

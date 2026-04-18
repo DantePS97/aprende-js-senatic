@@ -123,12 +123,53 @@ async function seed() {
   ]) await upsertLesson(mod4._id, l);
   console.log('✅  Módulo 4 listo (4 lecciones)');
 
+  // ─── Módulo 5: Objetos ────────────────────────────────────────────────────
+
+  let mod5 = await ModuleModel.findOne({ courseId: course._id, order: 5 });
+  if (!mod5) {
+    mod5 = await ModuleModel.create({
+      courseId: course._id,
+      order: 5,
+      title: 'Objetos',
+      description: 'Agrupa datos relacionados en estructuras con propiedades y métodos',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: '¿Qué es un objeto?',      xpReward: 35, contentId: 'javascript-basico/module-05-objetos/lesson-01-que-es-un-objeto' },
+    { order: 2, title: 'Propiedades y métodos',   xpReward: 40, contentId: 'javascript-basico/module-05-objetos/lesson-02-propiedades-y-metodos' },
+    { order: 3, title: 'this en objetos',          xpReward: 45, contentId: 'javascript-basico/module-05-objetos/lesson-03-this' },
+    { order: 4, title: 'Destructuring de objetos', xpReward: 45, contentId: 'javascript-basico/module-05-objetos/lesson-04-destructuring' },
+    { order: 5, title: 'Spread y rest en objetos', xpReward: 50, contentId: 'javascript-basico/module-05-objetos/lesson-05-spread-rest' },
+  ]) await upsertLesson(mod5._id, l);
+  console.log('✅  Módulo 5 listo (5 lecciones)');
+
+  // ─── Módulo 6: Arrays avanzados ───────────────────────────────────────────
+
+  let mod6 = await ModuleModel.findOne({ courseId: course._id, order: 6 });
+  if (!mod6) {
+    mod6 = await ModuleModel.create({
+      courseId: course._id,
+      order: 6,
+      title: 'Arrays avanzados',
+      description: 'Domina map, filter, reduce y otros métodos funcionales de arrays',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Transformar arrays con map', xpReward: 40, contentId: 'javascript-basico/module-06-arrays/lesson-01-map' },
+    { order: 2, title: 'Filtrar arrays con filter',  xpReward: 40, contentId: 'javascript-basico/module-06-arrays/lesson-02-filter' },
+    { order: 3, title: 'Reducir arrays con reduce',  xpReward: 50, contentId: 'javascript-basico/module-06-arrays/lesson-03-reduce' },
+    { order: 4, title: 'find, some y every',          xpReward: 45, contentId: 'javascript-basico/module-06-arrays/lesson-04-find-some-every' },
+  ]) await upsertLesson(mod6._id, l);
+  console.log('✅  Módulo 6 listo (4 lecciones)');
+
   // ─── Logros ───────────────────────────────────────────────────────────────
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40;
+  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();
