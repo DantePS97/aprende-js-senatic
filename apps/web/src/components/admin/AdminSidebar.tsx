@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Users, ClipboardList, LogOut } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, ClipboardList, BarChart2, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/admin/courses', label: 'Cursos', Icon: BookOpen, exact: false },
   { href: '/admin/users', label: 'Usuarios', Icon: Users, exact: false },
   { href: '/admin/audit', label: 'Auditoría', Icon: ClipboardList, exact: false },
+  { href: '/admin/analytics', label: 'Analytics', Icon: BarChart2, exact: false },
 ];
 
 export function AdminSidebar() {

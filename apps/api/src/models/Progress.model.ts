@@ -36,5 +36,9 @@ const ProgressSchema = new Schema<IProgress>(
 ProgressSchema.index({ userId: 1, lessonId: 1 }, { unique: true });
 // Para calcular stats rápido
 ProgressSchema.index({ userId: 1, status: 1 });
+// Para analytics — queries por fecha y por lección
+ProgressSchema.index({ completedAt: 1 });
+ProgressSchema.index({ lessonId: 1, status: 1 });
+ProgressSchema.index({ updatedAt: 1 });
 
 export const ProgressModel = mongoose.model<IProgress>('Progress', ProgressSchema);

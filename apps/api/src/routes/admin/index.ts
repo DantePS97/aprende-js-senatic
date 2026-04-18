@@ -5,6 +5,7 @@ import modulesAdminRouter from './modules.routes';
 import lessonsAdminRouter from './lessons.routes';
 import usersAdminRouter from './users.routes';
 import auditAdminRouter from './audit.routes';
+import analyticsRouter from './analytics.routes';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use('/modules', modulesAdminRouter);
 router.use('/lessons', lessonsAdminRouter);
 router.use('/users', usersAdminRouter);
 router.use('/audit', auditAdminRouter);
+router.use('/analytics', analyticsRouter);
 
 export default router;
