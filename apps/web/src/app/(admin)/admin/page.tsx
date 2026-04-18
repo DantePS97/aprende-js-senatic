@@ -58,7 +58,7 @@ function StatCard({
   loading: boolean;
 }) {
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-5 flex items-center gap-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center gap-4">
       <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
         <Icon className="w-6 h-6 text-primary-600" />
       </div>
