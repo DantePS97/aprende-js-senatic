@@ -8,9 +8,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  defs,
-  linearGradient,
-  stop,
 } from 'recharts';
 import type { DailyPoint } from '@senatic/shared';
 
