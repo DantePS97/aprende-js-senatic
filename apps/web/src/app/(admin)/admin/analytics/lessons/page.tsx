@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAnalyticsStore } from '@/store/analyticsStore';
 import { DateRangeSelector } from '@/components/admin/DateRangeSelector';
 import { BarChartLessons } from '@/components/admin/charts/BarChartLessons';
@@ -10,6 +10,7 @@ import { LessonsTable } from '@/components/admin/LessonsTable';
 export default function AnalyticsLessonsPage() {
   const { lessons, fetchLessons } = useAnalyticsStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     fetchLessons({
@@ -42,7 +43,7 @@ export default function AnalyticsLessonsPage() {
               const params = new URLSearchParams(searchParams.toString());
               if (e.target.value) params.set('courseId', e.target.value);
               else params.delete('courseId');
-              window.history.pushState({}, '', `?${params.toString()}`);
+              router.push(`?${params.toString()}`);
             }}
           >
             <option value="">Todos los cursos</option>
