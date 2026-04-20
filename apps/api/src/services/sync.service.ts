@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
-import { awardXp, calculateXpReward, checkAchievements } from './gamification.service';
+import { awardXp, calculateXpReward, checkAchievements, updateStreak } from './gamification.service';
 import type { SyncEvent, SyncResponse, Progress } from '@senatic/shared';
 
 export async function processSyncEvents(
@@ -59,9 +59,12 @@ export async function processSyncEvents(
         { upsert: true, new: true }
       );
 
-      if (event.passed && xpEarned > 0) {
-        await awardXp(userId, xpEarned);
-        totalNewXp += xpEarned;
+      if (event.passed) {
+        await updateStreak(userId);
+        if (xpEarned > 0) {
+          await awardXp(userId, xpEarned);
+          totalNewXp += xpEarned;
+        }
       }
 
       acknowledged.push(event.localId);
