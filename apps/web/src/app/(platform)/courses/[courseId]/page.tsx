@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -20,13 +20,54 @@ interface ModuleWithStatus extends Omit<Module, 'lessons'> {
   completedCount: number;
 }
 
+function buildModules(rawModules: Module[], getLessonStatus: (id: string) => string): ModuleWithStatus[] {
+  let previousModuleCompleted = true;
+
+  return rawModules.map((mod) => {
+    const unlockedByPrevious = previousModuleCompleted;
+
+    const lessons: LessonWithStatus[] = mod.lessons.map((lesson, i) => {
+      const status = getLessonStatus(lesson._id);
+
+      let lessonStatus: LessonStatus;
+      if (status === 'completed') {
+        lessonStatus = 'completed';
+      } else if (unlockedByPrevious && i === 0) {
+        lessonStatus = 'available';
+      } else {
+        lessonStatus = 'locked';
+      }
+
+      return { ...lesson, status: lessonStatus };
+    });
+
+    for (let i = 1; i < lessons.length; i++) {
+      if (lessons[i - 1].status === 'completed' && lessons[i].status === 'locked') {
+        lessons[i] = { ...lessons[i], status: 'available' };
+      }
+    }
+
+    const completedCount = lessons.filter((l) => l.status === 'completed').length;
+    const moduleCompleted = completedCount === lessons.length && lessons.length > 0;
+    previousModuleCompleted = moduleCompleted;
+
+    return {
+      ...mod,
+      lessons,
+      isUnlocked: mod.order === 1 || unlockedByPrevious,
+      completedCount,
+    };
+  });
+}
+
 export default function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const router = useRouter();
-  const { getLessonStatus } = useProgressStore();
+  const getLessonStatus = useProgressStore((s) => s.getLessonStatus);
+  const progressMap = useProgressStore((s) => s.progressMap);
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [modules, setModules] = useState<ModuleWithStatus[]>([]);
+  const [rawModules, setRawModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,59 +76,16 @@ export default function CourseDetailPage() {
       .then(({ data }) => {
         const raw: Course = data.data;
         setCourse(raw);
-
-        // Calcular estado de cada módulo y lección
-        // previousModuleCompleted arranca en true para que el módulo 1 siempre quede
-        // desbloqueado y sus lecciones disponibles desde el inicio.
-        let previousModuleCompleted = true;
-
-        const enriched: ModuleWithStatus[] = raw.modules.map((mod) => {
-          // CRÍTICO: capturar ANTES de sobrescribir. Si se lee después de la
-          // asignación `previousModuleCompleted = moduleCompleted`, el módulo N
-          // evalúa su propio estado (false si no ha empezado) en vez del del módulo N-1.
-          const unlockedByPrevious = previousModuleCompleted;
-
-          const lessons: LessonWithStatus[] = mod.lessons.map((lesson, i) => {
-            const status = getLessonStatus(lesson._id);
-
-            let lessonStatus: LessonStatus;
-            if (status === 'completed') {
-              lessonStatus = 'completed';
-            } else if (unlockedByPrevious && i === 0) {
-              // Primera lección del módulo: disponible si el módulo está desbloqueado
-              lessonStatus = 'available';
-            } else {
-              lessonStatus = 'locked';
-            }
-
-            return { ...lesson, status: lessonStatus };
-          });
-
-          // Desbloquear lecciones en secuencia dentro del módulo
-          for (let i = 1; i < lessons.length; i++) {
-            if (lessons[i - 1].status === 'completed' && lessons[i].status === 'locked') {
-              lessons[i] = { ...lessons[i], status: 'available' };
-            }
-          }
-
-          const completedCount = lessons.filter((l) => l.status === 'completed').length;
-          const moduleCompleted = completedCount === lessons.length && lessons.length > 0;
-
-          previousModuleCompleted = moduleCompleted; // Actualizar para la siguiente iteración
-
-          return {
-            ...mod,
-            lessons,
-            isUnlocked: mod.order === 1 || unlockedByPrevious,
-            completedCount,
-          };
-        });
-
-        setModules(enriched);
+        setRawModules(raw.modules);
       })
       .catch(() => router.push('/'))
       .finally(() => setLoading(false));
-  }, [courseId, router, getLessonStatus]);
+  }, [courseId, router]);
+
+  const modules = useMemo(
+    () => (rawModules.length > 0 ? buildModules(rawModules, getLessonStatus) : []),
+    [rawModules, progressMap, getLessonStatus]
+  );
 
   if (loading) {
     return (
