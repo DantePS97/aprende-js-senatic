@@ -65,22 +65,25 @@ export default function CourseDetailPage() {
   const router = useRouter();
   const getLessonStatus = useProgressStore((s) => s.getLessonStatus);
   const progressMap = useProgressStore((s) => s.progressMap);
+  const fetchMyProgress = useProgressStore((s) => s.fetchMyProgress);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [rawModules, setRawModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .get(`/courses/${courseId}`)
-      .then(({ data }) => {
+    Promise.all([
+      api.get(`/courses/${courseId}`),
+      fetchMyProgress(),
+    ])
+      .then(([{ data }]) => {
         const raw: Course = data.data;
         setCourse(raw);
         setRawModules(raw.modules);
       })
       .catch(() => router.push('/'))
       .finally(() => setLoading(false));
-  }, [courseId, router]);
+  }, [courseId, router, fetchMyProgress]);
 
   const modules = useMemo(
     () => (rawModules.length > 0 ? buildModules(rawModules, getLessonStatus) : []),
