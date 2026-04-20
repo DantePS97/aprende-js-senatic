@@ -108,4 +108,31 @@ describe('updateStreak', () => {
     expect(streak).toBe(5);
     expect(streakIncremented).toBe(false);
   });
+
+  it('increments streak using a past activityDate (offline sync scenario)', async () => {
+    const monday = new Date('2025-06-02T10:00:00Z');
+    const tuesday = new Date('2025-06-03T10:00:00Z');
+    mockUser.lastActiveDate = monday;
+    mockUser.streak = 2;
+    const { streak, streakIncremented } = await updateStreak('user-1', tuesday);
+    expect(streak).toBe(3);
+    expect(streakIncremented).toBe(true);
+  });
+
+  it('resets streak using a past activityDate with gap > 1 day (offline sync)', async () => {
+    const monday = new Date('2025-06-02T10:00:00Z');
+    const thursday = new Date('2025-06-05T10:00:00Z');
+    mockUser.lastActiveDate = monday;
+    mockUser.streak = 5;
+    const { streak } = await updateStreak('user-1', thursday);
+    expect(streak).toBe(1);
+  });
+
+  it('saves activityDate as lastActiveDate, not the current date', async () => {
+    const pastDate = new Date('2025-03-15T08:00:00Z');
+    mockUser.lastActiveDate = new Date('2025-03-14T08:00:00Z');
+    mockUser.streak = 1;
+    await updateStreak('user-1', pastDate);
+    expect(mockUser.lastActiveDate).toEqual(pastDate);
+  });
 });

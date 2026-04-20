@@ -60,7 +60,7 @@ export async function processSyncEvents(
       );
 
       if (event.passed) {
-        await updateStreak(userId);
+        await updateStreak(userId, new Date(event.completedAt));
         if (xpEarned > 0) {
           await awardXp(userId, xpEarned);
           totalNewXp += xpEarned;

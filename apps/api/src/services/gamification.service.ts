@@ -36,20 +36,21 @@ export function calculateLevel(xp: number): number {
  * - diffDays  > 1              → racha rota, resetear a 1
  */
 export async function updateStreak(
-  userId: string
+  userId: string,
+  activityDate: Date = new Date()
 ): Promise<{ streak: number; streakIncremented: boolean }> {
   const user = await UserModel.findById(userId);
   if (!user) throw new Error('Usuario no encontrado');
 
-  // Normalizar a inicio del día en UTC para comparación correcta
-  const todayUTC = new Date();
-  todayUTC.setUTCHours(0, 0, 0, 0);
+  // Normalizar ambas fechas a inicio del día en UTC
+  const activityUTC = new Date(activityDate);
+  activityUTC.setUTCHours(0, 0, 0, 0);
 
   const lastActiveUTC = new Date(user.lastActiveDate);
   lastActiveUTC.setUTCHours(0, 0, 0, 0);
 
   const diffDays = Math.round(
-    (todayUTC.getTime() - lastActiveUTC.getTime()) / 86_400_000
+    (activityUTC.getTime() - lastActiveUTC.getTime()) / 86_400_000
   );
 
   let streakIncremented = false;
@@ -61,15 +62,14 @@ export async function updateStreak(
     user.streak = 1; // racha rota
   } else {
     // diffDays === 0 → mismo día
-    // Si el streak nunca se inició (usuario nuevo o reseteado), arrancarlo en 1
     if (user.streak === 0) {
       user.streak = 1;
       streakIncremented = true;
     }
-    // Si ya tiene racha activa, no modificar — ya se contó hoy
+    // Si ya tiene racha activa, no modificar — ya se contó este día
   }
 
-  user.lastActiveDate = new Date();
+  user.lastActiveDate = activityDate;
   await user.save();
 
   return { streak: user.streak, streakIncremented };
