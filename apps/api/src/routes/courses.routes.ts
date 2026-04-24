@@ -147,6 +147,7 @@ coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, re
         theory: dbContent.theory,
         exercises: dbContent.exercises.map((ex) => ({
           title: ex.title,
+          type: ex.type,
           prompt: ex.prompt,
           starterCode: ex.startCode,                                    // runtime contract field
           tests: safeParseTests(ex.tests),                              // deserialize back to array

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BookOpen, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useProgressStore } from '@/store/progressStore';
 import { XPBar } from '@/components/gamification/XPBar';
@@ -57,10 +58,12 @@ export default function CoursesPage() {
             <StreakCounter streak={displayStats.streak} />
           </div>
           <div className="text-center">
+            <BookOpen className="w-6 h-6 text-primary-400 mx-auto mb-0.5" />
             <p className="text-2xl font-bold text-primary-400">{displayStats.completedLessons}</p>
             <p className="text-xs text-slate-500">lecciones</p>
           </div>
           <div className="text-center">
+            <CheckCircle className="w-6 h-6 text-success-DEFAULT mx-auto mb-0.5" />
             <p className="text-2xl font-bold text-success-DEFAULT">{displayStats.percentageComplete}%</p>
             <p className="text-xs text-slate-500">completado</p>
           </div>
