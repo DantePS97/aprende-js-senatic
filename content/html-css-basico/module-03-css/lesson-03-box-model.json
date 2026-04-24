@@ -1,0 +1,42 @@
+{
+  "theory": {
+    "markdown": "## El Modelo de Caja (Box Model)\n\nTodo elemento HTML es una caja rectangular con cuatro capas:\n\n```\n┌─────────────────────────────┐\n│          MARGIN             │  ← espacio externo (fuera del borde)\n│  ┌───────────────────────┐  │\n│  │       BORDER          │  │  ← borde del elemento\n│  │  ┌─────────────────┐  │  │\n│  │  │    PADDING      │  │  │  ← espacio interno (dentro del borde)\n│  │  │  ┌───────────┐  │  │  │\n│  │  │  │  CONTENT  │  │  │  │  ← el contenido real\n│  │  │  └───────────┘  │  │  │\n│  │  └─────────────────┘  │  │\n│  └───────────────────────┘  │\n└─────────────────────────────┘\n```\n\n```css\n.caja {\n  margin: 20px;           /* espacio fuera */\n  border: 2px solid black; /* borde */\n  padding: 10px;           /* espacio dentro */\n  width: 200px;            /* ancho del contenido */\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .tarjeta {\n    margin: 16px;\n    border: 1px solid #CBD5E1;\n    padding: 24px;\n    width: 300px;\n  }\n</style>\n<div class=\"tarjeta\">\n  <h2>Título</h2>\n  <p>Contenido de la tarjeta</p>\n</div>",
+        "explanation": "Una tarjeta con margin, border y padding bien definidos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Aplica padding y border",
+      "prompt": "Crea un `<div>` con clase `tarjeta` y aplica en CSS:\n- `padding: 20px`\n- `border: 2px solid black`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Box Model</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea tu div.tarjeta aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'tarjeta'",
+          "expression": "!!doc.querySelector('.tarjeta')"
+        },
+        {
+          "description": "El padding de .tarjeta es 20px",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).paddingTop === '20px'"
+        },
+        {
+          "description": "El border de .tarjeta tiene 2px de grosor",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).borderTopWidth === '2px'"
+        },
+        {
+          "description": "El border de .tarjeta es sólido",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).borderTopStyle === 'solid'"
+        }
+      ],
+      "hints": [
+        "Crea un <div class=\"tarjeta\"> en el body",
+        "En el <style>: .tarjeta { padding: 20px; border: 2px solid black; }",
+        "padding agrega espacio DENTRO del borde, margin agrega espacio FUERA"
+      ]
+    }
+  ]
+}

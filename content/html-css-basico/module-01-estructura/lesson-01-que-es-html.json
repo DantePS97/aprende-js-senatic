@@ -1,0 +1,42 @@
+{
+  "theory": {
+    "markdown": "## ¿Qué es HTML?\n\nHTML significa **HyperText Markup Language** — el lenguaje con el que se construyen todas las páginas web. No es un lenguaje de programación: es un lenguaje de **marcado** que describe la estructura del contenido.\n\nToda página HTML comienza con la misma estructura básica:\n\n```html\n<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Mi primera página</title>\n  </head>\n  <body>\n    <h1>¡Hola mundo!</h1>\n  </body>\n</html>\n```\n\n- `<!DOCTYPE html>` — le dice al navegador que este es HTML5\n- `<html>` — el elemento raíz que contiene todo\n- `<head>` — información sobre la página (no se muestra)\n- `<body>` — el contenido visible de la página",
+    "examples": [
+      {
+        "code": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Mi página</title>\n  </head>\n  <body>\n    <h1>Bienvenido</h1>\n    <p>Esta es mi primera página web.</p>\n  </body>\n</html>",
+        "explanation": "La estructura mínima de una página HTML válida."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tu primera página HTML",
+      "prompt": "Crea una página HTML básica que tenga:\n- Un elemento `<h1>` con el texto `Mi primera página`\n- Un elemento `<p>` con cualquier texto",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Mi página</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento h1",
+          "expression": "!!doc.querySelector('h1')"
+        },
+        {
+          "description": "El h1 contiene el texto 'Mi primera página'",
+          "expression": "doc.querySelector('h1')?.textContent?.trim() === 'Mi primera página'"
+        },
+        {
+          "description": "Existe un elemento p",
+          "expression": "!!doc.querySelector('p')"
+        },
+        {
+          "description": "El párrafo tiene algún texto",
+          "expression": "(doc.querySelector('p')?.textContent?.trim()?.length ?? 0) > 0"
+        }
+      ],
+      "hints": [
+        "Recuerda que el h1 debe ir dentro del <body>",
+        "El texto del h1 debe ser exactamente: Mi primera página",
+        "El <p> puede contener cualquier texto que quieras"
+      ]
+    }
+  ]
+}

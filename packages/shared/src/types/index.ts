@@ -2,6 +2,8 @@
 
 export type CourseLevel = 'basic' | 'intermediate';
 
+export type ExerciseType = 'js' | 'html';
+
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 
 export type AchievementConditionType =
@@ -92,6 +94,7 @@ export interface LessonTest {
 
 export interface LessonExercise {
   title?: string;      // nombre del ejercicio para el stepper (ej: "Básico", "Práctica", "Aplicación")
+  type?: ExerciseType;
   prompt: string;
   starterCode: string;
   tests: LessonTest[];

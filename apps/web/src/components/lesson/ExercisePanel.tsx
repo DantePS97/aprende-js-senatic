@@ -8,6 +8,7 @@ import { Console } from '@/components/editor/Console';
 import { TestRunner } from './TestRunner';
 import { HintSystem } from './HintSystem';
 import { runInSandbox, TestResult } from '@/lib/sandbox';
+import { runHtmlSandbox } from '@/lib/htmlSandbox';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,9 +72,25 @@ export function ExercisePanel({
   const s = states[current];
   const exercise = exercises[current];
 
+  const [previewSrcdoc, setPreviewSrcdoc] = useState<string>(
+    exercise.type === 'html' ? exercise.starterCode : ''
+  );
+
   // La lección está completa cuando el ejercicio principal (índice 0) fue aprobado
   const mainPassed = states[0].passed || isCompleted;
   const allPassed = s.testResults.length > 0 && s.testResults.every((r) => r.passed);
+
+  // Debounced live preview
+  useEffect(() => {
+    if (exercise.type !== 'html') return;
+    const id = setTimeout(() => setPreviewSrcdoc(s.code), 400);
+    return () => clearTimeout(id);
+  }, [s.code, exercise.type]);
+
+  // Reset preview when exercise changes
+  useEffect(() => {
+    if (exercise.type === 'html') setPreviewSrcdoc(exercise.starterCode ?? '');
+  }, [exercise]);
 
   // ─── Mutators ────────────────────────────────────────────────────────────────
 
@@ -85,7 +102,10 @@ export function ExercisePanel({
 
   const handleRun = useCallback(async () => {
     update({ isRunning: true, output: [], error: null, testResults: [] });
-    const result = await runInSandbox({ code: s.code, tests: exercise.tests });
+    const result =
+      exercise.type === 'html'
+        ? await runHtmlSandbox({ code: s.code, tests: exercise.tests })
+        : await runInSandbox({ code: s.code, tests: exercise.tests });
     update({
       output: result.output,
       error: result.error,
@@ -198,7 +218,22 @@ export function ExercisePanel({
         value={s.code}
         onChange={(v) => update({ code: v })}
         readOnly={isCurrentCompleted}
+        language={exercise.type === 'html' ? 'html' : 'javascript'}
       />
+
+      {exercise.type === 'html' && (
+        <div className="rounded-lg overflow-hidden border border-slate-700">
+          <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border-b border-slate-700">
+            <span className="text-xs text-slate-500 font-mono">preview</span>
+          </div>
+          <iframe
+            srcDoc={previewSrcdoc}
+            sandbox="allow-scripts"
+            className="w-full h-48 bg-white"
+            title="Vista previa HTML"
+          />
+        </div>
+      )}
 
       {/* Controles */}
       <div className="flex gap-2">

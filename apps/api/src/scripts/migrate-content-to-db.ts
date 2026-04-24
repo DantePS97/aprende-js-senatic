@@ -32,6 +32,7 @@ interface RawExercise {
   startCode?: string;
   tests?: RawTest[] | string;
   hints?: string[];
+  type?: 'js' | 'html';
 }
 
 interface RawContent {
@@ -120,6 +121,7 @@ async function migrate(): Promise<MigrationStats> {
       startCode: ex.startCode ?? ex.starterCode ?? '',
       tests: normalizeTests(ex.tests),
       hints: ex.hints ?? [],
+      type: ex.type ?? 'js',
     }));
 
     const existing = await LessonContentModel.findOne({ lessonId: lesson._id });

@@ -164,12 +164,83 @@ async function seed() {
   ]) await upsertLesson(mod6._id, l);
   console.log('✅  Módulo 6 listo (4 lecciones)');
 
+  // ─── Curso: HTML y CSS Básico ─────────────────────────────────────────────
+
+  let courseHtml = await CourseModel.findOne({ slug: 'html-css-basico' });
+  if (!courseHtml) {
+    courseHtml = await CourseModel.create({
+      slug: 'html-css-basico',
+      title: 'HTML y CSS Básico',
+      description: 'Aprende a construir páginas web desde cero con HTML y CSS',
+      level: 'basic',
+      iconEmoji: '🎨',
+      order: 2,
+    });
+    console.log('✅  Curso "HTML y CSS Básico" creado');
+  }
+
+  // ─── Módulo 1: Estructura HTML ────────────────────────────────────────────
+
+  let htmlMod1 = await ModuleModel.findOne({ courseId: courseHtml._id, order: 1 });
+  if (!htmlMod1) {
+    htmlMod1 = await ModuleModel.create({
+      courseId: courseHtml._id,
+      order: 1,
+      title: 'Estructura HTML',
+      description: 'Aprende la estructura fundamental de cualquier página web',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: '¿Qué es HTML?',       xpReward: 15, contentId: 'html-css-basico/module-01-estructura/lesson-01-que-es-html' },
+    { order: 2, title: 'Headings y párrafos', xpReward: 15, contentId: 'html-css-basico/module-01-estructura/lesson-02-headings-parrafos' },
+    { order: 3, title: 'Listas en HTML',      xpReward: 20, contentId: 'html-css-basico/module-01-estructura/lesson-03-listas' },
+  ]) await upsertLesson(htmlMod1._id, l);
+  console.log('✅  Módulo HTML 1 listo (3 lecciones)');
+
+  // ─── Módulo 2: Texto y Enlaces ────────────────────────────────────────────
+
+  let htmlMod2 = await ModuleModel.findOne({ courseId: courseHtml._id, order: 2 });
+  if (!htmlMod2) {
+    htmlMod2 = await ModuleModel.create({
+      courseId: courseHtml._id,
+      order: 2,
+      title: 'Texto y Enlaces',
+      description: 'Da formato al texto y conecta páginas con hipervínculos',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Énfasis en texto', xpReward: 15, contentId: 'html-css-basico/module-02-texto-enlaces/lesson-01-enfasis-texto' },
+    { order: 2, title: 'Hipervínculos',    xpReward: 20, contentId: 'html-css-basico/module-02-texto-enlaces/lesson-02-hipervinculos' },
+  ]) await upsertLesson(htmlMod2._id, l);
+  console.log('✅  Módulo HTML 2 listo (2 lecciones)');
+
+  // ─── Módulo 3: Introducción a CSS ─────────────────────────────────────────
+
+  let htmlMod3 = await ModuleModel.findOne({ courseId: courseHtml._id, order: 3 });
+  if (!htmlMod3) {
+    htmlMod3 = await ModuleModel.create({
+      courseId: courseHtml._id,
+      order: 3,
+      title: 'Introducción a CSS',
+      description: 'Añade estilo y color a tus páginas web',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Selectores CSS',    xpReward: 20, contentId: 'html-css-basico/module-03-css/lesson-01-selectores' },
+    { order: 2, title: 'Colores y texto',   xpReward: 25, contentId: 'html-css-basico/module-03-css/lesson-02-colores-texto' },
+    { order: 3, title: 'El modelo de caja', xpReward: 30, contentId: 'html-css-basico/module-03-css/lesson-03-box-model' },
+  ]) await upsertLesson(htmlMod3._id, l);
+  console.log('✅  Módulo HTML 3 listo (3 lecciones)');
+
   // ─── Logros ───────────────────────────────────────────────────────────────
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45;
+  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 3 + 2 + 3;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 15+15+20 + 15+20 + 20+25+30;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();

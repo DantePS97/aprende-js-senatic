@@ -1,0 +1,42 @@
+{
+  "theory": {
+    "markdown": "## Hipervínculos\n\nLos enlaces se crean con la etiqueta `<a>` y el atributo `href`:\n\n```html\n<a href=\"https://www.google.com\">Ir a Google</a>\n```\n\n**Atributos importantes:**\n- `href` — la URL de destino (obligatorio)\n- `target=\"_blank\"` — abre el enlace en una pestaña nueva\n- `title` — texto que aparece al pasar el cursor\n\n```html\n<!-- Enlace externo en nueva pestaña -->\n<a href=\"https://developer.mozilla.org\" target=\"_blank\">MDN Web Docs</a>\n\n<!-- Enlace a sección de la misma página -->\n<a href=\"#contacto\">Ir a contacto</a>\n```\n\nEl texto entre `<a>` y `</a>` es lo que el usuario ve y hace clic.",
+    "examples": [
+      {
+        "code": "<p>Aprende más en <a href=\"https://developer.mozilla.org\" target=\"_blank\">MDN Web Docs</a>.</p>",
+        "explanation": "Enlace externo dentro de un párrafo, abre en nueva pestaña."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Crea un enlace",
+      "prompt": "Crea un enlace (`<a>`) que:\n- Tenga el texto `Visita MDN`\n- Tenga el atributo `href` con cualquier URL válida\n- Tenga el atributo `target=\"_blank\"`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Hipervínculos</title>\n  </head>\n  <body>\n    <!-- Crea tu enlace aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento a",
+          "expression": "!!doc.querySelector('a')"
+        },
+        {
+          "description": "El enlace tiene atributo href",
+          "expression": "!!doc.querySelector('a')?.getAttribute('href')"
+        },
+        {
+          "description": "El texto del enlace es 'Visita MDN'",
+          "expression": "doc.querySelector('a')?.textContent?.trim() === 'Visita MDN'"
+        },
+        {
+          "description": "El enlace tiene target='_blank'",
+          "expression": "doc.querySelector('a')?.getAttribute('target') === '_blank'"
+        }
+      ],
+      "hints": [
+        "La estructura es: <a href=\"URL\">texto</a>",
+        "El texto del enlace debe ser exactamente: Visita MDN",
+        "Agrega target=\"_blank\" como atributo dentro de la etiqueta de apertura"
+      ]
+    }
+  ]
+}

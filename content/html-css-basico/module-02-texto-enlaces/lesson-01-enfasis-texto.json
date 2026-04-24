@@ -1,0 +1,42 @@
+{
+  "theory": {
+    "markdown": "## Énfasis en texto\n\nHTML tiene etiquetas para dar significado al texto:\n\n- `<strong>` — texto **importante** (se muestra en negrita)\n- `<em>` — texto *enfatizado* (se muestra en cursiva)\n- `<span>` — contenedor genérico en línea (sin estilo propio, usado con CSS)\n\n```html\n<p>Este producto es <strong>muy importante</strong> para tu salud.</p>\n<p>Debes completar esto <em>antes del viernes</em>.</p>\n<p>El precio es <span class=\"precio\">$99</span>.</p>\n```\n\n**Importante:** usa `<strong>` y `<em>` por su significado semántico, no solo para poner texto en negrita o cursiva. Para estilos puramente visuales, usa CSS.",
+    "examples": [
+      {
+        "code": "<p>HTML es <strong>el lenguaje base</strong> de la web, y aprenderlo es <em>fundamental</em> para cualquier desarrollador.</p>",
+        "explanation": "Combinando strong y em dentro de un párrafo."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Texto con énfasis",
+      "prompt": "Crea un párrafo que contenga:\n- Al menos una palabra dentro de `<strong>`\n- Al menos una palabra dentro de `<em>`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Énfasis</title>\n  </head>\n  <body>\n    <!-- Escribe un párrafo con <strong> y <em> -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento strong",
+          "expression": "!!doc.querySelector('strong')"
+        },
+        {
+          "description": "El strong tiene texto",
+          "expression": "(doc.querySelector('strong')?.textContent?.trim()?.length ?? 0) > 0"
+        },
+        {
+          "description": "Existe un elemento em",
+          "expression": "!!doc.querySelector('em')"
+        },
+        {
+          "description": "El em tiene texto",
+          "expression": "(doc.querySelector('em')?.textContent?.trim()?.length ?? 0) > 0"
+        }
+      ],
+      "hints": [
+        "Usa <strong>texto</strong> para la palabra importante",
+        "Usa <em>texto</em> para el texto enfatizado",
+        "Ambos pueden ir dentro de un mismo <p>"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "theory": {
+    "markdown": "## Colores y texto en CSS\n\nCSS permite controlar el color y el tamaño del texto con estas propiedades:\n\n- `color` — color del texto\n- `background-color` — color de fondo\n- `font-size` — tamaño del texto (px, em, rem)\n- `font-weight` — grosor del texto (`bold`, `normal`, `700`)\n\nLos colores se pueden escribir como:\n- Nombre: `red`, `blue`, `green`\n- Hexadecimal: `#FF0000`, `#3B82F6`\n- RGB: `rgb(255, 0, 0)`\n\n```css\nh1 {\n  color: #1E40AF;\n  font-size: 32px;\n  font-weight: bold;\n}\n\n.aviso {\n  color: white;\n  background-color: #EF4444;\n  font-size: 14px;\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .titulo { color: #1E40AF; font-size: 28px; font-weight: bold; }\n  .aviso  { color: white; background-color: #EF4444; }\n</style>\n<h1 class=\"titulo\">Bienvenido</h1>\n<p class=\"aviso\">¡Atención! Este es un mensaje importante.</p>",
+        "explanation": "Colores y tipografía aplicados con clases CSS."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Fondo azul en un div",
+      "prompt": "Crea un `<div>` con la clase `caja` y aplica con CSS:\n- `background-color: blue`\n- `color: white`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Colores</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea tu div.caja aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'caja'",
+          "expression": "!!doc.querySelector('.caja')"
+        },
+        {
+          "description": "El fondo de .caja es azul",
+          "expression": "win.getComputedStyle(doc.querySelector('.caja')).backgroundColor === 'rgb(0, 0, 255)'"
+        },
+        {
+          "description": "El texto de .caja es blanco",
+          "expression": "win.getComputedStyle(doc.querySelector('.caja')).color === 'rgb(255, 255, 255)'"
+        }
+      ],
+      "hints": [
+        "Crea un <div class=\"caja\"> en el body",
+        "En el <style>, escribe: .caja { background-color: blue; color: white; }",
+        "background-color y color son propiedades CSS separadas"
+      ]
+    }
+  ]
+}

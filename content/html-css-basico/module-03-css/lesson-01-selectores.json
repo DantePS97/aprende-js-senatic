@@ -1,0 +1,38 @@
+{
+  "theory": {
+    "markdown": "## Selectores CSS\n\nCSS se aplica seleccionando elementos HTML. Los tres selectores básicos son:\n\n**Selector de etiqueta** — aplica a todos los elementos de ese tipo:\n```css\np { color: blue; }\n```\n\n**Selector de clase** (`.`) — aplica a elementos con esa clase:\n```css\n.resaltado { background-color: yellow; }\n```\n\n**Selector de ID** (`#`) — aplica a un elemento único:\n```css\n#titulo { font-size: 32px; }\n```\n\nCSS puede ir en el `<head>` dentro de `<style>`, o en un archivo `.css` separado:\n\n```html\n<head>\n  <style>\n    h1 { color: red; }\n    .importante { font-weight: bold; }\n  </style>\n</head>\n```",
+    "examples": [
+      {
+        "code": "<style>\n  p { color: navy; }\n  .destacado { background: lightyellow; }\n  #titulo { font-size: 2em; }\n</style>\n<h1 id=\"titulo\">Mi página</h1>\n<p>Párrafo normal.</p>\n<p class=\"destacado\">Párrafo destacado.</p>",
+        "explanation": "Los tres selectores básicos aplicados a distintos elementos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Aplica una clase CSS",
+      "prompt": "Crea una página con:\n- Un elemento `<p>` que tenga la clase `destacado`\n- Un bloque `<style>` que aplique `color: red` a la clase `.destacado`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Selectores</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Escribe tu HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'destacado'",
+          "expression": "!!doc.querySelector('.destacado')"
+        },
+        {
+          "description": "El elemento .destacado es un párrafo",
+          "expression": "doc.querySelector('.destacado')?.tagName?.toLowerCase() === 'p'"
+        },
+        {
+          "description": "El color del texto .destacado es rojo",
+          "expression": "win.getComputedStyle(doc.querySelector('.destacado')).color === 'rgb(255, 0, 0)'"
+        }
+      ],
+      "hints": [
+        "Agrega class=\"destacado\" al elemento <p>",
+        "En el <style>, escribe: .destacado { color: red; }",
+        "El punto (.) antes del nombre indica que es un selector de clase"
+      ]
+    }
+  ]
+}

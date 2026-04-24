@@ -1,0 +1,42 @@
+{
+  "theory": {
+    "markdown": "## Listas en HTML\n\nHTML tiene dos tipos principales de listas:\n\n**Lista no ordenada** (`<ul>`) — para elementos sin orden específico:\n```html\n<ul>\n  <li>Manzanas</li>\n  <li>Bananas</li>\n  <li>Naranjas</li>\n</ul>\n```\n\n**Lista ordenada** (`<ol>`) — para pasos o elementos en secuencia:\n```html\n<ol>\n  <li>Hervir el agua</li>\n  <li>Agregar la pasta</li>\n  <li>Cocinar 10 minutos</li>\n</ol>\n```\n\nCada elemento de la lista va dentro de un `<li>` (list item). Los `<li>` siempre van dentro de `<ul>` o `<ol>`.",
+    "examples": [
+      {
+        "code": "<h2>Frutas favoritas</h2>\n<ul>\n  <li>Mango</li>\n  <li>Fresa</li>\n  <li>Uva</li>\n</ul>",
+        "explanation": "Lista no ordenada con tres frutas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Lista de compras y pasos",
+      "prompt": "Crea una página con:\n- Una lista **no ordenada** (`<ul>`) con exactamente **3 items** (`<li>`)\n- Una lista **ordenada** (`<ol>`) con exactamente **3 items** (`<li>`)",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Listas</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe una lista no ordenada (ul)",
+          "expression": "!!doc.querySelector('ul')"
+        },
+        {
+          "description": "La lista no ordenada tiene exactamente 3 items",
+          "expression": "doc.querySelectorAll('ul > li').length === 3"
+        },
+        {
+          "description": "Existe una lista ordenada (ol)",
+          "expression": "!!doc.querySelector('ol')"
+        },
+        {
+          "description": "La lista ordenada tiene exactamente 3 items",
+          "expression": "doc.querySelectorAll('ol > li').length === 3"
+        }
+      ],
+      "hints": [
+        "Usa <ul> para la lista sin orden y <ol> para la lista ordenada",
+        "Cada elemento de la lista debe estar dentro de un <li>",
+        "Los <li> van directamente dentro del <ul> o <ol>"
+      ]
+    }
+  ]
+}

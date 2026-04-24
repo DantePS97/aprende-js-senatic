@@ -7,6 +7,7 @@ export interface ILessonExample {
 
 export interface ILessonExercise {
   title: string;
+  type: 'js' | 'html';
   prompt: string;
   startCode: string; // NOTE: admin uses startCode; runtime contract uses starterCode — normalize on read
   tests: string;     // raw JS source as a single string — admin edits textually
@@ -36,6 +37,7 @@ const ExampleSchema = new Schema<ILessonExample>(
 const ExerciseSchema = new Schema<ILessonExercise>(
   {
     title: { type: String, default: '' },
+    type: { type: String, enum: ['js', 'html'], default: 'js' },
     prompt: { type: String, default: '' },
     startCode: { type: String, required: true },
     tests: { type: String, required: true },

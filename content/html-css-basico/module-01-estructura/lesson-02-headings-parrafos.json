@@ -1,0 +1,46 @@
+{
+  "theory": {
+    "markdown": "## Headings y párrafos\n\nHTML tiene 6 niveles de encabezados: `<h1>` al `<h6>`. El `<h1>` es el más importante (solo debe haber uno por página), y el `<h6>` es el menos relevante.\n\nLos párrafos se crean con `<p>`. El navegador agrega espacio arriba y abajo automáticamente.\n\n```html\n<h1>Título principal</h1>\n<h2>Subtítulo</h2>\n<h3>Sección</h3>\n<p>Este es un párrafo de texto normal.</p>\n<p>Este es otro párrafo.</p>\n```\n\n**Regla importante:** usa los headings por su significado semántico, no por su tamaño visual. `h1` para el título principal, `h2` para secciones, `h3` para subsecciones.",
+    "examples": [
+      {
+        "code": "<h1>Mi blog</h1>\n<h2>Artículos recientes</h2>\n<h3>Cómo aprender HTML</h3>\n<p>En este artículo te enseño a escribir HTML desde cero.</p>",
+        "explanation": "Jerarquía de headings en una página de blog típica."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Estructura de una receta",
+      "prompt": "Crea la estructura de una receta con:\n- Un `<h1>` con el nombre `Receta de pasta`\n- Un `<h2>` con el texto `Ingredientes`\n- Un `<h2>` con el texto `Preparación`\n- Al menos un `<p>` debajo del h2 de Preparación",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Receta</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "El h1 dice 'Receta de pasta'",
+          "expression": "doc.querySelector('h1')?.textContent?.trim() === 'Receta de pasta'"
+        },
+        {
+          "description": "Hay exactamente 2 elementos h2",
+          "expression": "doc.querySelectorAll('h2').length === 2"
+        },
+        {
+          "description": "Existe un h2 con texto 'Ingredientes'",
+          "expression": "Array.from(doc.querySelectorAll('h2')).some(el => el.textContent?.trim() === 'Ingredientes')"
+        },
+        {
+          "description": "Existe un h2 con texto 'Preparación'",
+          "expression": "Array.from(doc.querySelectorAll('h2')).some(el => el.textContent?.trim() === 'Preparación')"
+        },
+        {
+          "description": "Hay al menos un párrafo",
+          "expression": "doc.querySelectorAll('p').length >= 1"
+        }
+      ],
+      "hints": [
+        "Recuerda que h1 es el título principal, h2 para secciones",
+        "Los h2 deben tener el texto exacto: 'Ingredientes' y 'Preparación'",
+        "El párrafo puede tener cualquier contenido"
+      ]
+    }
+  ]
+}
