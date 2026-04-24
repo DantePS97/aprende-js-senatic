@@ -7,6 +7,7 @@ import type {
   AnalyticsRetention,
   AnalyticsFunnel,
   ExercisesAnalyticsResponse,
+  ActivityHeatmapResponse,
 } from '@senatic/shared';
 
 interface PanelState<T> {
@@ -33,11 +34,13 @@ interface AnalyticsStore {
   retention: PanelState<AnalyticsRetention>;
   funnel: PanelState<AnalyticsFunnel>;
   exercises: PanelState<ExercisesAnalyticsResponse>;
+  heatmap: PanelState<ActivityHeatmapResponse>;
   fetchOverview: (params?: DateRangeParams) => Promise<void>;
   fetchLessons: (params?: DateRangeParams) => Promise<void>;
   fetchRetention: (params?: DateRangeParams) => Promise<void>;
   fetchFunnel: (params: DateRangeParams & { courseId: string }) => Promise<void>;
   fetchExercises: (lessonId?: string) => Promise<void>;
+  fetchHeatmap: (params?: DateRangeParams) => Promise<void>;
 }
 
 export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
@@ -46,6 +49,7 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
   retention: initialPanel(),
   funnel: initialPanel(),
   exercises: initialPanel(),
+  heatmap: initialPanel(),
 
   fetchOverview: async (params) => {
     set((s) => ({ overview: { ...s.overview, loading: true, error: null } }));
@@ -95,6 +99,16 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
       set({ exercises: { data: data.data, loading: false, error: null } });
     } catch (e: any) {
       set({ exercises: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar ejercicios' } });
+    }
+  },
+
+  fetchHeatmap: async (params?: DateRangeParams) => {
+    set((s) => ({ heatmap: { ...s.heatmap, loading: true, error: null } }));
+    try {
+      const { data } = await api.get('/admin/analytics/heatmap', { params: buildParams(params) });
+      set({ heatmap: { data: data.data, loading: false, error: null } });
+    } catch (e: any) {
+      set({ heatmap: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar mapa de calor' } });
     }
   },
 }));

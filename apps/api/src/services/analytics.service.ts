@@ -21,6 +21,8 @@ import type {
   StudentProfile,
   ExerciseAnalyticsItem,
   ExercisesAnalyticsResponse,
+  HeatmapCell,
+  ActivityHeatmapResponse,
 } from '@senatic/shared';
 
 interface QueryParams {
@@ -516,4 +518,73 @@ export async function getExercisesAnalytics(
   }));
 
   return { exercises, total: exercises.length };
+}
+
+// ─── Activity heatmap ─────────────────────────────────────────────────────────
+
+// Colombia = America/Bogota = UTC-5 (sin horario de verano)
+const BOGOTA_TZ = 'America/Bogota';
+
+// $dayOfWeek en MongoDB: 1=domingo … 7=sábado
+// Convertimos a 0=lunes … 6=domingo
+function mongoWeekdayToISO(dow: number): number {
+  // MongoDB: 1=Dom, 2=Lun, 3=Mar, 4=Mié, 5=Jue, 6=Vie, 7=Sáb
+  // ISO: 0=Lun, 1=Mar, 2=Mié, 3=Jue, 4=Vie, 5=Sáb, 6=Dom
+  return dow === 1 ? 6 : dow - 2;
+}
+
+export async function getActivityHeatmap(
+  params: QueryParams = {},
+): Promise<ActivityHeatmapResponse> {
+  const { from, to } = defaultRange(params.from, params.to);
+
+  const agg = await ProgressModel.aggregate([
+    {
+      $match: {
+        status: 'completed',
+        completedAt: { $gte: from, $lte: to },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          day: { $dayOfWeek: { date: '$completedAt', timezone: BOGOTA_TZ } },
+          hour: { $hour: { date: '$completedAt', timezone: BOGOTA_TZ } },
+        },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Construir mapa completo 7×24 (todas las celdas, incluso con count=0)
+  const countMap = new Map<string, number>();
+  for (const row of agg) {
+    const day = mongoWeekdayToISO(row._id.day);
+    const key = `${day}:${row._id.hour}`;
+    countMap.set(key, row.count);
+  }
+
+  const cells: HeatmapCell[] = [];
+  for (let day = 0; day < 7; day++) {
+    for (let hour = 0; hour < 24; hour++) {
+      cells.push({ day, hour, count: countMap.get(`${day}:${hour}`) ?? 0 });
+    }
+  }
+
+  const maxCount = Math.max(...cells.map((c) => c.count), 1);
+  const totalCompletions = cells.reduce((s, c) => s + c.count, 0);
+
+  // Día con más actividad
+  const dayTotals = Array.from({ length: 7 }, (_, d) =>
+    cells.filter((c) => c.day === d).reduce((s, c) => s + c.count, 0),
+  );
+  const peakDay = dayTotals.indexOf(Math.max(...dayTotals));
+
+  // Hora con más actividad
+  const hourTotals = Array.from({ length: 24 }, (_, h) =>
+    cells.filter((c) => c.hour === h).reduce((s, c) => s + c.count, 0),
+  );
+  const peakHour = hourTotals.indexOf(Math.max(...hourTotals));
+
+  return { cells, maxCount, totalCompletions, peakDay, peakHour };
 }

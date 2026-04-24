@@ -59,6 +59,22 @@ export interface AnalyticsFunnel {
   stages: FunnelStage[];
 }
 
+// ─── Activity heatmap ─────────────────────────────────────────────────────────
+
+export interface HeatmapCell {
+  day: number;   // 0 = lunes … 6 = domingo
+  hour: number;  // 0–23 (hora local Colombia, UTC-5)
+  count: number;
+}
+
+export interface ActivityHeatmapResponse {
+  cells: HeatmapCell[];
+  maxCount: number;
+  totalCompletions: number;
+  peakDay: number;    // día con más actividad
+  peakHour: number;   // hora con más actividad
+}
+
 // ─── Exercise analytics ───────────────────────────────────────────────────────
 
 export interface ExerciseAnalyticsItem {

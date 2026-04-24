@@ -69,4 +69,15 @@ router.get('/exercises', async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data });
 });
 
+// GET /admin/analytics/heatmap[?from=&to=]
+router.get('/heatmap', async (req: AuthRequest, res: Response) => {
+  const parsed = parseDateParams(req.query as Record<string, unknown>);
+  if ('error' in parsed) { res.status(400).json({ success: false, error: parsed.error }); return; }
+
+  const { from, to } = parsed.params;
+  const key = `analytics:heatmap:${from?.toISOString() ?? ''}:${to?.toISOString() ?? ''}`;
+  const data = await cached(key, 300, () => analytics.getActivityHeatmap({ from, to }));
+  res.json({ success: true, data });
+});
+
 export default router;
