@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import ServiceWorkerRegister from '@/components/layout/ServiceWorkerRegister';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -62,6 +63,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body className={`${inter.variable} font-sans`}>
+        <ServiceWorkerRegister />
         {children}
       </body>
     </html>
