@@ -16,7 +16,7 @@ export function runHtmlSandbox(
 
   return new Promise((resolve) => {
     const iframe = document.createElement('iframe');
-    iframe.setAttribute('sandbox', 'allow-scripts');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     iframe.style.cssText =
       'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
 
