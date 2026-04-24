@@ -14,6 +14,10 @@ import type {
   AnalyticsRetention,
   FunnelStage,
   AnalyticsFunnel,
+  StudentSummary,
+  StudentsListResponse,
+  StudentLessonProgress,
+  StudentProfile,
 } from '@senatic/shared';
 
 interface QueryParams {
@@ -315,4 +319,131 @@ export async function getFunnel(params: QueryParams & { courseId: string }): Pro
   }));
 
   return { courseId: params.courseId, courseTitle, stages };
+}
+
+// ─── Students list ────────────────────────────────────────────────────────────
+
+export async function getStudentList(): Promise<StudentsListResponse> {
+  const [users, completedAgg] = await Promise.all([
+    UserModel.find({}, 'displayName email xp level streak lastActiveDate').lean(),
+    ProgressModel.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: '$userId', completedLessons: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const completedMap = new Map<string, number>(
+    completedAgg.map((p: any) => [String(p._id), p.completedLessons]),
+  );
+
+  const students: StudentSummary[] = users.map((u: any) => ({
+    id: String(u._id),
+    displayName: u.displayName,
+    email: u.email,
+    xp: u.xp,
+    level: u.level,
+    streak: u.streak,
+    lastActiveDate: u.lastActiveDate ? (u.lastActiveDate as Date).toISOString() : null,
+    completedLessons: completedMap.get(String(u._id)) ?? 0,
+  }));
+
+  // Sort by XP desc by default
+  students.sort((a, b) => b.xp - a.xp);
+
+  return { students, total: students.length };
+}
+
+// ─── Student profile ──────────────────────────────────────────────────────────
+
+export async function getStudentProfile(userId: string): Promise<StudentProfile | null> {
+  const uid = new mongoose.Types.ObjectId(userId);
+
+  const [user, progressAgg, totalLessons] = await Promise.all([
+    UserModel.findById(uid, 'displayName email xp level streak lastActiveDate').lean(),
+    ProgressModel.aggregate([
+      { $match: { userId: uid } },
+      {
+        $lookup: {
+          from: 'lessons',
+          localField: 'lessonId',
+          foreignField: '_id',
+          as: 'lesson',
+        },
+      },
+      { $unwind: { path: '$lesson', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'modules',
+          localField: 'lesson.moduleId',
+          foreignField: '_id',
+          as: 'module',
+        },
+      },
+      { $unwind: { path: '$module', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: 'module.courseId',
+          foreignField: '_id',
+          as: 'course',
+        },
+      },
+      { $unwind: { path: '$course', preserveNullAndEmptyArrays: true } },
+      { $sort: { 'module.order': 1, 'lesson.order': 1 } },
+    ]),
+    LessonModel.countDocuments({ isPublished: true }),
+  ]);
+
+  if (!user) return null;
+
+  const progress: StudentLessonProgress[] = progressAgg.map((p: any) => ({
+    lessonId: String(p.lessonId),
+    lessonTitle: p.lesson?.title ?? '(sin título)',
+    moduleTitle: p.module?.title ?? '(sin módulo)',
+    status: p.status,
+    xpEarned: p.xpEarned,
+    attempts: p.attempts,
+    hintsUsed: p.hintsUsed,
+    completedAt: p.completedAt ? (p.completedAt as Date).toISOString() : null,
+  }));
+
+  // Daily activity — last 30 days, completions per day
+  const to = new Date();
+  const from = new Date(to.getTime() - 30 * 86400000);
+
+  const dailyAgg = await ProgressModel.aggregate([
+    {
+      $match: {
+        userId: uid,
+        status: 'completed',
+        completedAt: { $gte: from, $lte: to },
+      },
+    },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt' } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const rawPoints: DailyPoint[] = dailyAgg.map((d: any) => ({ date: d._id, count: d.count }));
+  const dailyActivity = fillDateGaps(rawPoints, from, to);
+
+  return {
+    id: String((user as any)._id),
+    displayName: (user as any).displayName,
+    email: (user as any).email,
+    xp: (user as any).xp,
+    level: (user as any).level,
+    streak: (user as any).streak,
+    lastActiveDate: (user as any).lastActiveDate
+      ? ((user as any).lastActiveDate as Date).toISOString()
+      : null,
+    completedLessons: progress.filter((p) => p.status === 'completed').length,
+    totalLessons,
+    dailyActivity,
+    progress,
+  };
 }

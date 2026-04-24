@@ -58,3 +58,46 @@ export interface AnalyticsFunnel {
   courseTitle: string;
   stages: FunnelStage[];
 }
+
+// ─── Student profile ──────────────────────────────────────────────────────────
+
+export interface StudentSummary {
+  id: string;
+  displayName: string;
+  email: string;
+  xp: number;
+  level: number;
+  streak: number;
+  completedLessons: number;
+  lastActiveDate: string | null;
+}
+
+export interface StudentsListResponse {
+  students: StudentSummary[];
+  total: number;
+}
+
+export interface StudentLessonProgress {
+  lessonId: string;
+  lessonTitle: string;
+  moduleTitle: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  xpEarned: number;
+  attempts: number;
+  hintsUsed: number;
+  completedAt: string | null;
+}
+
+export interface StudentProfile {
+  id: string;
+  displayName: string;
+  email: string;
+  xp: number;
+  level: number;
+  streak: number;
+  lastActiveDate: string | null;
+  completedLessons: number;
+  totalLessons: number;
+  dailyActivity: DailyPoint[];
+  progress: StudentLessonProgress[];
+}
