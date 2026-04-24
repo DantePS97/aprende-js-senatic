@@ -1,0 +1,104 @@
+{
+  "id": "js-basico-m7-l2",
+  "title": "Seleccionar elementos del DOM",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Seleccionar elementos del DOM\n\nAntes de modificar algo en la página, primero tienes que **encontrarlo**. JavaScript ofrece varios métodos para seleccionar elementos del DOM.\n\n### Los dos métodos principales\n\n#### `getElementById`\nSelecciona UN elemento por su atributo `id`. Retorna el elemento o `null` si no lo encuentra.\n\n```js\nconst titulo = document.getElementById('titulo');\n// Busca: <h1 id=\"titulo\">...</h1>\n```\n\n#### `querySelector`\nSelecciona el **primer elemento** que coincide con un selector CSS. Es más flexible.\n\n```js\nconst boton = document.querySelector('button');         // por etiqueta\nconst intro = document.querySelector('.intro');          // por clase\nconst nav = document.querySelector('#navegacion');       // por id\nconst item = document.querySelector('ul > li.activo');   // selector compuesto\n```\n\n### Para seleccionar múltiples elementos\n\n#### `querySelectorAll`\nRetorna **todos** los elementos que coinciden. El resultado es una `NodeList` (parecida a un array).\n\n```js\nconst parrafos = document.querySelectorAll('p');\nparrafos.forEach(p => console.log(p.textContent));\n```\n\n### Regla de oro\n\n| Necesito | Uso |\n|----------|-----|\n| Un elemento por `id` | `getElementById` |\n| El primer elemento por cualquier selector | `querySelector` |\n| Todos los elementos que coincidan | `querySelectorAll` |",
+    "examples": [
+      {
+        "code": "// getElementById — selector más rápido para ids\nconst header = document.getElementById('header');\nif (header) {\n  console.log(header.textContent); // texto del elemento\n} else {\n  console.log('No existe ese id');\n}",
+        "explanation": "getElementById devuelve null si el id no existe. Siempre es buena práctica verificar antes de usar el elemento."
+      },
+      {
+        "code": "// querySelector — usa sintaxis CSS\nconst primerBoton = document.querySelector('button');\nconst botonPrimario = document.querySelector('button.primario');\nconst inputEmail = document.querySelector('input[type=\"email\"]');\n\nconsole.log(primerBoton?.textContent); // ?. evita error si es null",
+        "explanation": "querySelector acepta cualquier selector CSS válido. El operador ?. (optional chaining) evita errores si el elemento no existe."
+      },
+      {
+        "code": "// querySelectorAll — selecciona varios\nconst items = document.querySelectorAll('li');\nconsole.log(items.length); // cuántos hay\n\n// NodeList es iterable con forEach\nitems.forEach((li, index) => {\n  console.log(`Item ${index}: ${li.textContent}`);\n});\n\n// Para usar métodos de array (map, filter), convierte:\nconst textos = Array.from(items).map(li => li.textContent);",
+        "explanation": "querySelectorAll retorna un NodeList, no un Array. Tiene forEach, pero no map ni filter. Usa Array.from() para convertirlo si necesitas esos métodos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Elegir el método correcto",
+      "prompt": "Dado este array de selectores, crea `selectoresId` filtrando solo los que empiezan con `#` (que son selectores de id).\n\n```js\nconst selectores = ['#titulo', '.clase', 'button', '#menu', 'p.activo'];\n```",
+      "starterCode": "const selectores = ['#titulo', '.clase', 'button', '#menu', 'p.activo'];\n\n// Filtra solo los selectores de id (que empiezan con '#')\nconst selectoresId = selectores.filter(s => s.startsWith('#'));\n",
+      "tests": [
+        {
+          "description": "selectoresId es un array",
+          "expression": "Array.isArray(selectoresId)"
+        },
+        {
+          "description": "selectoresId tiene 2 elementos",
+          "expression": "selectoresId.length === 2"
+        },
+        {
+          "description": "El primer elemento es '#titulo'",
+          "expression": "selectoresId[0] === '#titulo'"
+        },
+        {
+          "description": "Todos empiezan con '#'",
+          "expression": "selectoresId.every(s => s.startsWith('#'))"
+        }
+      ],
+      "hints": [
+        "Usa `.filter()` sobre el array de selectores.",
+        "Los strings tienen el método `.startsWith('#')` que retorna `true` si empiezan con ese carácter.",
+        "Solución: `const selectoresId = selectores.filter(s => s.startsWith('#'));`"
+      ]
+    },
+    {
+      "title": "Práctica: Contar elementos seleccionados",
+      "prompt": "Imagina que `querySelectorAll` te retornó un NodeList con los siguientes elementos (simulado como array):\n\n```js\nconst elementos = ['p', 'p', 'p', 'span', 'p'];\n```\n\nCrea `soloParrafos` filtrando solo los `'p'` y `totalParrafos` con su conteo.",
+      "starterCode": "const elementos = ['p', 'p', 'p', 'span', 'p'];\n\n// Filtra solo los párrafos y cuenta cuántos hay\nconst soloParrafos = elementos.filter(el => el === 'p');\nconst totalParrafos = soloParrafos.length;\n",
+      "tests": [
+        {
+          "description": "soloParrafos tiene 4 elementos",
+          "expression": "soloParrafos.length === 4"
+        },
+        {
+          "description": "totalParrafos es 4",
+          "expression": "totalParrafos === 4"
+        },
+        {
+          "description": "Todos los elementos de soloParrafos son 'p'",
+          "expression": "soloParrafos.every(el => el === 'p')"
+        }
+      ],
+      "hints": [
+        "Usa `.filter()` para quedarte solo con los elementos que sean exactamente `'p'`.",
+        "Luego accede a `.length` para contar.",
+        "Solución: `const soloParrafos = elementos.filter(el => el === 'p'); const totalParrafos = soloParrafos.length;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Simulador de querySelector",
+      "prompt": "Implementa `buscarElemento(lista, selector)`, que recibe un array de objetos `{ tag, id, clase }` y retorna el primero que coincide con el selector.\n\n- Si `selector` empieza con `#`, busca por `id`.\n- Si empieza con `.`, busca por `clase`.\n- Si no, busca por `tag`.",
+      "starterCode": "function buscarElemento(lista, selector) {\n  if (selector.startsWith('#')) {\n    const id = selector.slice(1);\n    return lista.find(el => el.id === id) || null;\n  }\n  if (selector.startsWith('.')) {\n    const clase = selector.slice(1);\n    return lista.find(el => el.clase === clase) || null;\n  }\n  return lista.find(el => el.tag === selector) || null;\n}\n\nconst elementos = [\n  { tag: 'h1', id: 'titulo', clase: 'grande' },\n  { tag: 'p',  id: 'intro',  clase: 'texto' },\n  { tag: 'button', id: 'btn', clase: 'primario' }\n];\n",
+      "tests": [
+        {
+          "description": "buscarElemento(elementos, '#intro') retorna el párrafo",
+          "expression": "buscarElemento(elementos, '#intro').tag === 'p'"
+        },
+        {
+          "description": "buscarElemento(elementos, '.primario') retorna el botón",
+          "expression": "buscarElemento(elementos, '.primario').id === 'btn'"
+        },
+        {
+          "description": "buscarElemento(elementos, 'h1') retorna el h1",
+          "expression": "buscarElemento(elementos, 'h1').id === 'titulo'"
+        },
+        {
+          "description": "buscarElemento(elementos, '#noexiste') retorna null",
+          "expression": "buscarElemento(elementos, '#noexiste') === null"
+        }
+      ],
+      "hints": [
+        "Usa `startsWith` para detectar el tipo de selector y `slice(1)` para quitar el `#` o `.` del inicio.",
+        "`.find()` retorna el primer elemento que cumple la condición, o `undefined`. El `|| null` lo convierte a `null`.",
+        "La estructura está completa — revisa que la lógica de cada rama sea correcta."
+      ]
+    }
+  ]
+}

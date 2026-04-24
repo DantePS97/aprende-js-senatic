@@ -1,0 +1,96 @@
+{
+  "id": "js-basico-m8-l2",
+  "title": "Promesas: manejo de operaciones asíncronas",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Promesas\n\nUna **Promesa** (Promise) representa un valor que todavía no está disponible, pero que estará disponible en el futuro — o fallará con un error.\n\nEs exactamente como una promesa en la vida real: alguien te promete algo. Puede cumplirse o romperse, y en ambos casos hay una acción que tomar.\n\n### Estados de una Promesa\n\n| Estado | Descripción |\n|--------|-------------|\n| `pending` | Aún esperando |\n| `fulfilled` | Se resolvió con éxito |\n| `rejected` | Falló con un error |\n\n### Crear una Promesa\n\n```js\nconst miPromesa = new Promise((resolve, reject) => {\n  const exito = true;\n\n  if (exito) {\n    resolve('¡Todo bien!');  // se cumplió\n  } else {\n    reject('Algo salió mal'); // falló\n  }\n});\n```\n\n### Consumir una Promesa con `.then()` / `.catch()`\n\n```js\nmiPromesa\n  .then(resultado => {\n    console.log('Éxito:', resultado); // '¡Todo bien!'\n  })\n  .catch(error => {\n    console.log('Error:', error);\n  })\n  .finally(() => {\n    console.log('Siempre se ejecuta');\n  });\n```\n\n### Encadenar promesas\n\n```js\nfetch('/api/usuario')\n  .then(respuesta => respuesta.json())  // convierte a JSON\n  .then(usuario => {\n    console.log(usuario.nombre);\n  })\n  .catch(error => {\n    console.error('Error al cargar usuario:', error);\n  });\n```\n\n### Promise.all — esperar varias a la vez\n\n```js\nconst [usuarios, productos] = await Promise.all([\n  fetch('/api/usuarios').then(r => r.json()),\n  fetch('/api/productos').then(r => r.json())\n]);\n// Ambas peticiones se hacen en paralelo\n```",
+    "examples": [
+      {
+        "code": "// Promesa que simula una operación que puede tardar\nfunction obtenerUsuario(id) {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      if (id > 0) {\n        resolve({ id, nombre: 'Ana', rol: 'estudiante' });\n      } else {\n        reject(new Error('ID inválido'));\n      }\n    }, 500);\n  });\n}\n\nobtenerUsuario(1)\n  .then(usuario => console.log(usuario.nombre)) // 'Ana'\n  .catch(err => console.error(err.message));",
+        "explanation": "La función retorna una Promesa. Si el id es válido, resolve entrega el usuario. Si no, reject lanza el error. El consumidor usa .then()/.catch() para manejar ambos casos."
+      },
+      {
+        "code": "// Encadenamiento de promesas\nfetch('https://api.ejemplo.com/usuarios/1')\n  .then(respuesta => {\n    if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);\n    return respuesta.json(); // retorna otra promesa\n  })\n  .then(usuario => {\n    console.log(`Usuario: ${usuario.nombre}`);\n    return usuario.id;\n  })\n  .then(id => console.log(`ID: ${id}`))\n  .catch(error => console.error('Falló:', error.message));",
+        "explanation": "Cada .then() puede retornar un valor o una nueva Promesa. El siguiente .then() recibe el resultado. Un solo .catch() al final atrapa errores de cualquier paso del chain."
+      },
+      {
+        "code": "// Promise.all — peticiones en paralelo\nasync function cargarDatos() {\n  try {\n    const [posts, comentarios] = await Promise.all([\n      fetch('/api/posts').then(r => r.json()),\n      fetch('/api/comentarios').then(r => r.json())\n    ]);\n    console.log(`${posts.length} posts, ${comentarios.length} comentarios`);\n  } catch (error) {\n    console.error('Una petición falló:', error);\n  }\n}\n\ncargarDatos();",
+        "explanation": "Promise.all ejecuta todas las promesas en paralelo y espera que TODAS terminen. Si cualquiera falla, el catch captura el error. Mucho más rápido que esperar una por una."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Estados de una promesa",
+      "prompt": "Crea `promesaExitosa`: una Promesa que se resuelve inmediatamente con el valor `'listo'`.\n\nLuego crea `promesaFallida`: una Promesa que se rechaza con el mensaje `'error de red'`.",
+      "starterCode": "const promesaExitosa = new Promise((resolve, reject) => {\n  resolve('listo');\n});\n\nconst promesaFallida = new Promise((resolve, reject) => {\n  reject('error de red');\n});\n\n// Para que el test pueda verificar los valores:\nlet valorExito;\nlet valorError;\n\npromesaExitosa.then(v => { valorExito = v; });\npromesaFallida.catch(e => { valorError = e; });\n\n// Pequeño hack para esperar la microtask queue\nawait Promise.resolve();\n",
+      "tests": [
+        {
+          "description": "promesaExitosa es una instancia de Promise",
+          "expression": "promesaExitosa instanceof Promise"
+        },
+        {
+          "description": "valorExito es 'listo'",
+          "expression": "valorExito === 'listo'"
+        },
+        {
+          "description": "promesaFallida es una instancia de Promise",
+          "expression": "promesaFallida instanceof Promise"
+        },
+        {
+          "description": "valorError es 'error de red'",
+          "expression": "valorError === 'error de red'"
+        }
+      ],
+      "hints": [
+        "Para resolver: llama a `resolve(valor)` dentro del constructor de la Promesa.",
+        "Para rechazar: llama a `reject(mensaje)` en lugar de `resolve`.",
+        "El código inicial ya es correcto — analiza cómo `resolve` y `reject` son funciones que recibes como parámetros."
+      ]
+    },
+    {
+      "title": "Práctica: Encadenar .then()",
+      "prompt": "Implementa una cadena de promesas que:\n1. Parte de `Promise.resolve(5)`.\n2. Multiplica por 2 (debe dar 10).\n3. Suma 3 (debe dar 13).\n4. Asigna el resultado final a `resultado`.",
+      "starterCode": "let resultado;\n\nawait Promise.resolve(5)\n  .then(n => n * 2)    // 10\n  .then(n => n + 3)    // 13\n  .then(n => { resultado = n; });\n",
+      "tests": [
+        {
+          "description": "resultado es 13",
+          "expression": "resultado === 13"
+        }
+      ],
+      "hints": [
+        "Cada `.then()` recibe el valor retornado por el anterior.",
+        "El código está completo — verifica que las operaciones sean las correctas: `n * 2` luego `n + 3`.",
+        "Solución: El starterCode ya es la solución."
+      ]
+    },
+    {
+      "title": "Aplicación: Promise.all en paralelo",
+      "prompt": "Tienes dos promesas que simulan peticiones:\n\n```js\nconst p1 = Promise.resolve('usuarios cargados');\nconst p2 = Promise.resolve('productos cargados');\n```\n\nUsa `Promise.all` para esperar ambas y asigna los resultados al array `datos`.",
+      "starterCode": "const p1 = Promise.resolve('usuarios cargados');\nconst p2 = Promise.resolve('productos cargados');\n\nconst datos = await Promise.all([p1, p2]);\n",
+      "tests": [
+        {
+          "description": "datos es un array",
+          "expression": "Array.isArray(datos)"
+        },
+        {
+          "description": "datos tiene 2 elementos",
+          "expression": "datos.length === 2"
+        },
+        {
+          "description": "El primero es 'usuarios cargados'",
+          "expression": "datos[0] === 'usuarios cargados'"
+        },
+        {
+          "description": "El segundo es 'productos cargados'",
+          "expression": "datos[1] === 'productos cargados'"
+        }
+      ],
+      "hints": [
+        "`Promise.all` recibe un array de Promesas y retorna una Promesa que resuelve con un array de resultados.",
+        "El orden del array de resultados coincide con el orden del array de Promesas.",
+        "Solución: `const datos = await Promise.all([p1, p2]);`"
+      ]
+    }
+  ]
+}

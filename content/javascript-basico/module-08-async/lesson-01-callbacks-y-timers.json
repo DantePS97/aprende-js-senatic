@@ -1,0 +1,100 @@
+{
+  "id": "js-basico-m8-l1",
+  "title": "Callbacks y temporizadores",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Callbacks y temporizadores\n\nHasta ahora todo tu código se ejecutó línea por línea, inmediatamente. Pero JavaScript también puede ejecutar código **en el futuro**: después de un tiempo, cuando llegue una respuesta, o cuando ocurra un evento.\n\n### ¿Qué es asincronismo?\n\nJavaScript es **single-threaded**: solo puede hacer una cosa a la vez. Sin embargo, puede delegar tareas (como esperar un tiempo o pedir datos a un servidor) y continuar ejecutando otro código mientras tanto. Cuando esa tarea termina, JavaScript vuelve a ejecutar el código pendiente.\n\nPiénsalo como pedir comida en un restaurante: el mesero toma tu pedido, lo lleva a la cocina, y luego atiende otras mesas. Cuando la cocina termina, el mesero regresa con tu comida. Nadie se queda parado esperando.\n\n### `setTimeout`\n\nEjecuta una función **una vez**, después de un tiempo (en milisegundos):\n\n```js\nsetTimeout(() => {\n  console.log('Hola después de 2 segundos');\n}, 2000);\n\nconsole.log('Este mensaje aparece PRIMERO');\n```\n\nSalida:\n```\nEste mensaje aparece PRIMERO\nHola después de 2 segundos\n```\n\n### `setInterval`\n\nEjecuta una función **repetidamente**, cada cierto tiempo:\n\n```js\nconst intervalo = setInterval(() => {\n  console.log('Tick');\n}, 1000);\n\n// Para detenerlo:\nclearInterval(intervalo);\n```\n\n### Callbacks\n\nUn **callback** es simplemente una función que pasas como argumento para que sea llamada después:\n\n```js\nfunction saludar(nombre, callback) {\n  console.log(`Hola, ${nombre}`);\n  callback();\n}\n\nsaludar('Ana', () => {\n  console.log('El saludo terminó');\n});\n```",
+    "examples": [
+      {
+        "code": "// Orden de ejecución — clave para entender async\nconsole.log('1: inicio');\n\nsetTimeout(() => {\n  console.log('3: dentro del timeout');\n}, 1000);\n\nconsole.log('2: después del setTimeout');\n\n// Salida:\n// 1: inicio\n// 2: después del setTimeout\n// 3: dentro del timeout (después de 1 segundo)",
+        "explanation": "setTimeout no bloquea el hilo. JavaScript continúa ejecutando el código siguiente. El callback del timeout se ejecuta solo cuando el tiempo se cumple y el hilo está libre."
+      },
+      {
+        "code": "// setInterval — reloj en tiempo real\nlet segundos = 0;\n\nconst reloj = setInterval(() => {\n  segundos++;\n  console.log(`Han pasado ${segundos} segundo(s)`);\n  if (segundos >= 3) {\n    clearInterval(reloj); // para el intervalo\n    console.log('Reloj detenido');\n  }\n}, 1000);",
+        "explanation": "setInterval ejecuta el callback cada 1000ms (1 segundo). clearInterval lo detiene. Es la base de los relojes, animaciones y polling."
+      },
+      {
+        "code": "// Callbacks encadenados\nfunction paso1(callback) {\n  setTimeout(() => {\n    console.log('Paso 1 completado');\n    callback();\n  }, 500);\n}\n\nfunction paso2(callback) {\n  setTimeout(() => {\n    console.log('Paso 2 completado');\n    callback();\n  }, 500);\n}\n\npaso1(() => {\n  paso2(() => {\n    console.log('Todo terminado');\n  });\n});",
+        "explanation": "Los callbacks pueden encadenarse para ejecutar pasos en secuencia. Cuando hay muchos niveles, esto se vuelve difícil de leer — se llama 'callback hell', y es el problema que resuelven las Promesas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Orden de ejecución",
+      "prompt": "Predice el orden de salida y asigna los mensajes al array `orden` en el orden CORRECTO en que aparecerían en consola.\n\n```js\n// El código que se ejecutaría:\n// console.log('A');\n// setTimeout(() => console.log('B'), 0);\n// console.log('C');\n```\n\nEven con `0ms`, `setTimeout` siempre se ejecuta después del código síncrono.",
+      "starterCode": "// Asigna los mensajes en el orden en que aparecerían\nconst orden = ['A', 'C', 'B'];\n",
+      "tests": [
+        {
+          "description": "El primer mensaje es 'A'",
+          "expression": "orden[0] === 'A'"
+        },
+        {
+          "description": "El segundo mensaje es 'C'",
+          "expression": "orden[1] === 'C'"
+        },
+        {
+          "description": "El tercer mensaje es 'B' (el setTimeout)",
+          "expression": "orden[2] === 'B'"
+        }
+      ],
+      "hints": [
+        "El código síncrono siempre se ejecuta primero, incluso si el delay del setTimeout es 0.",
+        "JavaScript pone los callbacks en una cola y los ejecuta cuando el hilo principal está libre.",
+        "Orden: A (síncrono) → C (síncrono) → B (callback asíncrono)"
+      ]
+    },
+    {
+      "title": "Práctica: Implementar delay",
+      "prompt": "Implementa `delay(ms)`: una función que retorna una Promesa que se resuelve después de `ms` milisegundos usando `setTimeout`.\n\n```js\nawait delay(1000); // espera 1 segundo\n```",
+      "starterCode": "function delay(ms) {\n  return new Promise(resolve => {\n    setTimeout(resolve, ms);\n  });\n}\n\n// Test: mide el tiempo antes y después\nconst inicio = Date.now();\nawait delay(100);\nconst fin = Date.now();\nconst duracion = fin - inicio;\n",
+      "tests": [
+        {
+          "description": "delay retorna una Promesa",
+          "expression": "delay(0) instanceof Promise"
+        },
+        {
+          "description": "La duración es al menos 90ms (margen de error del timer)",
+          "expression": "duracion >= 90"
+        },
+        {
+          "description": "La duración es menor a 500ms (no tardó de más)",
+          "expression": "duracion < 500"
+        }
+      ],
+      "hints": [
+        "Una Promesa recibe una función `(resolve, reject)`. Al llamar `resolve()`, la promesa se cumple.",
+        "Pasa `resolve` directamente como callback de `setTimeout`: `setTimeout(resolve, ms)`.",
+        "El código inicial ya es correcto — estúdialo para entender el patrón."
+      ]
+    },
+    {
+      "title": "Aplicación: Simular cola de tareas",
+      "prompt": "Implementa `ejecutarEnSecuencia(tareas)`: recibe un array de funciones y las ejecuta una por una, recopilando sus valores de retorno en un array.\n\nNo hay async aquí — las funciones son síncronas. El objetivo es practicar el patrón de secuenciación.",
+      "starterCode": "function ejecutarEnSecuencia(tareas) {\n  const resultados = [];\n  for (const tarea of tareas) {\n    resultados.push(tarea());\n  }\n  return resultados;\n}\n\nconst tareas = [\n  () => 'tarea 1 lista',\n  () => 'tarea 2 lista',\n  () => 'tarea 3 lista'\n];\n\nconst resultados = ejecutarEnSecuencia(tareas);\n",
+      "tests": [
+        {
+          "description": "resultados tiene 3 elementos",
+          "expression": "resultados.length === 3"
+        },
+        {
+          "description": "El primer resultado es 'tarea 1 lista'",
+          "expression": "resultados[0] === 'tarea 1 lista'"
+        },
+        {
+          "description": "El tercer resultado es 'tarea 3 lista'",
+          "expression": "resultados[2] === 'tarea 3 lista'"
+        },
+        {
+          "description": "ejecutarEnSecuencia([]) retorna []",
+          "expression": "ejecutarEnSecuencia([]).length === 0"
+        }
+      ],
+      "hints": [
+        "El código ya está implementado. Revisa el patrón: iterar el array, llamar cada función, recoger el resultado.",
+        "Este mismo patrón se extiende al mundo async con `for...of` y `await` — lo verás en la próxima lección.",
+        "Solución: El starterCode ya es la solución."
+      ]
+    }
+  ]
+}

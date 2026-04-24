@@ -1,0 +1,108 @@
+{
+  "id": "js-basico-m7-l4",
+  "title": "Eventos: hacer páginas interactivas",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Eventos: hacer páginas interactivas\n\nUn **evento** es algo que ocurre en la página: el usuario hace clic, escribe en un campo, mueve el mouse, o presiona una tecla. JavaScript puede **escuchar** esos eventos y ejecutar código en respuesta.\n\n### `addEventListener`\n\nEsta es la forma correcta de manejar eventos:\n\n```js\nconst boton = document.getElementById('miBoton');\n\nboton.addEventListener('click', function() {\n  console.log('¡Hiciste clic!');\n});\n```\n\nO con arrow function:\n\n```js\nboton.addEventListener('click', () => {\n  console.log('¡Hiciste clic!');\n});\n```\n\n### Tipos de eventos comunes\n\n| Evento | Cuándo ocurre |\n|--------|---------------|\n| `click` | El usuario hace clic |\n| `input` | El usuario escribe en un campo |\n| `submit` | Se envía un formulario |\n| `mouseover` | El mouse pasa sobre un elemento |\n| `keydown` | Se presiona una tecla |\n| `DOMContentLoaded` | La página terminó de cargar |\n\n### El objeto `event`\n\nEl manejador recibe automáticamente un objeto con información del evento:\n\n```js\nboton.addEventListener('click', (event) => {\n  console.log(event.type);   // 'click'\n  console.log(event.target); // el elemento que fue clickeado\n});\n\ninput.addEventListener('input', (event) => {\n  console.log(event.target.value); // texto que el usuario escribió\n});\n```\n\n### Remover un listener\n\n```js\nfunction manejarClic() {\n  console.log('clic');\n}\n\nboton.addEventListener('click', manejarClic);\nboton.removeEventListener('click', manejarClic); // lo desactiva\n```",
+    "examples": [
+      {
+        "code": "const boton = document.getElementById('btnSaludar');\n\nboton.addEventListener('click', () => {\n  const h1 = document.getElementById('mensaje');\n  h1.textContent = '¡Hola, mundo!';\n  h1.style.color = 'green';\n});",
+        "explanation": "Al hacer clic en el botón, cambiamos el texto y color de un h1. Este patrón — seleccionar, escuchar, modificar — es la base de toda interactividad en la web."
+      },
+      {
+        "code": "const input = document.getElementById('nombre');\nconst saludo = document.getElementById('saludo');\n\ninput.addEventListener('input', (e) => {\n  const texto = e.target.value;\n  saludo.textContent = texto ? `Hola, ${texto}!` : 'Escribe tu nombre...';\n});",
+        "explanation": "El evento 'input' se dispara en cada tecla. e.target.value contiene el texto actual del campo. Aquí actualizamos el saludo en tiempo real."
+      },
+      {
+        "code": "const lista = document.getElementById('tareas');\nconst btnAgregar = document.getElementById('agregar');\nconst inputTarea = document.getElementById('nuevaTarea');\n\nbtnAgregar.addEventListener('click', () => {\n  const texto = inputTarea.value.trim();\n  if (!texto) return; // no agregar si está vacío\n\n  const li = document.createElement('li');\n  li.textContent = texto;\n  lista.appendChild(li);\n\n  inputTarea.value = ''; // limpiar el input\n});",
+        "explanation": "Un patrón clásico: escuchar un clic, leer el valor de un input, crear un nuevo elemento y agregarlo a la lista. La base de muchas aplicaciones de tareas (todo apps)."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Identificar tipos de eventos",
+      "prompt": "Dado este array de eventos, filtra solo los que son eventos de teclado. Los eventos de teclado son: `'keydown'`, `'keyup'`, `'keypress'`.\n\n```js\nconst eventos = ['click', 'keydown', 'mouseover', 'keyup', 'input', 'keypress'];\n```",
+      "starterCode": "const eventos = ['click', 'keydown', 'mouseover', 'keyup', 'input', 'keypress'];\nconst eventosTeclado = ['keydown', 'keyup', 'keypress'];\n\nconst soloTeclado = eventos.filter(e => eventosTeclado.includes(e));\n",
+      "tests": [
+        {
+          "description": "soloTeclado tiene 3 elementos",
+          "expression": "soloTeclado.length === 3"
+        },
+        {
+          "description": "Incluye 'keydown'",
+          "expression": "soloTeclado.includes('keydown')"
+        },
+        {
+          "description": "Incluye 'keyup'",
+          "expression": "soloTeclado.includes('keyup')"
+        },
+        {
+          "description": "No incluye 'click'",
+          "expression": "!soloTeclado.includes('click')"
+        }
+      ],
+      "hints": [
+        "Filtra los eventos que estén dentro del array `eventosTeclado`.",
+        "Usa `.includes()` para verificar si un valor está en el array.",
+        "Solución: `const soloTeclado = eventos.filter(e => eventosTeclado.includes(e));`"
+      ]
+    },
+    {
+      "title": "Práctica: Simular listener",
+      "prompt": "Implementa un sistema simple de eventos. Crea `crearEmisor()` que retorna un objeto con:\n- `on(evento, fn)`: registra un manejador para ese evento.\n- `emit(evento)`: llama todos los manejadores registrados para ese evento.",
+      "starterCode": "function crearEmisor() {\n  const manejadores = {};\n\n  return {\n    on(evento, fn) {\n      if (!manejadores[evento]) manejadores[evento] = [];\n      manejadores[evento].push(fn);\n    },\n    emit(evento) {\n      if (manejadores[evento]) {\n        manejadores[evento].forEach(fn => fn());\n      }\n    }\n  };\n}\n\nconst emisor = crearEmisor();\nconst registro = [];\n\nemisor.on('click', () => registro.push('primer listener'));\nemisor.on('click', () => registro.push('segundo listener'));\nemisor.emit('click');\n",
+      "tests": [
+        {
+          "description": "registro tiene 2 elementos después de emit",
+          "expression": "registro.length === 2"
+        },
+        {
+          "description": "El primer elemento es 'primer listener'",
+          "expression": "registro[0] === 'primer listener'"
+        },
+        {
+          "description": "El segundo es 'segundo listener'",
+          "expression": "registro[1] === 'segundo listener'"
+        },
+        {
+          "description": "emit de evento sin listeners no lanza error",
+          "expression": "(() => { try { emisor.emit('noexiste'); return true; } catch { return false; } })()"
+        }
+      ],
+      "hints": [
+        "El código ya está completo. Analiza cómo `manejadores` almacena arrays de funciones por evento.",
+        "El patrón `if (!manejadores[evento]) manejadores[evento] = []` inicializa el array si no existe.",
+        "Este patrón se llama EventEmitter y es la base de Node.js y muchos frameworks."
+      ]
+    },
+    {
+      "title": "Aplicación: Contador de clics",
+      "prompt": "Implementa `crearContador()`, que retorna un objeto con:\n- `incrementar()`: suma 1 al contador.\n- `obtenerValor()`: retorna el valor actual.\n- `reiniciar()`: lo devuelve a 0.\n\nSimula el estado que manejaría un botón con `addEventListener('click', contador.incrementar)`.",
+      "starterCode": "function crearContador() {\n  let valor = 0;\n\n  return {\n    incrementar() {\n      valor += 1;\n    },\n    obtenerValor() {\n      return valor;\n    },\n    reiniciar() {\n      valor = 0;\n    }\n  };\n}\n\nconst contador = crearContador();\n",
+      "tests": [
+        {
+          "description": "Valor inicial es 0",
+          "expression": "contador.obtenerValor() === 0"
+        },
+        {
+          "description": "Después de 3 incrementos, valor es 3",
+          "expression": "(() => { contador.incrementar(); contador.incrementar(); contador.incrementar(); return contador.obtenerValor() === 3; })()"
+        },
+        {
+          "description": "reiniciar() lo vuelve a 0",
+          "expression": "(() => { contador.reiniciar(); return contador.obtenerValor() === 0; })()"
+        },
+        {
+          "description": "Dos contadores son independientes",
+          "expression": "(() => { const c2 = crearContador(); c2.incrementar(); return c2.obtenerValor() === 1 && contador.obtenerValor() === 0; })()"
+        }
+      ],
+      "hints": [
+        "La variable `valor` está en el scope de `crearContador`, no expuesta. Eso se llama closurr — cada contador tiene su propio `valor` privado.",
+        "El código ya está correcto — ejecútalo para ver los tests pasar.",
+        "El último test crea un segundo contador para verificar que son independientes gracias al closure."
+      ]
+    }
+  ]
+}

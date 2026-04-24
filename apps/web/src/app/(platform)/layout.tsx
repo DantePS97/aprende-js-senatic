@@ -38,7 +38,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   return (
     <SyncProvider>
       <OfflineBanner />
-      <main className="min-h-screen bg-surface-900 pb-20 md:pb-0">
+      <main className="min-h-screen bg-surface-900 pb-20">
         {children}
       </main>
       <BottomNav />

@@ -164,6 +164,45 @@ async function seed() {
   ]) await upsertLesson(mod6._id, l);
   console.log('✅  Módulo 6 listo (4 lecciones)');
 
+  // ─── Módulo 7: DOM y Eventos ──────────────────────────────────────────────
+
+  let mod7 = await ModuleModel.findOne({ courseId: course._id, order: 7 });
+  if (!mod7) {
+    mod7 = await ModuleModel.create({
+      courseId: course._id,
+      order: 7,
+      title: 'DOM y Eventos',
+      description: 'Haz tus páginas interactivas manipulando el DOM y respondiendo a eventos',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: '¿Qué es el DOM?',               xpReward: 40, contentId: 'javascript-basico/module-07-dom/lesson-01-que-es-el-dom' },
+    { order: 2, title: 'Seleccionar elementos del DOM', xpReward: 45, contentId: 'javascript-basico/module-07-dom/lesson-02-seleccionar-elementos' },
+    { order: 3, title: 'Modificar el DOM',              xpReward: 50, contentId: 'javascript-basico/module-07-dom/lesson-03-modificar-dom' },
+    { order: 4, title: 'Eventos: páginas interactivas', xpReward: 55, contentId: 'javascript-basico/module-07-dom/lesson-04-eventos' },
+  ]) await upsertLesson(mod7._id, l);
+  console.log('✅  Módulo 7 listo (4 lecciones)');
+
+  // ─── Módulo 8: Asincronismo ────────────────────────────────────────────────
+
+  let mod8 = await ModuleModel.findOne({ courseId: course._id, order: 8 });
+  if (!mod8) {
+    mod8 = await ModuleModel.create({
+      courseId: course._id,
+      order: 8,
+      title: 'Asincronismo',
+      description: 'Entiende cómo JavaScript maneja operaciones que toman tiempo',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Callbacks y temporizadores',          xpReward: 50, contentId: 'javascript-basico/module-08-async/lesson-01-callbacks-y-timers' },
+    { order: 2, title: 'Promesas',                            xpReward: 55, contentId: 'javascript-basico/module-08-async/lesson-02-promesas' },
+    { order: 3, title: 'async/await',                         xpReward: 60, contentId: 'javascript-basico/module-08-async/lesson-03-async-await' },
+  ]) await upsertLesson(mod8._id, l);
+  console.log('✅  Módulo 8 listo (3 lecciones)');
+
   // ─── Curso: HTML y CSS Básico ─────────────────────────────────────────────
 
   let courseHtml = await CourseModel.findOne({ slug: 'html-css-basico' });
@@ -239,8 +278,8 @@ async function seed() {
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 3 + 2 + 3;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 15+15+20 + 15+20 + 20+25+30;
+  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 2 + 3;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 15+15+20 + 15+20 + 20+25+30;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();

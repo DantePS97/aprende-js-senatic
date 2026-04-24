@@ -1,0 +1,96 @@
+{
+  "id": "js-basico-m7-l3",
+  "title": "Modificar el DOM",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Modificar el DOM\n\nYa sabes cómo seleccionar elementos. Ahora aprenderás a **cambiarlos**: su texto, su estilo, sus clases, y hasta crear elementos nuevos desde cero.\n\n### Cambiar contenido de texto\n\n```js\nconst titulo = document.getElementById('titulo');\ntitulo.textContent = 'Nuevo título'; // solo texto, sin HTML\ntitulo.innerHTML = '<strong>Título</strong> en negrita'; // acepta HTML\n```\n\n> Usa `textContent` cuando insertes texto del usuario (evita ataques XSS). Usa `innerHTML` solo con contenido que tú controlas.\n\n### Cambiar estilos en línea\n\n```js\nconst caja = document.querySelector('.caja');\ncaja.style.color = 'red';\ncaja.style.backgroundColor = 'yellow'; // camelCase, no kebab-case\ncaja.style.fontSize = '24px';\n```\n\n### Manejar clases (la forma recomendada)\n\nEn lugar de modificar estilos directamente, agrega/quita clases CSS:\n\n```js\nel.classList.add('activo');       // agrega clase\nel.classList.remove('oculto');    // quita clase\nel.classList.toggle('expandido'); // alterna: la agrega si no está, la quita si está\nel.classList.contains('activo');  // true o false\n```\n\n### Cambiar atributos\n\n```js\nconst img = document.querySelector('img');\nimg.setAttribute('src', 'nueva-foto.jpg');\nimg.setAttribute('alt', 'Descripción');\nconsole.log(img.getAttribute('src')); // 'nueva-foto.jpg'\n```\n\n### Crear y agregar elementos\n\n```js\n// 1. Crear el elemento\nconst nuevoParrafo = document.createElement('p');\nnuevoParrafo.textContent = 'Soy nuevo';\n\n// 2. Agregarlo al DOM\ndocument.body.appendChild(nuevoParrafo); // al final\ndocument.body.prepend(nuevoParrafo);     // al inicio\n```",
+    "examples": [
+      {
+        "code": "// Cambiar texto y estilo\nconst h1 = document.querySelector('h1');\nh1.textContent = 'Bienvenido a JavaScript';\nh1.style.color = '#2563eb';\nh1.style.fontWeight = 'bold';",
+        "explanation": "textContent modifica el texto visible. style permite cambiar cualquier propiedad CSS usando camelCase en lugar de kebab-case."
+      },
+      {
+        "code": "// Manejar clases — forma preferida en proyectos reales\nconst menu = document.querySelector('.menu');\n\n// Mostrar/ocultar con una clase CSS\nmenu.classList.add('visible');    // muestra el menú\nmenu.classList.remove('visible'); // oculta el menú\nmenu.classList.toggle('visible'); // alterna\n\nconsole.log(menu.classList.contains('visible')); // true o false",
+        "explanation": "Gestionar clases es más limpio que cambiar estilos directamente. Las clases se definen en CSS y JavaScript solo las activa o desactiva."
+      },
+      {
+        "code": "// Crear elementos dinámicamente\nconst lista = document.querySelector('ul');\n\nconst frutas = ['Manzana', 'Banana', 'Naranja'];\n\nfrutas.forEach(fruta => {\n  const li = document.createElement('li');\n  li.textContent = fruta;\n  lista.appendChild(li); // agrega cada <li> a la <ul>\n});",
+        "explanation": "createElement crea un nodo en memoria. appendChild lo inserta en el DOM. Esta combinación es la forma estándar de generar contenido dinámico."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Modificar textContent",
+      "prompt": "Tienes un objeto que simula un elemento del DOM:\n\n```js\nconst elemento = { textContent: 'Texto original', style: {} };\n```\n\nCambia `textContent` a `'JavaScript es genial'` y asigna `style.color` a `'blue'`.",
+      "starterCode": "const elemento = { textContent: 'Texto original', style: {} };\n\n// Modifica textContent y style.color\nelEmento.textContent = 'JavaScript es genial';\nelEmento.style.color = 'blue';\n",
+      "tests": [
+        {
+          "description": "textContent es 'JavaScript es genial'",
+          "expression": "elemento.textContent === 'JavaScript es genial'"
+        },
+        {
+          "description": "style.color es 'blue'",
+          "expression": "elemento.style.color === 'blue'"
+        }
+      ],
+      "hints": [
+        "Hay un error tipográfico en el código inicial — `elEmento` no es lo mismo que `elemento`.",
+        "Corrige la capitalización: usa `elemento.textContent` y `elemento.style.color`.",
+        "Solución: `elemento.textContent = 'JavaScript es genial'; elemento.style.color = 'blue';`"
+      ]
+    },
+    {
+      "title": "Práctica: Gestionar clases",
+      "prompt": "Dado un objeto que simula `classList`:\n\n```js\nconst classList = new Set(['visible', 'grande']);\n```\n\nImplementa tres operaciones:\n1. Agrega la clase `'activo'`.\n2. Elimina la clase `'grande'`.\n3. Crea `tieneVisible` que sea `true` si `'visible'` está en el set.",
+      "starterCode": "const classList = new Set(['visible', 'grande']);\n\n// 1. Agrega 'activo'\nclassList.add('activo');\n\n// 2. Elimina 'grande'\nclassList.delete('grande');\n\n// 3. tieneVisible = true si 'visible' está en classList\nconst tieneVisible = classList.has('visible');\n",
+      "tests": [
+        {
+          "description": "classList contiene 'activo'",
+          "expression": "classList.has('activo')"
+        },
+        {
+          "description": "classList no contiene 'grande'",
+          "expression": "!classList.has('grande')"
+        },
+        {
+          "description": "tieneVisible es true",
+          "expression": "tieneVisible === true"
+        }
+      ],
+      "hints": [
+        "Los `Set` usan `.add()`, `.delete()`, y `.has()` — exactamente los mismos nombres que `classList`.",
+        "El código inicial ya es correcto — solo ejecútalo para ver los tests pasar.",
+        "Solución: El código del starterCode ya es la solución."
+      ]
+    },
+    {
+      "title": "Aplicación: Crear lista dinámica",
+      "prompt": "Implementa `crearItems(etiquetas)`: recibe un array de strings y retorna un array de objetos `{ tag: 'li', textContent: string }`.\n\nEsto simula crear elementos `<li>` para insertar en el DOM.",
+      "starterCode": "function crearItems(etiquetas) {\n  return etiquetas.map(texto => ({ tag: 'li', textContent: texto }));\n}\n\nconst frutas = ['Manzana', 'Banana', 'Naranja'];\nconst items = crearItems(frutas);\n",
+      "tests": [
+        {
+          "description": "items es un array con 3 elementos",
+          "expression": "items.length === 3"
+        },
+        {
+          "description": "Cada item tiene tag 'li'",
+          "expression": "items.every(i => i.tag === 'li')"
+        },
+        {
+          "description": "El primer item tiene textContent 'Manzana'",
+          "expression": "items[0].textContent === 'Manzana'"
+        },
+        {
+          "description": "crearItems([]) retorna array vacío",
+          "expression": "crearItems([]).length === 0"
+        }
+      ],
+      "hints": [
+        "Usa `.map()` para transformar cada string en un objeto.",
+        "El objeto debe tener exactamente las propiedades `tag` y `textContent`.",
+        "Solución: `return etiquetas.map(texto => ({ tag: 'li', textContent: texto }));`"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "js-basico-m7-l1",
+  "title": "¿Qué es el DOM?",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## ¿Qué es el DOM?\n\nCuando el navegador carga una página HTML, no solo muestra el texto — crea una **representación en memoria** de toda la página. Esa representación se llama **DOM** (Document Object Model, Modelo de Objetos del Documento).\n\nPiensa en el DOM como un **árbol genealógico** de tu página: el `<html>` es el abuelo, `<body>` y `<head>` son sus hijos, y cada etiqueta dentro es un nodo más del árbol.\n\n```\ndocument\n└── html\n    ├── head\n    │   └── title\n    └── body\n        ├── h1\n        └── p\n```\n\n### ¿Por qué importa?\n\nJavaScript puede **leer y modificar** ese árbol en tiempo real. Eso es lo que hace que las páginas sean dinámicas: cuando haces clic en un botón y algo cambia en la pantalla, JavaScript manipuló el DOM.\n\n### El objeto `document`\n\nEn JavaScript, accedes al DOM a través del objeto global `document`. Es el punto de entrada a toda la página.\n\n```js\nconsole.log(document.title);   // el título de la pestaña\nconsole.log(document.body);    // todo el body de la página\n```\n\n### Nodos y elementos\n\nTodo en el DOM es un **nodo**. Los más comunes son:\n- **Nodos de elemento**: `<h1>`, `<p>`, `<div>`, etc.\n- **Nodos de texto**: el texto dentro de una etiqueta\n- **Nodos de atributo**: `class`, `id`, `src`, etc.",
+    "examples": [
+      {
+        "code": "// El objeto document representa toda la página\nconsole.log(document.title);       // 'Mi Página'\nconsole.log(document.URL);         // 'https://...'\nconsole.log(typeof document);      // 'object'",
+        "explanation": "document es un objeto global siempre disponible en el navegador. Contiene información sobre la página y métodos para interactuar con ella."
+      },
+      {
+        "code": "// La estructura del DOM refleja el HTML\n// Dado este HTML:\n// <body>\n//   <h1 id=\"titulo\">Hola</h1>\n//   <p class=\"intro\">Bienvenido</p>\n// </body>\n\nconsole.log(document.body.children.length); // 2 (h1 y p)\nconsole.log(document.body.children[0].tagName); // 'H1'",
+        "explanation": "Puedes navegar por el árbol del DOM como si fuera un objeto: body tiene hijos, cada hijo tiene propiedades como tagName, id, className, etc."
+      },
+      {
+        "code": "// Relaciones entre nodos\nconst body = document.body;\n\nconsole.log(body.parentNode.tagName);   // 'HTML' (padre)\nconsole.log(body.firstElementChild);    // primer hijo\nconsole.log(body.lastElementChild);     // último hijo",
+        "explanation": "Cada nodo conoce a sus vecinos: parentNode sube al padre, firstElementChild y lastElementChild bajan a los hijos, nextElementSibling avanza al hermano siguiente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Explorar document",
+      "prompt": "Usando el objeto `document`, crea una variable `tipo` que contenga el resultado de `typeof document`.\n\nLuego crea una variable `tieneBody` que sea `true` si `document.body` existe (no es `null` ni `undefined`).",
+      "starterCode": "// Crea las variables tipo y tieneBody\n",
+      "tests": [
+        {
+          "description": "tipo es el string 'object'",
+          "expression": "tipo === 'object'"
+        },
+        {
+          "description": "tieneBody es true",
+          "expression": "tieneBody === true"
+        }
+      ],
+      "hints": [
+        "Para `tipo`: usa `typeof document` y asígnalo a una variable.",
+        "Para `tieneBody`: `document.body` existe en cualquier página cargada. Puedes usar `Boolean(document.body)` o simplemente `document.body !== null`.",
+        "Solución: `const tipo = typeof document; const tieneBody = document.body !== null;`"
+      ]
+    },
+    {
+      "title": "Práctica: Navegar el árbol",
+      "prompt": "El DOM tiene un árbol de nodos. Dado el siguiente fragmento (simulado):\n\n```js\nconst nodos = ['html', 'head', 'body', 'h1', 'p'];\n```\n\nCrea `raiz` con el primer elemento del array (el nodo raíz) y `totalNodos` con la cantidad total de nodos.",
+      "starterCode": "const nodos = ['html', 'head', 'body', 'h1', 'p'];\n\n// Crea raiz y totalNodos\n",
+      "tests": [
+        {
+          "description": "raiz es 'html'",
+          "expression": "raiz === 'html'"
+        },
+        {
+          "description": "totalNodos es 5",
+          "expression": "totalNodos === 5"
+        }
+      ],
+      "hints": [
+        "Para `raiz`: accede al primer elemento con `nodos[0]`.",
+        "Para `totalNodos`: usa la propiedad `.length` del array.",
+        "Solución: `const raiz = nodos[0]; const totalNodos = nodos.length;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Contar hijos",
+      "prompt": "Imagina que tienes una función `contarHijos` que recibe un array de etiquetas hijas y retorna cuántas hay.\n\nImpleméntala:",
+      "starterCode": "function contarHijos(hijos) {\n  // Retorna la cantidad de elementos en hijos\n}\n\nconst hijos = ['h1', 'p', 'section', 'footer'];\nconst cantidad = contarHijos(hijos);\n",
+      "tests": [
+        {
+          "description": "contarHijos(['a', 'b']) retorna 2",
+          "expression": "contarHijos(['a', 'b']) === 2"
+        },
+        {
+          "description": "cantidad es 4",
+          "expression": "cantidad === 4"
+        },
+        {
+          "description": "contarHijos([]) retorna 0",
+          "expression": "contarHijos([]) === 0"
+        }
+      ],
+      "hints": [
+        "La función debe retornar el tamaño del array que recibe.",
+        "Los arrays tienen la propiedad `.length`.",
+        "Solución: `function contarHijos(hijos) { return hijos.length; }`"
+      ]
+    }
+  ]
+}

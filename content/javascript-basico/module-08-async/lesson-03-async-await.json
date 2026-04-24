@@ -1,0 +1,84 @@
+{
+  "id": "js-basico-m8-l3",
+  "title": "async/await: el código asíncrono que parece síncrono",
+  "xpReward": 60,
+  "theory": {
+    "markdown": "## async/await\n\n`async/await` es **azúcar sintáctica** sobre las Promesas. No reemplaza las Promesas — las usa por debajo — pero hace que el código asíncrono sea mucho más fácil de leer y escribir.\n\n### `async`\n\nPonerle `async` a una función hace dos cosas:\n1. La función siempre retorna una Promesa.\n2. Habilita el uso de `await` dentro de ella.\n\n```js\nasync function saludar() {\n  return 'Hola'; // automáticamente se envuelve en Promise.resolve('Hola')\n}\n\nsaludar().then(msg => console.log(msg)); // 'Hola'\n```\n\n### `await`\n\n`await` pausa la ejecución de la función `async` hasta que la Promesa se resuelva, y retorna el valor resuelto:\n\n```js\nasync function obtenerDatos() {\n  const respuesta = await fetch('/api/datos'); // espera la respuesta\n  const datos = await respuesta.json();         // espera el JSON\n  return datos;\n}\n```\n\n### Manejo de errores con try/catch\n\n```js\nasync function cargarUsuario(id) {\n  try {\n    const res = await fetch(`/api/usuarios/${id}`);\n    if (!res.ok) throw new Error(`Error ${res.status}`);\n    return await res.json();\n  } catch (error) {\n    console.error('No se pudo cargar el usuario:', error.message);\n    return null;\n  }\n}\n```\n\n### Comparación: Promesas vs async/await\n\n```js\n// Con Promesas\nfetch('/api/user')\n  .then(r => r.json())\n  .then(user => console.log(user))\n  .catch(err => console.error(err));\n\n// Con async/await (mismo resultado, más legible)\nasync function getUser() {\n  try {\n    const r = await fetch('/api/user');\n    const user = await r.json();\n    console.log(user);\n  } catch (err) {\n    console.error(err);\n  }\n}\n```",
+    "examples": [
+      {
+        "code": "// Una función async siempre retorna una Promesa\nasync function sumar(a, b) {\n  return a + b;\n}\n\n// Aunque parece síncrona, su resultado es una Promesa\nsumar(3, 4).then(resultado => {\n  console.log(resultado); // 7\n});\n\n// O con await:\nconst total = await sumar(10, 20);\nconsole.log(total); // 30",
+        "explanation": "async convierte cualquier función en una que retorna Promesa. Puedes usar await para 'esperar' el resultado sin anidar .then()."
+      },
+      {
+        "code": "// Simular petición a una API\nasync function obtenerClima(ciudad) {\n  // Simula una demora de red\n  await new Promise(resolve => setTimeout(resolve, 300));\n\n  // Datos simulados\n  const datos = { ciudad, temp: 22, condicion: 'Soleado' };\n  return datos;\n}\n\nasync function mostrarClima() {\n  console.log('Consultando...');\n  const clima = await obtenerClima('Bogotá');\n  console.log(`${clima.ciudad}: ${clima.temp}°C, ${clima.condicion}`);\n}\n\nmostrarClima();",
+        "explanation": "Este patrón es exactamente cómo se consume una API real. La única diferencia con producción es reemplazar los datos simulados por un fetch() real."
+      },
+      {
+        "code": "// try/catch con async/await\nasync function dividir(a, b) {\n  if (b === 0) throw new Error('No se puede dividir por cero');\n  return a / b;\n}\n\nasync function calcular() {\n  try {\n    const resultado1 = await dividir(10, 2);\n    console.log(resultado1); // 5\n\n    const resultado2 = await dividir(10, 0); // lanza error\n    console.log(resultado2); // nunca llega aquí\n  } catch (error) {\n    console.error('Error:', error.message); // 'No se puede dividir por cero'\n  }\n}\n\ncalcular();",
+        "explanation": "try/catch captura errores de cualquier await dentro del bloque, igual que en código síncrono. Es más claro que anidar .catch() en cada promesa."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Función async",
+      "prompt": "Crea una función `async` llamada `obtenerSaludo` que retorne la string `'Hola desde async'`.\n\nLuego asigna su resultado a `saludo` usando `await`.",
+      "starterCode": "async function obtenerSaludo() {\n  return 'Hola desde async';\n}\n\nconst saludo = await obtenerSaludo();\n",
+      "tests": [
+        {
+          "description": "obtenerSaludo retorna una Promesa",
+          "expression": "obtenerSaludo() instanceof Promise"
+        },
+        {
+          "description": "saludo es 'Hola desde async'",
+          "expression": "saludo === 'Hola desde async'"
+        }
+      ],
+      "hints": [
+        "Una función marcada con `async` retorna automáticamente una Promesa, aunque uses `return` con un valor normal.",
+        "El `await` 'desenvuelve' la Promesa y te da el valor directamente.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Práctica: await en secuencia",
+      "prompt": "Tienes dos funciones async que simulan operaciones:\n\n```js\nasync function paso1() { return 'primer resultado'; }\nasync function paso2(input) { return `${input} procesado`; }\n```\n\nUsando `await`, obtén el resultado de `paso1`, pásalo a `paso2`, y asigna el resultado final a `resultadoFinal`.",
+      "starterCode": "async function paso1() { return 'primer resultado'; }\nasync function paso2(input) { return `${input} procesado`; }\n\nconst r1 = await paso1();\nconst resultadoFinal = await paso2(r1);\n",
+      "tests": [
+        {
+          "description": "resultadoFinal es 'primer resultado procesado'",
+          "expression": "resultadoFinal === 'primer resultado procesado'"
+        }
+      ],
+      "hints": [
+        "Primero haz `await paso1()` para obtener el primer resultado.",
+        "Luego pasa ese resultado como argumento a `paso2()`.",
+        "Solución: `const r1 = await paso1(); const resultadoFinal = await paso2(r1);`"
+      ]
+    },
+    {
+      "title": "Aplicación: try/catch con async",
+      "prompt": "Implementa `dividirSeguro(a, b)`: una función `async` que:\n- Si `b === 0`, lanza un error con el mensaje `'División por cero'`.\n- Si no, retorna el resultado de `a / b`.\n\nLuego implementa `calcular()` que llama a `dividirSeguro` con `10` y `0`, captura el error, y asigna el mensaje a `mensajeError`.",
+      "starterCode": "async function dividirSeguro(a, b) {\n  if (b === 0) throw new Error('División por cero');\n  return a / b;\n}\n\nlet mensajeError;\n\nasync function calcular() {\n  try {\n    await dividirSeguro(10, 0);\n  } catch (error) {\n    mensajeError = error.message;\n  }\n}\n\nawait calcular();\n",
+      "tests": [
+        {
+          "description": "dividirSeguro(10, 2) retorna 5",
+          "expression": "await dividirSeguro(10, 2) === 5"
+        },
+        {
+          "description": "dividirSeguro(10, 0) lanza un error",
+          "expression": "await dividirSeguro(10, 0).then(() => false).catch(() => true)"
+        },
+        {
+          "description": "mensajeError es 'División por cero'",
+          "expression": "mensajeError === 'División por cero'"
+        }
+      ],
+      "hints": [
+        "Usa `throw new Error('mensaje')` para lanzar un error dentro de una función async.",
+        "El `try/catch` dentro de una función async captura tanto errores síncronos como rechazos de Promesas.",
+        "El código inicial ya es correcto — estúdialo para entender el patrón try/catch con async/await."
+      ]
+    }
+  ]
+}

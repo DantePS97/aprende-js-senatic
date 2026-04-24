@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-surface-800 border-t border-slate-700 z-40 md:hidden"
+      className="fixed bottom-0 left-0 right-0 bg-surface-800 border-t border-slate-700 z-40"
       aria-label="Navegación principal"
     >
       <div className="flex">
