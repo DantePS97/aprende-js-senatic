@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('@ducanh2912/next-pwa').default;
 const path = require('path');
 
-const nextConfig = {
+module.exports = {
   reactStrictMode: true,
   transpilePackages: ['@senatic/shared'],
   // Required for monorepos: tells Next.js file tracer to resolve from the repo
@@ -12,10 +11,3 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 };
-
-module.exports = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-})(nextConfig);
