@@ -30,17 +30,50 @@ describe('calculateLevel', () => {
 });
 
 describe('calculateXpReward', () => {
+  // ─── Penalización por pistas ────────────────────────────────────────────────
   it('returns full XP when no hints used', () => {
     expect(calculateXpReward(100, 0)).toBe(100);
   });
 
-  it('returns 67% of XP when 1 hint used', () => {
-    expect(calculateXpReward(100, 1)).toBe(67);
+  it('returns 75% of XP when 1 hint used', () => {
+    expect(calculateXpReward(100, 1)).toBe(75);
   });
 
-  it('returns 33% of XP when 2+ hints used', () => {
-    expect(calculateXpReward(100, 2)).toBe(33);
-    expect(calculateXpReward(100, 5)).toBe(33);
+  it('returns 50% of XP when 2 hints used (floor)', () => {
+    expect(calculateXpReward(100, 2)).toBe(50);
+  });
+
+  it('returns same 50% floor for 3+ hints', () => {
+    expect(calculateXpReward(100, 5)).toBe(50);
+    expect(calculateXpReward(100, 10)).toBe(50);
+  });
+
+  // ─── Bonus por racha ────────────────────────────────────────────────────────
+  it('applies no bonus for streak < 7', () => {
+    expect(calculateXpReward(100, 0, 6)).toBe(100);
+  });
+
+  it('applies +5% bonus for streak 7–13', () => {
+    expect(calculateXpReward(100, 0, 7)).toBe(105);
+    expect(calculateXpReward(100, 0, 13)).toBe(105);
+  });
+
+  it('applies +10% bonus for streak 14–29', () => {
+    expect(calculateXpReward(100, 0, 14)).toBe(110);
+    expect(calculateXpReward(100, 0, 29)).toBe(110);
+  });
+
+  it('applies +20% bonus for streak 30+', () => {
+    expect(calculateXpReward(100, 0, 30)).toBe(120);
+    expect(calculateXpReward(100, 0, 99)).toBe(120);
+  });
+
+  // ─── Combinación pistas + racha ─────────────────────────────────────────────
+  it('applies streak bonus on top of hint-penalized XP', () => {
+    // 1 pista (75%) + racha 7 (+5%) = 75 * 1.05 = 78.75 → 79
+    expect(calculateXpReward(100, 1, 7)).toBe(79);
+    // 2 pistas (50%) + racha 30 (+20%) = 50 * 1.20 = 60
+    expect(calculateXpReward(100, 2, 30)).toBe(60);
   });
 });
 

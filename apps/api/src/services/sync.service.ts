@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
+import { UserModel } from '../models/User.model';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from './gamification.service';
 import type { SyncEvent, SyncResponse, Progress } from '@senatic/shared';
 
@@ -11,6 +12,10 @@ export async function processSyncEvents(
   const acknowledged: string[] = [];
   const processedProgress: Progress[] = [];
   let totalNewXp = 0;
+
+  // Streak al momento del sync — se usa para calcular el bonus de XP en cada lección
+  const syncUser = await UserModel.findById(userId);
+  const streakAtSync = syncUser?.streak ?? 0;
 
   for (const event of events) {
     try {
@@ -38,7 +43,7 @@ export async function processSyncEvents(
       // Calcular XP a otorgar solo si el evento es "passed"
       let xpEarned = 0;
       if (event.passed) {
-        xpEarned = calculateXpReward(lesson.xpReward, event.hintsUsed);
+        xpEarned = calculateXpReward(lesson.xpReward, event.hintsUsed, streakAtSync);
       }
 
       const progress = await ProgressModel.findOneAndUpdate(
@@ -78,7 +83,6 @@ export async function processSyncEvents(
   const newAchievements = await checkAchievements(userId);
 
   // Obtener estado actual del usuario
-  const { UserModel } = await import('../models/User.model');
   const user = await UserModel.findById(userId);
 
   return {

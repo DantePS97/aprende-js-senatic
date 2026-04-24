@@ -32,7 +32,8 @@ progressRouter.post('/', requireAuth, validate(submitProgressSchema), async (req
     }));
 
     if (passed && isFirstCompletion) {
-      xpEarned = calculateXpReward(lesson.xpReward, hintsUsed);
+      const currentUser = await UserModel.findById(userId);
+      xpEarned = calculateXpReward(lesson.xpReward, hintsUsed, currentUser?.streak ?? 0);
     }
 
     const progress = await ProgressModel.findOneAndUpdate(
