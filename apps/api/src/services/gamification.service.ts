@@ -75,12 +75,36 @@ export async function updateStreak(
   return { streak: user.streak, streakIncremented };
 }
 
-// ─── XP award by hints used ───────────────────────────────────────────────────
+// ─── Streak bonus ─────────────────────────────────────────────────────────────
 
-export function calculateXpReward(baseXp: number, hintsUsed: number): number {
-  if (hintsUsed === 0) return baseXp;
-  if (hintsUsed === 1) return Math.round(baseXp * 0.67);
-  return Math.round(baseXp * 0.33);
+function streakBonus(streak: number): number {
+  if (streak >= 30) return 0.20;
+  if (streak >= 14) return 0.10;
+  if (streak >= 7)  return 0.05;
+  return 0;
+}
+
+// ─── XP award by hints used + streak bonus ────────────────────────────────────
+
+/**
+ * Calcula el XP real que recibe el usuario por completar una lección.
+ *
+ * Penalización por pistas:
+ *   0 pistas → 100 %
+ *   1 pista  →  75 %
+ *   2+ pistas →  50 %  (piso — siempre vale la pena intentar)
+ *
+ * Bonus por racha (se aplica sobre el XP ya penalizado):
+ *   streak  7–13 →  +5 %
+ *   streak 14–29 → +10 %
+ *   streak  30+  → +20 %
+ */
+export function calculateXpReward(baseXp: number, hintsUsed: number, streak: number = 0): number {
+  const ratio = hintsUsed === 0 ? 1.00
+              : hintsUsed === 1 ? 0.75
+              : 0.50;
+
+  return Math.round(baseXp * ratio * (1 + streakBonus(streak)));
 }
 
 // ─── Award XP and update user ─────────────────────────────────────────────────
@@ -121,6 +145,20 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
   const completedCount = await ProgressModel.countDocuments({ userId, status: 'completed' });
   const noHintsCount = await ProgressModel.countDocuments({ userId, status: 'completed', hintsUsed: 0 });
 
+  // Lecciones completadas hoy (hora Colombia = UTC-5, sin DST)
+  const BOGOTA_OFFSET_MS = -5 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const bogotaMidnight = new Date(
+    Math.floor((nowMs + BOGOTA_OFFSET_MS) / 86_400_000) * 86_400_000 - BOGOTA_OFFSET_MS
+  );
+  const todayStart = bogotaMidnight;
+  const todayEnd   = new Date(todayStart.getTime() + 86_400_000);
+  const lessonsToday = await ProgressModel.countDocuments({
+    userId,
+    status: 'completed',
+    completedAt: { $gte: todayStart, $lt: todayEnd },
+  });
+
   // Módulos completados: módulos donde todas sus lecciones están completadas
   const allModules = await ModuleModel.find({}, '_id');
   let completedModulesCount = 0;
@@ -158,6 +196,9 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
         break;
       case 'module_completed':
         earned = completedModulesCount >= threshold;
+        break;
+      case 'lessons_in_day':
+        earned = lessonsToday >= threshold;
         break;
     }
 
@@ -289,6 +330,77 @@ export async function seedAchievements(): Promise<void> {
       description: 'Completaste todas las lecciones de 3 módulos',
       iconEmoji: '🎓',
       condition: { type: 'module_completed', threshold: 3 },
+    },
+    // ─── New achievements ──────────────────────────────────────────────────────
+    {
+      key: 'twenty_lessons',
+      title: 'Constante',
+      description: 'Completaste 20 lecciones',
+      iconEmoji: '🏃',
+      condition: { type: 'lessons_completed', threshold: 20 },
+    },
+    {
+      key: 'thirty_lessons',
+      title: 'Dedicado',
+      description: 'Completaste 30 lecciones',
+      iconEmoji: '🎯',
+      condition: { type: 'lessons_completed', threshold: 30 },
+    },
+    {
+      key: 'graduate',
+      title: 'Graduado JavaScript',
+      description: 'Completaste todas las lecciones del curso',
+      iconEmoji: '🎓',
+      condition: { type: 'lessons_completed', threshold: 37 },
+    },
+    {
+      key: 'no_hints_5',
+      title: 'Mente Afilada',
+      description: 'Completaste 5 lecciones sin usar ninguna pista',
+      iconEmoji: '🔮',
+      condition: { type: 'no_hints', threshold: 5 },
+    },
+    {
+      key: 'no_hints_10',
+      title: 'Sin Mapa',
+      description: 'Completaste 10 lecciones sin usar ninguna pista',
+      iconEmoji: '🗺️',
+      condition: { type: 'no_hints', threshold: 10 },
+    },
+    {
+      key: 'module_completed_5',
+      title: 'Explorador Profundo',
+      description: 'Completaste todas las lecciones de 5 módulos',
+      iconEmoji: '🏗️',
+      condition: { type: 'module_completed', threshold: 5 },
+    },
+    {
+      key: 'module_completed_11',
+      title: 'Maestro del Curso',
+      description: 'Completaste todos los módulos del curso',
+      iconEmoji: '🏅',
+      condition: { type: 'module_completed', threshold: 11 },
+    },
+    {
+      key: 'xp_3000',
+      title: 'Elite',
+      description: 'Alcanzaste 3000 XP',
+      iconEmoji: '💫',
+      condition: { type: 'xp', threshold: 3000 },
+    },
+    {
+      key: 'turbo_day',
+      title: 'Modo Turbo',
+      description: 'Completaste 3 lecciones en un solo día',
+      iconEmoji: '⚡',
+      condition: { type: 'lessons_in_day', threshold: 3 },
+    },
+    {
+      key: 'marathon_day',
+      title: 'Maratón de Código',
+      description: 'Completaste 5 lecciones en un solo día',
+      iconEmoji: '🏃',
+      condition: { type: 'lessons_in_day', threshold: 5 },
     },
   ];
 

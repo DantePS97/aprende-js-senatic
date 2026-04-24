@@ -26,7 +26,7 @@ const AchievementSchema = new Schema<IAchievement>(
     condition: {
       type: {
         type: String,
-        enum: ['lessons_completed', 'streak', 'xp', 'module_completed', 'no_hints'],
+        enum: ['lessons_completed', 'streak', 'xp', 'module_completed', 'no_hints', 'lessons_in_day'],
         required: true,
       },
       threshold: { type: Number, required: true },

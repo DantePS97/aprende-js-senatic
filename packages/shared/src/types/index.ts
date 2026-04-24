@@ -11,7 +11,8 @@ export type AchievementConditionType =
   | 'streak'
   | 'xp'
   | 'module_completed'
-  | 'no_hints';
+  | 'no_hints'
+  | 'lessons_in_day';
 
 // ─── User ─────────────────────────────────────────────────────────────────────
 
