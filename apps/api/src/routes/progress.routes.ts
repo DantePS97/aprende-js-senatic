@@ -4,6 +4,7 @@ import { submitProgressSchema } from '@senatic/shared';
 import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
 import { UserModel } from '../models/User.model';
+import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
@@ -90,6 +91,38 @@ progressRouter.post('/', requireAuth, validate(submitProgressSchema), async (req
   } catch (err) {
     console.error('[progress/submit]', err);
     res.status(500).json({ success: false, error: 'Error al guardar progreso.' });
+  }
+});
+
+// ─── POST /api/progress/exercise (telemetría de ejercicio) ───────────────────
+
+progressRouter.post('/exercise', requireAuth, async (req: AuthRequest, res: Response) => {
+  // Responder inmediatamente — el cliente no espera
+  res.json({ success: true });
+
+  try {
+    const { lessonId, exerciseIndex, exerciseTitle, passed, hintsUsed } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.user!.userId);
+    const lessonOid = new mongoose.Types.ObjectId(String(lessonId));
+    const idx = Number(exerciseIndex ?? 0);
+
+    await ExerciseAttemptModel.findOneAndUpdate(
+      { userId, lessonId: lessonOid, exerciseIndex: idx },
+      {
+        $inc: { attempts: 1 },
+        $set: {
+          exerciseTitle: String(exerciseTitle ?? ''),
+          passed: Boolean(passed),
+          hintsUsed: Number(hintsUsed ?? 0),
+          lastAttemptAt: new Date(),
+        },
+        $setOnInsert: { firstAttemptAt: new Date() },
+      },
+      { upsert: true },
+    );
+  } catch (err) {
+    // Telemetría: errores silenciosos — no afectan al estudiante
+    console.error('[progress/exercise]', err);
   }
 });
 

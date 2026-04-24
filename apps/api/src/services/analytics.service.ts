@@ -4,6 +4,7 @@ import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
 import { ModuleModel } from '../models/Module.model';
 import { CourseModel } from '../models/Course.model';
+import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import type {
   DailyPoint,
   AnalyticsOverview,
@@ -18,6 +19,8 @@ import type {
   StudentsListResponse,
   StudentLessonProgress,
   StudentProfile,
+  ExerciseAnalyticsItem,
+  ExercisesAnalyticsResponse,
 } from '@senatic/shared';
 
 interface QueryParams {
@@ -446,4 +449,71 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile 
     dailyActivity,
     progress,
   };
+}
+
+// ─── Exercise analytics ───────────────────────────────────────────────────────
+
+export async function getExercisesAnalytics(
+  lessonId?: string,
+): Promise<ExercisesAnalyticsResponse> {
+  const matchStage: Record<string, unknown> = {};
+  if (lessonId) matchStage.lessonId = new mongoose.Types.ObjectId(lessonId);
+
+  const agg = await ExerciseAttemptModel.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: { lessonId: '$lessonId', exerciseIndex: '$exerciseIndex' },
+        totalStudents: { $sum: 1 },
+        passedStudents: { $sum: { $cond: ['$passed', 1, 0] } },
+        avgAttempts: { $avg: '$attempts' },
+        avgHints: { $avg: '$hintsUsed' },
+        exerciseTitle: { $first: '$exerciseTitle' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'lessons',
+        localField: '_id.lessonId',
+        foreignField: '_id',
+        as: 'lesson',
+      },
+    },
+    { $unwind: { path: '$lesson', preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 0,
+        lessonId: '$_id.lessonId',
+        lessonTitle: { $ifNull: ['$lesson.title', '(sin título)'] },
+        exerciseIndex: '$_id.exerciseIndex',
+        exerciseTitle: 1,
+        totalStudents: 1,
+        passedStudents: 1,
+        passRate: {
+          $cond: [
+            { $gt: ['$totalStudents', 0] },
+            { $divide: ['$passedStudents', '$totalStudents'] },
+            0,
+          ],
+        },
+        avgAttempts: { $round: ['$avgAttempts', 1] },
+        avgHints: { $round: ['$avgHints', 1] },
+      },
+    },
+    { $sort: { lessonId: 1, exerciseIndex: 1 } },
+  ]);
+
+  const exercises: ExerciseAnalyticsItem[] = agg.map((row: any) => ({
+    lessonId: String(row.lessonId),
+    lessonTitle: row.lessonTitle,
+    exerciseIndex: row.exerciseIndex,
+    exerciseTitle: row.exerciseTitle || `Ejercicio ${row.exerciseIndex + 1}`,
+    totalStudents: row.totalStudents,
+    passedStudents: row.passedStudents,
+    passRate: row.passRate,
+    avgAttempts: row.avgAttempts,
+    avgHints: row.avgHints,
+  }));
+
+  return { exercises, total: exercises.length };
 }

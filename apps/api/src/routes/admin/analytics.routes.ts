@@ -61,4 +61,12 @@ router.get('/funnel', async (req: AuthRequest, res: Response) => {
   res.json({ success: true, data });
 });
 
+// GET /admin/analytics/exercises[?lessonId=xxx]
+router.get('/exercises', async (req: AuthRequest, res: Response) => {
+  const lessonId = req.query.lessonId ? String(req.query.lessonId) : undefined;
+  const key = `analytics:exercises:${lessonId ?? 'all'}`;
+  const data = await cached(key, 180, () => analytics.getExercisesAnalytics(lessonId));
+  res.json({ success: true, data });
+});
+
 export default router;

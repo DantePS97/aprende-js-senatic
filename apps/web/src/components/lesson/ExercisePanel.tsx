@@ -9,6 +9,7 @@ import { TestRunner } from './TestRunner';
 import { HintSystem } from './HintSystem';
 import { runInSandbox, TestResult } from '@/lib/sandbox';
 import { runHtmlSandbox } from '@/lib/htmlSandbox';
+import { api } from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ interface ExerciseState {
 interface ExercisePanelProps {
   exercises: LessonExercise[];
   xpReward: number;
+  lessonId?: string;
   onComplete: (passed: boolean, hintsUsed: number) => Promise<void>;
   isCompleted?: boolean;
   onNextLesson: () => void;
@@ -52,6 +54,7 @@ function makeInitialState(exercise: LessonExercise): ExerciseState {
 export function ExercisePanel({
   exercises,
   xpReward,
+  lessonId,
   onComplete,
   isCompleted,
   onNextLesson,
@@ -112,8 +115,20 @@ export function ExercisePanel({
       testResults: result.testResults,
       isRunning: false,
     });
+
+    // Telemetría de ejercicio — fire and forget, no bloquea al estudiante
+    if (lessonId) {
+      const passed = result.testResults.length > 0 && result.testResults.every((r) => r.passed);
+      api.post('/progress/exercise', {
+        lessonId,
+        exerciseIndex: current,
+        exerciseTitle: exercise.title ?? `Ejercicio ${current + 1}`,
+        passed,
+        hintsUsed: s.hintsUsed,
+      }).catch(() => {});
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.code, exercise.tests, current]);
+  }, [s.code, exercise.tests, exercise.title, current, lessonId, s.hintsUsed]);
 
   const handleReset = () => {
     update({

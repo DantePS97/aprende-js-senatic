@@ -171,6 +171,7 @@ export default function LessonPage() {
         <ExercisePanel
           exercises={exercises}
           xpReward={data.lesson.xpReward}
+          lessonId={params.lessonId}
           onComplete={handleComplete}
           isCompleted={isCompleted}
           onNextLesson={handleNextLesson}

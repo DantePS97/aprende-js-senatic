@@ -6,6 +6,7 @@ import type {
   AnalyticsLessonsResponse,
   AnalyticsRetention,
   AnalyticsFunnel,
+  ExercisesAnalyticsResponse,
 } from '@senatic/shared';
 
 interface PanelState<T> {
@@ -31,10 +32,12 @@ interface AnalyticsStore {
   lessons: PanelState<AnalyticsLessonsResponse>;
   retention: PanelState<AnalyticsRetention>;
   funnel: PanelState<AnalyticsFunnel>;
+  exercises: PanelState<ExercisesAnalyticsResponse>;
   fetchOverview: (params?: DateRangeParams) => Promise<void>;
   fetchLessons: (params?: DateRangeParams) => Promise<void>;
   fetchRetention: (params?: DateRangeParams) => Promise<void>;
   fetchFunnel: (params: DateRangeParams & { courseId: string }) => Promise<void>;
+  fetchExercises: (lessonId?: string) => Promise<void>;
 }
 
 export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
@@ -42,6 +45,7 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
   lessons: initialPanel(),
   retention: initialPanel(),
   funnel: initialPanel(),
+  exercises: initialPanel(),
 
   fetchOverview: async (params) => {
     set((s) => ({ overview: { ...s.overview, loading: true, error: null } }));
@@ -80,6 +84,17 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
       set({ funnel: { data: data.data, loading: false, error: null } });
     } catch (e: any) {
       set({ funnel: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar embudo' } });
+    }
+  },
+
+  fetchExercises: async (lessonId?: string) => {
+    set((s) => ({ exercises: { ...s.exercises, loading: true, error: null } }));
+    try {
+      const params = lessonId ? { lessonId } : {};
+      const { data } = await api.get('/admin/analytics/exercises', { params });
+      set({ exercises: { data: data.data, loading: false, error: null } });
+    } catch (e: any) {
+      set({ exercises: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar ejercicios' } });
     }
   },
 }));

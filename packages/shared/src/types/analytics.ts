@@ -59,6 +59,25 @@ export interface AnalyticsFunnel {
   stages: FunnelStage[];
 }
 
+// ─── Exercise analytics ───────────────────────────────────────────────────────
+
+export interface ExerciseAnalyticsItem {
+  lessonId: string;
+  lessonTitle: string;
+  exerciseIndex: number;
+  exerciseTitle: string;
+  totalStudents: number;
+  passedStudents: number;
+  passRate: number;
+  avgAttempts: number;
+  avgHints: number;
+}
+
+export interface ExercisesAnalyticsResponse {
+  exercises: ExerciseAnalyticsItem[];
+  total: number;
+}
+
 // ─── Student profile ──────────────────────────────────────────────────────────
 
 export interface StudentSummary {
