@@ -1,0 +1,100 @@
+{
+  "id": "js-basico-m9-l3",
+  "title": "Errores en código asíncrono",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Errores en código asíncrono\n\nManejar errores en código asíncrono tiene sus particularidades. Un error dentro de un callback o Promesa no se comporta igual que en código síncrono.\n\n### Errores en Promesas\n\nSi una Promesa se rechaza y no hay un `.catch()`, el error queda **sin manejar** (unhandled rejection). En Node.js esto termina el proceso; en el navegador aparece en consola como advertencia.\n\n```js\n// ❌ Error silenciado — peligroso\nfetch('/api/datos')\n  .then(r => r.json());\n  // si falla, nadie lo sabe\n\n// ✅ Siempre manejar el error\nfetch('/api/datos')\n  .then(r => r.json())\n  .catch(error => console.error('Error:', error.message));\n```\n\n### try/catch con async/await\n\nCon `async/await`, el `try/catch` funciona exactamente igual que en código síncrono:\n\n```js\nasync function cargar() {\n  try {\n    const res = await fetch('/api/datos');\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n    return await res.json();\n  } catch (error) {\n    // captura errores de red Y los throw manuales\n    console.error(error.message);\n    return null;\n  }\n}\n```\n\n### Propagar vs. capturar\n\nNo siempre conviene capturar el error donde ocurre. A veces es mejor **propagarlo** para que el llamador decida:\n\n```js\n// Función de bajo nivel — propaga el error\nasync function obtenerUsuario(id) {\n  const res = await fetch(`/api/usuarios/${id}`);\n  if (!res.ok) throw new Error(`Usuario ${id} no encontrado`);\n  return res.json();\n}\n\n// Función de alto nivel — decide qué hacer\nasync function mostrarPerfil(id) {\n  try {\n    const usuario = await obtenerUsuario(id);\n    renderPerfil(usuario);\n  } catch (error) {\n    mostrarError('No pudimos cargar tu perfil');\n  }\n}\n```\n\n### `Promise.allSettled` — cuando no quieres que uno arruine todo\n\n```js\nconst resultados = await Promise.allSettled([\n  fetch('/api/posts').then(r => r.json()),\n  fetch('/api/comentarios').then(r => r.json())\n]);\n\nresultados.forEach(r => {\n  if (r.status === 'fulfilled') console.log(r.value);\n  else console.error(r.reason.message);\n});\n```",
+    "examples": [
+      {
+        "code": "// .catch() en cadena de promesas\nasync function cargarDatos() {\n  const datos = await fetch('https://jsonplaceholder.typicode.com/posts/1')\n    .then(res => {\n      if (!res.ok) throw new Error(`HTTP ${res.status}`);\n      return res.json();\n    })\n    .catch(error => {\n      console.error('Falló la carga:', error.message);\n      return null; // valor de fallback\n    });\n\n  if (datos) console.log('Título:', datos.title);\n  else console.log('Usando datos por defecto');\n}\n\ncargarDatos();",
+        "explanation": "El .catch() al final del chain captura cualquier error que ocurra en cualquier .then() anterior. Retornar null en lugar de relanzar permite que el flujo continúe con un valor seguro."
+      },
+      {
+        "code": "// try/catch con await — forma más legible\nasync function cargarUsuario(id) {\n  try {\n    const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);\n    if (!res.ok) throw new Error(`No encontrado: ${res.status}`);\n    const usuario = await res.json();\n    console.log('Usuario:', usuario.name);\n    return usuario;\n  } catch (error) {\n    console.error('Error al cargar usuario:', error.message);\n    return { nombre: 'Anónimo', error: true }; // fallback\n  }\n}\n\nawait cargarUsuario(1);   // OK\nawait cargarUsuario(999); // retorna fallback",
+        "explanation": "Con try/catch el flujo es lineal y fácil de seguir. El fallback { nombre: 'Anónimo', error: true } permite que el código que llama a esta función continúe sin romperse."
+      },
+      {
+        "code": "// Promise.allSettled — tolera fallos parciales\nasync function cargarTodo() {\n  const [posts, usuarios] = await Promise.allSettled([\n    fetch('https://jsonplaceholder.typicode.com/posts').then(r => r.json()),\n    fetch('https://jsonplaceholder.typicode.com/RUTA_INVALIDA').then(r => {\n      if (!r.ok) throw new Error(`HTTP ${r.status}`);\n      return r.json();\n    })\n  ]);\n\n  const postsData = posts.status === 'fulfilled' ? posts.value : [];\n  const usuariosData = usuarios.status === 'fulfilled' ? usuarios.value : [];\n\n  console.log(`${postsData.length} posts, ${usuariosData.length} usuarios`);\n}\n\ncargarTodo();",
+        "explanation": "Promise.allSettled nunca rechaza — siempre resuelve con un array donde cada elemento tiene status: 'fulfilled' o 'rejected'. Ideal cuando quieres los datos que puedas conseguir aunque alguna petición falle."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Promesa con manejo de error",
+      "prompt": "Dada una función que puede fallar aleatoriamente, envuelve su llamada con `.catch()` para que en caso de error asignes el mensaje a `errorCapturado` (en lugar de que el error quede sin manejar).",
+      "starterCode": "function operacionRiesgosa() {\n  return Promise.reject(new Error('Conexión rechazada'));\n}\n\nlet errorCapturado;\n\nawait operacionRiesgosa()\n  .catch(error => {\n    errorCapturado = error.message;\n  });\n",
+      "tests": [
+        {
+          "description": "errorCapturado es un string",
+          "expression": "typeof errorCapturado === 'string'"
+        },
+        {
+          "description": "errorCapturado contiene el mensaje correcto",
+          "expression": "errorCapturado === 'Conexión rechazada'"
+        }
+      ],
+      "hints": [
+        "`.catch(error => ...)` captura el rechazo de la Promesa.",
+        "Dentro del `.catch`, asigna `error.message` a la variable `errorCapturado`.",
+        "Solución: El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Práctica: try/catch con async",
+      "prompt": "Implementa `intentar(fn)`: una función async que llama a `fn()` (que puede lanzar error), y retorna `{ ok: true, valor }` si tiene éxito, o `{ ok: false, error: error.message }` si falla.",
+      "starterCode": "async function intentar(fn) {\n  try {\n    const valor = await fn();\n    return { ok: true, valor };\n  } catch (error) {\n    return { ok: false, error: error.message };\n  }\n}\n\nconst exitoso = await intentar(() => Promise.resolve(42));\nconst fallido = await intentar(() => Promise.reject(new Error('algo falló')));\n",
+      "tests": [
+        {
+          "description": "exitoso.ok es true",
+          "expression": "exitoso.ok === true"
+        },
+        {
+          "description": "exitoso.valor es 42",
+          "expression": "exitoso.valor === 42"
+        },
+        {
+          "description": "fallido.ok es false",
+          "expression": "fallido.ok === false"
+        },
+        {
+          "description": "fallido.error es 'algo falló'",
+          "expression": "fallido.error === 'algo falló'"
+        }
+      ],
+      "hints": [
+        "Usa `try { return { ok: true, valor: await fn() } } catch (error) { return { ok: false, error: error.message } }`.",
+        "Este patrón se llama 'Result type' y es muy común en TypeScript y Rust para evitar excepciones.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: allSettled para resultados parciales",
+      "prompt": "Dadas dos Promesas (una exitosa, una fallida), usa `Promise.allSettled` para obtener ambos resultados. Luego crea `exitosos` (valores de las fulfilled) y `fallidos` (mensajes de las rejected).",
+      "starterCode": "const promesas = [\n  Promise.resolve('datos de usuarios'),\n  Promise.reject(new Error('timeout de red')),\n  Promise.resolve('datos de productos')\n];\n\nconst resultados = await Promise.allSettled(promesas);\n\nconst exitosos = resultados\n  .filter(r => r.status === 'fulfilled')\n  .map(r => r.value);\n\nconst fallidos = resultados\n  .filter(r => r.status === 'rejected')\n  .map(r => r.reason.message);\n",
+      "tests": [
+        {
+          "description": "resultados tiene 3 elementos",
+          "expression": "resultados.length === 3"
+        },
+        {
+          "description": "exitosos tiene 2 elementos",
+          "expression": "exitosos.length === 2"
+        },
+        {
+          "description": "exitosos incluye 'datos de usuarios'",
+          "expression": "exitosos.includes('datos de usuarios')"
+        },
+        {
+          "description": "fallidos tiene 1 elemento con el mensaje correcto",
+          "expression": "fallidos.length === 1 && fallidos[0] === 'timeout de red'"
+        }
+      ],
+      "hints": [
+        "`Promise.allSettled` siempre resuelve con un array — nunca rechaza.",
+        "Cada elemento tiene `status: 'fulfilled'` o `status: 'rejected'`. Los fulfilled tienen `.value`, los rejected tienen `.reason`.",
+        "El código inicial ya es correcto."
+      ]
+    }
+  ]
+}

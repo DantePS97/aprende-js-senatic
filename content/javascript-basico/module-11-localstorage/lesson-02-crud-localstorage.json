@@ -1,0 +1,109 @@
+{
+  "id": "js-basico-m11-l2",
+  "title": "CRUD con localStorage",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## CRUD con localStorage\n\n**CRUD** significa Crear, Leer, Actualizar, Eliminar (Create, Read, Update, Delete). Es el conjunto de operaciones básicas para gestionar datos. Con localStorage puedes implementar un CRUD completo sin necesitar un servidor.\n\n### El patrón estándar\n\nComo localStorage solo guarda strings, la estrategia es:\n1. **Leer** la lista actual → `JSON.parse`\n2. **Modificar** el array en memoria\n3. **Guardar** de vuelta → `JSON.stringify`\n\n```js\n// Leer\nconst items = JSON.parse(localStorage.getItem('items') || '[]');\n\n// Agregar\nitems.push({ id: Date.now(), texto: 'Nueva tarea' });\n\n// Guardar\nlocalStorage.setItem('items', JSON.stringify(items));\n```\n\n### Operaciones CRUD completas\n\n```js\nconst CLAVE = 'tareas';\n\n// CREATE\nfunction agregarTarea(texto) {\n  const tareas = leerTareas();\n  tareas.push({ id: Date.now(), texto, completada: false });\n  localStorage.setItem(CLAVE, JSON.stringify(tareas));\n}\n\n// READ\nfunction leerTareas() {\n  return JSON.parse(localStorage.getItem(CLAVE) || '[]');\n}\n\n// UPDATE\nfunction completarTarea(id) {\n  const tareas = leerTareas();\n  const tarea = tareas.find(t => t.id === id);\n  if (tarea) tarea.completada = true;\n  localStorage.setItem(CLAVE, JSON.stringify(tareas));\n}\n\n// DELETE\nfunction eliminarTarea(id) {\n  const tareas = leerTareas().filter(t => t.id !== id);\n  localStorage.setItem(CLAVE, JSON.stringify(tareas));\n}\n```\n\n### Cuándo usar localStorage\n\n✅ Preferencias del usuario, caché ligera, datos de sesión\n❌ Datos sensibles (contraseñas, tokens de larga duración)\n❌ Grandes volúmenes de datos (límite ~5-10 MB)",
+    "examples": [
+      {
+        "code": "// Sistema de notas simple\nconst NOTAS_KEY = 'mis-notas';\n\nfunction guardarNota(titulo, contenido) {\n  const notas = JSON.parse(localStorage.getItem(NOTAS_KEY) || '[]');\n  notas.push({ id: Date.now(), titulo, contenido });\n  localStorage.setItem(NOTAS_KEY, JSON.stringify(notas));\n  return notas;\n}\n\nfunction obtenerNotas() {\n  return JSON.parse(localStorage.getItem(NOTAS_KEY) || '[]');\n}\n\nguardarNota('Idea', 'Aprender fetch esta semana');\nguardarNota('Tarea', 'Terminar el módulo de localStorage');\nconsole.log(obtenerNotas().length); // 2",
+        "explanation": "El truco '[]' en el OR garantiza que si la clave no existe (getItem retorna null), parseamos un array vacío. Así las funciones siempre trabajan con un array, nunca con null."
+      },
+      {
+        "code": "// Actualizar un elemento — patrón map\nconst PREFS_KEY = 'preferencias';\n\nfunction actualizarPreferencia(clave, valor) {\n  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');\n  prefs[clave] = valor; // actualiza o agrega la propiedad\n  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));\n}\n\nfunction obtenerPreferencias() {\n  return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');\n}\n\nactualizarPreferencia('tema', 'oscuro');\nactualizarPreferencia('idioma', 'es');\nconsole.log(obtenerPreferencias()); // { tema: 'oscuro', idioma: 'es' }",
+        "explanation": "Para un objeto de configuración, el patrón es más simple: lee el objeto, modifica la propiedad, guarda. El spread {...prefs, [clave]: valor} también funciona para crear una copia inmutable."
+      },
+      {
+        "code": "// Eliminar — patrón filter\nconst ITEMS_KEY = 'items';\n\nfunction eliminarItem(id) {\n  const items = JSON.parse(localStorage.getItem(ITEMS_KEY) || '[]');\n  const restantes = items.filter(item => item.id !== id);\n  localStorage.setItem(ITEMS_KEY, JSON.stringify(restantes));\n  return restantes;\n}\n\n// Poblar con datos de prueba\nlocalStorage.setItem(ITEMS_KEY, JSON.stringify([\n  { id: 1, texto: 'Estudiar JS' },\n  { id: 2, texto: 'Hacer ejercicio' },\n  { id: 3, texto: 'Leer un libro' }\n]));\n\neliminarItem(2);\nconsole.log(JSON.parse(localStorage.getItem(ITEMS_KEY)).length); // 2",
+        "explanation": "filter crea un nuevo array sin el elemento eliminado. Nunca mutes el array directamente con splice en este patrón — siempre crea uno nuevo y guárdalo."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Agregar items a una lista",
+      "prompt": "Implementa `agregarItem(texto)`: lee la lista actual de `'lista'` en localStorage (o usa `[]` si no existe), agrega el nuevo texto, y guarda la lista actualizada.\n\nRetorna la lista actualizada.",
+      "starterCode": "function agregarItem(texto) {\n  const lista = JSON.parse(localStorage.getItem('lista') || '[]');\n  lista.push(texto);\n  localStorage.setItem('lista', JSON.stringify(lista));\n  return lista;\n}\n\nagregarItem('Tarea 1');\nagregarItem('Tarea 2');\nconst listaFinal = agregarItem('Tarea 3');\n",
+      "tests": [
+        {
+          "description": "listaFinal tiene 3 elementos",
+          "expression": "listaFinal.length === 3"
+        },
+        {
+          "description": "El primer elemento es 'Tarea 1'",
+          "expression": "listaFinal[0] === 'Tarea 1'"
+        },
+        {
+          "description": "El último es 'Tarea 3'",
+          "expression": "listaFinal[2] === 'Tarea 3'"
+        },
+        {
+          "description": "La lista persiste en localStorage",
+          "expression": "JSON.parse(localStorage.getItem('lista')).length === 3"
+        }
+      ],
+      "hints": [
+        "El truco `|| '[]'` convierte el `null` de `getItem` a un string parseable: `JSON.parse('[]')` da `[]`.",
+        "Siempre guarda de vuelta con `localStorage.setItem` después de modificar el array.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Práctica: Eliminar item por índice",
+      "prompt": "Implementa `eliminarItem(indice)`: elimina el elemento en esa posición de la lista guardada en `'lista'` y guarda la lista resultante. Retorna la lista actualizada.",
+      "starterCode": "// Primero poblamos la lista para el test\nlocalStorage.setItem('lista', JSON.stringify(['A', 'B', 'C', 'D']));\n\nfunction eliminarItem(indice) {\n  const lista = JSON.parse(localStorage.getItem('lista') || '[]');\n  lista.splice(indice, 1);\n  localStorage.setItem('lista', JSON.stringify(lista));\n  return lista;\n}\n\nconst resultado = eliminarItem(1); // elimina 'B'\n",
+      "tests": [
+        {
+          "description": "resultado tiene 3 elementos",
+          "expression": "resultado.length === 3"
+        },
+        {
+          "description": "'B' fue eliminado",
+          "expression": "!resultado.includes('B')"
+        },
+        {
+          "description": "'A' sigue siendo el primero",
+          "expression": "resultado[0] === 'A'"
+        },
+        {
+          "description": "La lista en localStorage tiene 3 elementos",
+          "expression": "JSON.parse(localStorage.getItem('lista')).length === 3"
+        }
+      ],
+      "hints": [
+        "`splice(indice, 1)` elimina 1 elemento en la posición `indice`. Modifica el array en su lugar.",
+        "Después de `splice`, guarda la lista actualizada con `setItem`.",
+        "Solución: El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Mini gestor de tareas",
+      "prompt": "Implementa un gestor de tareas con tres funciones que operan sobre la clave `'tareas'` en localStorage:\n\n- `agregarTarea(texto)`: agrega `{ texto, completada: false }` y retorna la lista.\n- `completarTarea(indice)`: cambia `completada` a `true` en esa posición y retorna la lista.\n- `tareasCompletadas()`: retorna cuántas tareas tienen `completada === true`.",
+      "starterCode": "function agregarTarea(texto) {\n  const tareas = JSON.parse(localStorage.getItem('tareas') || '[]');\n  tareas.push({ texto, completada: false });\n  localStorage.setItem('tareas', JSON.stringify(tareas));\n  return tareas;\n}\n\nfunction completarTarea(indice) {\n  const tareas = JSON.parse(localStorage.getItem('tareas') || '[]');\n  if (tareas[indice]) tareas[indice].completada = true;\n  localStorage.setItem('tareas', JSON.stringify(tareas));\n  return tareas;\n}\n\nfunction tareasCompletadas() {\n  const tareas = JSON.parse(localStorage.getItem('tareas') || '[]');\n  return tareas.filter(t => t.completada).length;\n}\n\nagregarTarea('Estudiar JavaScript');\nagregarTarea('Hacer ejercicio');\nagregarTarea('Leer un libro');\ncompletarTarea(0);\ncompletarTarea(2);\nconst completadas = tareasCompletadas();\n",
+      "tests": [
+        {
+          "description": "Hay 3 tareas en total",
+          "expression": "JSON.parse(localStorage.getItem('tareas')).length === 3"
+        },
+        {
+          "description": "La primera tarea está completada",
+          "expression": "JSON.parse(localStorage.getItem('tareas'))[0].completada === true"
+        },
+        {
+          "description": "La segunda tarea NO está completada",
+          "expression": "JSON.parse(localStorage.getItem('tareas'))[1].completada === false"
+        },
+        {
+          "description": "tareasCompletadas() retorna 2",
+          "expression": "completadas === 2"
+        }
+      ],
+      "hints": [
+        "El patrón es siempre: leer → modificar → guardar → retornar.",
+        "Para `completarTarea`, accede a `tareas[indice]` y cambia la propiedad `completada`.",
+        "Para contar, usa `filter(t => t.completada).length`.",
+        "El código inicial ya es correcto."
+      ]
+    }
+  ]
+}

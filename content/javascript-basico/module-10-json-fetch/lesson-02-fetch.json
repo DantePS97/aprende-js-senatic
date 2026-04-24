@@ -1,0 +1,104 @@
+{
+  "id": "js-basico-m10-l2",
+  "title": "Fetch API: conectar con el mundo real",
+  "xpReward": 60,
+  "theory": {
+    "markdown": "## Fetch API: conectar con el mundo real\n\n`fetch` es la función nativa de JavaScript para hacer **peticiones HTTP** — pedir datos a un servidor o API. Es la forma en que tu app web se comunica con el backend.\n\n### Sintaxis básica\n\n```js\nconst respuesta = await fetch('https://api.ejemplo.com/datos');\nconst datos = await respuesta.json();\nconsole.log(datos);\n```\n\n### Lo que retorna fetch\n\n`fetch` retorna una Promesa que resuelve con un objeto `Response`. Ese objeto NO contiene los datos directamente — hay que extraerlos:\n\n```js\nconst res = await fetch(url);\n\nres.ok;       // true si el status es 200-299\nres.status;   // 200, 404, 500, etc.\nawait res.json();   // parsea el cuerpo como JSON\nawait res.text();   // obtiene el cuerpo como texto\n```\n\n### Manejo de errores con fetch\n\nOjo: `fetch` solo rechaza la Promesa si hay un **error de red** (sin conexión). Un status 404 o 500 NO lanza error — debes verificar `res.ok`:\n\n```js\nasync function obtenerUsuario(id) {\n  try {\n    const res = await fetch(`/api/usuarios/${id}`);\n    if (!res.ok) throw new Error(`Error ${res.status}`);\n    return await res.json();\n  } catch (error) {\n    console.error('Falló la petición:', error.message);\n    return null;\n  }\n}\n```\n\n### Enviar datos con POST\n\n```js\nconst res = await fetch('/api/usuarios', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ nombre: 'Ana', edad: 17 })\n});\nconst nuevo = await res.json();\n```\n\n### APIs públicas para practicar\n\n- `https://jsonplaceholder.typicode.com/posts` — posts de prueba\n- `https://jsonplaceholder.typicode.com/users` — usuarios de prueba",
+    "examples": [
+      {
+        "code": "// GET básico — pedir una lista de posts\nasync function obtenerPosts() {\n  const res = await fetch('https://jsonplaceholder.typicode.com/posts');\n  const posts = await res.json();\n\n  console.log(`Hay ${posts.length} posts`);\n  console.log('Primero:', posts[0].title);\n}\n\nobtenerPosts();",
+        "explanation": "fetch retorna una Promesa. Con await, esperamos la respuesta. Luego .json() convierte el cuerpo de la respuesta en un objeto JavaScript. Este es el patrón más simple de GET."
+      },
+      {
+        "code": "// GET con manejo de errores correcto\nasync function obtenerUsuario(id) {\n  try {\n    const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);\n\n    if (!res.ok) {\n      throw new Error(`No encontrado (status: ${res.status})`);\n    }\n\n    const usuario = await res.json();\n    return usuario;\n  } catch (error) {\n    console.error('Error:', error.message);\n    return null;\n  }\n}\n\nconst usuario = await obtenerUsuario(1);\nconsole.log(usuario?.name); // 'Leanne Graham'",
+        "explanation": "Siempre verifica res.ok. Un 404 no lanza error por sí solo — fetch solo falla si no hay red. El try/catch captura errores de red y los errores que tú lanzas con throw."
+      },
+      {
+        "code": "// POST — crear un recurso nuevo\nasync function crearPost(titulo, cuerpo) {\n  const res = await fetch('https://jsonplaceholder.typicode.com/posts', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ title: titulo, body: cuerpo, userId: 1 })\n  });\n\n  if (!res.ok) throw new Error(`Error ${res.status}`);\n\n  const postCreado = await res.json();\n  console.log('Creado con id:', postCreado.id); // 101\n  return postCreado;\n}\n\nawait crearPost('Mi primer post', 'Contenido del post');",
+        "explanation": "Para POST, pasas un objeto de opciones con method, headers y body. El body debe ser un string (JSON.stringify). El servidor responde con el recurso creado, incluyendo el id asignado."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Verificar respuesta OK",
+      "prompt": "Dado un objeto que simula una respuesta HTTP, implementa `esExitosa(respuesta)` que retorna `true` si `respuesta.ok` es `true`, o `false` si no.\n\nLuego úsala para clasificar tres respuestas.",
+      "starterCode": "function esExitosa(respuesta) {\n  return respuesta.ok === true;\n}\n\nconst res200 = { ok: true,  status: 200 };\nconst res404 = { ok: false, status: 404 };\nconst res500 = { ok: false, status: 500 };\n\nconst resultados = [res200, res404, res500].map(esExitosa);\n",
+      "tests": [
+        {
+          "description": "res200 es exitosa",
+          "expression": "esExitosa(res200) === true"
+        },
+        {
+          "description": "res404 no es exitosa",
+          "expression": "esExitosa(res404) === false"
+        },
+        {
+          "description": "resultados tiene 3 elementos",
+          "expression": "resultados.length === 3"
+        },
+        {
+          "description": "Solo el primero es true",
+          "expression": "resultados[0] === true && resultados[1] === false && resultados[2] === false"
+        }
+      ],
+      "hints": [
+        "Una respuesta HTTP es exitosa si su propiedad `ok` es `true` (status 200-299).",
+        "Simplifica: `return respuesta.ok;` es equivalente a `return respuesta.ok === true;`",
+        "Solución: `function esExitosa(respuesta) { return respuesta.ok; }`"
+      ]
+    },
+    {
+      "title": "Práctica: Construir opciones para POST",
+      "prompt": "Implementa `crearOpcionesPost(datos)`: recibe un objeto y retorna las opciones que se pasarían a `fetch` para hacer un POST:\n\n```js\n{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) }\n```",
+      "starterCode": "function crearOpcionesPost(datos) {\n  return {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(datos)\n  };\n}\n\nconst opciones = crearOpcionesPost({ nombre: 'Ana', edad: 17 });\n",
+      "tests": [
+        {
+          "description": "method es 'POST'",
+          "expression": "opciones.method === 'POST'"
+        },
+        {
+          "description": "Content-Type es 'application/json'",
+          "expression": "opciones.headers['Content-Type'] === 'application/json'"
+        },
+        {
+          "description": "body es un string (JSON)",
+          "expression": "typeof opciones.body === 'string'"
+        },
+        {
+          "description": "body contiene el nombre 'Ana'",
+          "expression": "opciones.body.includes('Ana')"
+        }
+      ],
+      "hints": [
+        "El body debe ser `JSON.stringify(datos)` — no el objeto directamente.",
+        "El header `Content-Type: application/json` le dice al servidor qué formato estás enviando.",
+        "Solución: El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Función fetch robusta",
+      "prompt": "Implementa `fetchSeguro(url)`: llama a `fetch(url)` y:\n- Si `res.ok` es false, lanza `new Error('HTTP ' + res.status)`.\n- Si todo va bien, retorna `await res.json()`.\n- Si hay un error (de red o de status), retorna `{ error: error.message }`.\n\nSimula `fetch` con la función `mockFetch` ya definida.",
+      "starterCode": "// Simulación de fetch para el ejercicio\nfunction mockFetch(url) {\n  if (url.includes('error')) {\n    return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });\n  }\n  return Promise.resolve({\n    ok: true,\n    status: 200,\n    json: () => Promise.resolve({ datos: 'ok', url })\n  });\n}\n\nasync function fetchSeguro(url, _fetch = mockFetch) {\n  try {\n    const res = await _fetch(url);\n    if (!res.ok) throw new Error('HTTP ' + res.status);\n    return await res.json();\n  } catch (error) {\n    return { error: error.message };\n  }\n}\n\nconst exitoso = await fetchSeguro('https://api.ejemplo.com/datos');\nconst fallido = await fetchSeguro('https://api.ejemplo.com/error');\n",
+      "tests": [
+        {
+          "description": "La URL exitosa retorna los datos",
+          "expression": "exitoso.datos === 'ok'"
+        },
+        {
+          "description": "La URL fallida retorna un objeto con error",
+          "expression": "typeof fallido.error === 'string'"
+        },
+        {
+          "description": "El error incluye el status 404",
+          "expression": "fallido.error.includes('404')"
+        }
+      ],
+      "hints": [
+        "Verifica `res.ok` justo después del `await _fetch(url)`. Si es false, usa `throw new Error(...)`.",
+        "El catch captura tanto errores de red como los que tú lanzas con throw.",
+        "El código inicial ya es correcto — estudia cómo `mockFetch` simula las dos respuestas posibles."
+      ]
+    }
+  ]
+}

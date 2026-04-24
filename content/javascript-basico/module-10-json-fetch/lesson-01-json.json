@@ -1,0 +1,108 @@
+{
+  "id": "js-basico-m10-l1",
+  "title": "JSON: el lenguaje de los datos",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## JSON: el lenguaje de los datos\n\n**JSON** (JavaScript Object Notation) es el formato estándar para intercambiar datos en la web. Cuando una app pide información a un servidor, la respuesta casi siempre llega en JSON.\n\nJSON se ve igual que los objetos y arrays de JavaScript, pero con una diferencia clave: **es texto**. Un objeto JavaScript vive en memoria; un JSON es una cadena de texto que se puede enviar por internet.\n\n### Sintaxis JSON\n\n```json\n{\n  \"nombre\": \"Ana\",\n  \"edad\": 17,\n  \"activa\": true,\n  \"cursos\": [\"JavaScript\", \"HTML\"],\n  \"direccion\": null\n}\n```\n\nReglas importantes:\n- Las **claves siempre van entre comillas dobles** (`\"clave\"`, no `clave`)\n- No hay `undefined`, funciones ni comentarios\n- Valores válidos: string, number, boolean, null, array, object\n\n### `JSON.stringify` — objeto → texto\n\n```js\nconst usuario = { nombre: 'Ana', edad: 17 };\nconst texto = JSON.stringify(usuario);\nconsole.log(texto);         // '{\"nombre\":\"Ana\",\"edad\":17}'\nconsole.log(typeof texto);  // 'string'\n\n// Con formato legible (2 espacios de indentación)\nconst bonito = JSON.stringify(usuario, null, 2);\n```\n\n### `JSON.parse` — texto → objeto\n\n```js\nconst texto = '{\"nombre\":\"Ana\",\"edad\":17}';\nconst usuario = JSON.parse(texto);\nconsole.log(usuario.nombre); // 'Ana'\nconsole.log(typeof usuario); // 'object'\n```\n\n### Truco: clonar objetos con JSON\n\n```js\nconst original = { a: 1, b: { c: 2 } };\nconst copia = JSON.parse(JSON.stringify(original));\ncopia.b.c = 99;\nconsole.log(original.b.c); // 2 — no se modificó\n```",
+    "examples": [
+      {
+        "code": "// stringify: convertir a texto para enviar o guardar\nconst producto = {\n  id: 42,\n  nombre: 'Laptop',\n  precio: 2500000,\n  disponible: true,\n  etiquetas: ['electrónica', 'oferta']\n};\n\nconst json = JSON.stringify(producto);\nconsole.log(json);\n// {\"id\":42,\"nombre\":\"Laptop\",\"precio\":2500000,\"disponible\":true,\"etiquetas\":[\"electrónica\",\"oferta\"]}\n\nconsole.log(typeof json); // 'string'",
+        "explanation": "JSON.stringify convierte cualquier valor JavaScript válido a su representación de texto. El resultado es un string que puede viajar por red o guardarse en localStorage."
+      },
+      {
+        "code": "// parse: recibir texto y convertirlo a objeto usable\nconst respuestaServidor = '{\"usuarios\":[{\"id\":1,\"nombre\":\"Ana\"},{\"id\":2,\"nombre\":\"Luis\"}]}';\n\nconst datos = JSON.parse(respuestaServidor);\nconsole.log(datos.usuarios.length);    // 2\nconsole.log(datos.usuarios[0].nombre); // 'Ana'\n\n// Ahora puedes usar todos los métodos de array\nconst nombres = datos.usuarios.map(u => u.nombre);\nconsole.log(nombres); // ['Ana', 'Luis']",
+        "explanation": "JSON.parse convierte el texto de vuelta a un objeto JavaScript. A partir de ese momento puedes usar el objeto normalmente: acceder a propiedades, iterar arrays, etc."
+      },
+      {
+        "code": "// Errores comunes con JSON\n\n// ❌ Claves sin comillas\n// JSON.parse(\"{ nombre: 'Ana' }\"); // SyntaxError\n\n// ❌ Comillas simples\n// JSON.parse(\"{ 'nombre': 'Ana' }\"); // SyntaxError\n\n// ✅ Siempre comillas dobles\nJSON.parse('{ \"nombre\": \"Ana\" }'); // OK\n\n// Valores que stringify ignora\nconst obj = { nombre: 'Ana', fn: () => 42, x: undefined };\nconsole.log(JSON.stringify(obj)); // '{\"nombre\":\"Ana\"}' — fn y x desaparecen",
+        "explanation": "JSON es más estricto que JS: solo comillas dobles, sin funciones ni undefined. stringify simplemente omite esos valores. Siempre usa try/catch al parsear JSON externo."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Convertir objeto a JSON",
+      "prompt": "Dado el objeto `estudiante`, usa `JSON.stringify` para convertirlo a texto y asígnalo a `jsonTexto`.\n\nLuego verifica que `jsonTexto` sea un string.",
+      "starterCode": "const estudiante = {\n  nombre: 'Carlos',\n  edad: 16,\n  curso: 'JavaScript Básico'\n};\n\nconst jsonTexto = JSON.stringify(estudiante);\nconst esString = typeof jsonTexto === 'string';\n",
+      "tests": [
+        {
+          "description": "jsonTexto es un string",
+          "expression": "typeof jsonTexto === 'string'"
+        },
+        {
+          "description": "esString es true",
+          "expression": "esString === true"
+        },
+        {
+          "description": "jsonTexto contiene el nombre",
+          "expression": "jsonTexto.includes('Carlos')"
+        },
+        {
+          "description": "jsonTexto contiene la edad",
+          "expression": "jsonTexto.includes('16')"
+        }
+      ],
+      "hints": [
+        "`JSON.stringify(objeto)` convierte el objeto a su representación en texto.",
+        "El resultado es siempre un string — puedes verificarlo con `typeof`.",
+        "Solución: `const jsonTexto = JSON.stringify(estudiante);`"
+      ]
+    },
+    {
+      "title": "Práctica: Parsear JSON",
+      "prompt": "Dado el texto JSON `datosJson`, usa `JSON.parse` para convertirlo a objeto. Luego extrae el `nombre` y el primer elemento de `cursos` en variables separadas.",
+      "starterCode": "const datosJson = '{\"nombre\":\"María\",\"edad\":17,\"cursos\":[\"JavaScript\",\"HTML\",\"CSS\"]}';\n\nconst datos = JSON.parse(datosJson);\nconst nombre = datos.nombre;\nconst primerCurso = datos.cursos[0];\n",
+      "tests": [
+        {
+          "description": "datos es un objeto",
+          "expression": "typeof datos === 'object' && datos !== null"
+        },
+        {
+          "description": "nombre es 'María'",
+          "expression": "nombre === 'María'"
+        },
+        {
+          "description": "primerCurso es 'JavaScript'",
+          "expression": "primerCurso === 'JavaScript'"
+        },
+        {
+          "description": "datos.cursos tiene 3 elementos",
+          "expression": "datos.cursos.length === 3"
+        }
+      ],
+      "hints": [
+        "`JSON.parse(texto)` convierte el string de vuelta a un objeto JavaScript.",
+        "Accede a propiedades normalmente: `datos.nombre`, `datos.cursos[0]`.",
+        "Solución: `const datos = JSON.parse(datosJson); const nombre = datos.nombre; const primerCurso = datos.cursos[0];`"
+      ]
+    },
+    {
+      "title": "Aplicación: Ciclo completo stringify → parse",
+      "prompt": "Implementa `clonarObjeto(obj)`: usa `JSON.stringify` y `JSON.parse` para crear una copia profunda del objeto. Verifica que modificar la copia no afecte el original.",
+      "starterCode": "function clonarObjeto(obj) {\n  return JSON.parse(JSON.stringify(obj));\n}\n\nconst original = { nombre: 'Ana', scores: [10, 20, 30] };\nconst copia = clonarObjeto(original);\n\n// Modificar la copia no debe afectar el original\ncopia.nombre = 'Luis';\ncopia.scores.push(40);\n",
+      "tests": [
+        {
+          "description": "copia tiene los mismos valores iniciales",
+          "expression": "copia.nombre === 'Luis'"
+        },
+        {
+          "description": "original.nombre sigue siendo 'Ana'",
+          "expression": "original.nombre === 'Ana'"
+        },
+        {
+          "description": "original.scores tiene 3 elementos (no fue afectado)",
+          "expression": "original.scores.length === 3"
+        },
+        {
+          "description": "copia.scores tiene 4 elementos",
+          "expression": "copia.scores.length === 4"
+        }
+      ],
+      "hints": [
+        "El truco es: `JSON.parse(JSON.stringify(obj))` — convierte a texto y de vuelta a objeto, creando una copia completamente independiente.",
+        "Esto funciona para objetos simples (sin funciones ni clases). Para estructuras complejas se usan otras técnicas.",
+        "Solución: `return JSON.parse(JSON.stringify(obj));`"
+      ]
+    }
+  ]
+}

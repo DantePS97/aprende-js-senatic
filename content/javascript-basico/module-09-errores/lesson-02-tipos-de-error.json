@@ -1,0 +1,112 @@
+{
+  "id": "js-basico-m9-l2",
+  "title": "Tipos de error en JavaScript",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Tipos de error en JavaScript\n\nJavaScript no lanza solo un tipo de error genérico — tiene varios tipos especializados, cada uno diseñado para señalar un problema diferente. Conocerlos te ayuda a identificar y corregir bugs mucho más rápido.\n\n### Los errores más comunes\n\n#### `TypeError`\nOcurre cuando usas un valor de un tipo incorrecto.\n\n```js\nnull.nombre;       // TypeError: Cannot read properties of null\n(42)();            // TypeError: 42 is not a function\n```\n\n#### `ReferenceError`\nOcurre cuando accedes a una variable que no existe.\n\n```js\nconsole.log(variableQueNoExiste); // ReferenceError\n```\n\n#### `SyntaxError`\nOcurre cuando el código tiene una sintaxis inválida. Se detecta antes de ejecutar.\n\n```js\nJSON.parse('no es json'); // SyntaxError\n```\n\n#### `RangeError`\nOcurre cuando un valor está fuera del rango permitido.\n\n```js\nnew Array(-1);          // RangeError: Invalid array length\n(1.5).toFixed(200);     // RangeError\n```\n\n#### `Error` (genérico)\nLa clase base. Úsalo cuando ningún tipo específico aplica.\n\n```js\nthrow new Error('Algo salió mal');\n```\n\n### Identificar el tipo en catch\n\n```js\ntry {\n  operacion();\n} catch (error) {\n  if (error instanceof TypeError) {\n    console.log('Tipo incorrecto:', error.message);\n  } else if (error instanceof RangeError) {\n    console.log('Valor fuera de rango:', error.message);\n  } else {\n    console.log('Error inesperado:', error.message);\n  }\n}\n```\n\n### Crear errores personalizados\n\n```js\nclass ErrorDeValidacion extends Error {\n  constructor(campo, mensaje) {\n    super(mensaje);\n    this.name = 'ErrorDeValidacion';\n    this.campo = campo;\n  }\n}\n\nthrow new ErrorDeValidacion('email', 'El email no es válido');\n```",
+    "examples": [
+      {
+        "code": "// Identificar el tipo de error\nconst casos = [\n  () => null.propiedad,           // TypeError\n  () => variableInexistente,      // ReferenceError\n  () => JSON.parse('{inválido}'), // SyntaxError\n  () => new Array(-1),            // RangeError\n];\n\ncasos.forEach((fn, i) => {\n  try {\n    fn();\n  } catch (error) {\n    console.log(`Caso ${i + 1}: ${error.name} — ${error.message}`);\n  }\n});",
+        "explanation": "Cada tipo de operación fallida lanza un tipo de error diferente. El nombre del error (error.name) identifica la categoría, el mensaje (error.message) da el detalle específico."
+      },
+      {
+        "code": "// Usar instanceof para responder diferente a cada error\nfunction procesarDato(dato) {\n  try {\n    if (typeof dato !== 'string') throw new TypeError('Se esperaba un string');\n    const parsed = JSON.parse(dato);\n    return parsed;\n  } catch (error) {\n    if (error instanceof TypeError) {\n      return { error: 'tipo', mensaje: error.message };\n    }\n    if (error instanceof SyntaxError) {\n      return { error: 'sintaxis', mensaje: 'JSON inválido' };\n    }\n    throw error; // relanza errores inesperados\n  }\n}\n\nconsole.log(procesarDato(42));         // { error: 'tipo', ... }\nconsole.log(procesarDato('inválido')); // { error: 'sintaxis', ... }\nconsole.log(procesarDato('{\"a\":1}')); // { a: 1 }",
+        "explanation": "instanceof permite actuar diferente según el tipo de error. Relanzar (throw error) errores inesperados es buena práctica: no silencies lo que no entiendes."
+      },
+      {
+        "code": "// Error personalizado con clase\nclass ErrorDeAutenticacion extends Error {\n  constructor(motivo) {\n    super(`Fallo de autenticación: ${motivo}`);\n    this.name = 'ErrorDeAutenticacion';\n    this.motivo = motivo;\n  }\n}\n\nfunction verificarToken(token) {\n  if (!token) throw new ErrorDeAutenticacion('token ausente');\n  if (token.length < 10) throw new ErrorDeAutenticacion('token inválido');\n  return true;\n}\n\ntry {\n  verificarToken('');\n} catch (error) {\n  console.log(error.name);   // 'ErrorDeAutenticacion'\n  console.log(error.motivo); // 'token ausente'\n  console.log(error instanceof Error); // true — hereda de Error\n}",
+        "explanation": "Extender Error permite crear errores con propiedades extra (como motivo o campo) que el catch puede usar para dar respuestas precisas. Es el patrón estándar en aplicaciones profesionales."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Identificar nombres de errores",
+      "prompt": "Dado el array `tiposDeError`, usa `map` para crear `nombres`: un array con el nombre de cada tipo de error.\n\nLos errores en JS tienen una propiedad `.name`.",
+      "starterCode": "const tiposDeError = [\n  new TypeError('tipo incorrecto'),\n  new RangeError('fuera de rango'),\n  new Error('error genérico')\n];\n\nconst nombres = tiposDeError.map(e => e.name);\n",
+      "tests": [
+        {
+          "description": "nombres tiene 3 elementos",
+          "expression": "nombres.length === 3"
+        },
+        {
+          "description": "El primero es 'TypeError'",
+          "expression": "nombres[0] === 'TypeError'"
+        },
+        {
+          "description": "El segundo es 'RangeError'",
+          "expression": "nombres[1] === 'RangeError'"
+        },
+        {
+          "description": "El tercero es 'Error'",
+          "expression": "nombres[2] === 'Error'"
+        }
+      ],
+      "hints": [
+        "Todos los errores en JS tienen una propiedad `.name` con el nombre del tipo.",
+        "Usa `.map(e => e.name)` para extraer el nombre de cada uno.",
+        "Solución: `const nombres = tiposDeError.map(e => e.name);`"
+      ]
+    },
+    {
+      "title": "Práctica: Clasificar errores con instanceof",
+      "prompt": "Implementa `clasificarError(error)`: retorna `'tipo'` si es un TypeError, `'rango'` si es un RangeError, o `'otro'` para cualquier otro error.",
+      "starterCode": "function clasificarError(error) {\n  if (error instanceof TypeError) return 'tipo';\n  if (error instanceof RangeError) return 'rango';\n  return 'otro';\n}\n",
+      "tests": [
+        {
+          "description": "TypeError → 'tipo'",
+          "expression": "clasificarError(new TypeError()) === 'tipo'"
+        },
+        {
+          "description": "RangeError → 'rango'",
+          "expression": "clasificarError(new RangeError()) === 'rango'"
+        },
+        {
+          "description": "Error genérico → 'otro'",
+          "expression": "clasificarError(new Error()) === 'otro'"
+        },
+        {
+          "description": "SyntaxError → 'otro'",
+          "expression": "clasificarError(new SyntaxError()) === 'otro'"
+        }
+      ],
+      "hints": [
+        "Usa `instanceof` para verificar el tipo: `error instanceof TypeError`.",
+        "El orden importa si los tipos heredan entre sí. En este caso no hay problema.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Error personalizado",
+      "prompt": "Crea una clase `ErrorDeValidacion` que extienda `Error` con:\n- `name` = `'ErrorDeValidacion'`\n- `campo`: el campo que falló (pasado al constructor)\n- `message`: el mensaje de error (pasado al constructor vía `super`)\n\nLuego crea una instancia lanzando un error para el campo `'email'` con mensaje `'Formato inválido'`.",
+      "starterCode": "class ErrorDeValidacion extends Error {\n  constructor(campo, mensaje) {\n    super(mensaje);\n    this.name = 'ErrorDeValidacion';\n    this.campo = campo;\n  }\n}\n\nlet errorCapturado;\ntry {\n  throw new ErrorDeValidacion('email', 'Formato inválido');\n} catch (e) {\n  errorCapturado = e;\n}\n",
+      "tests": [
+        {
+          "description": "errorCapturado es instancia de Error",
+          "expression": "errorCapturado instanceof Error"
+        },
+        {
+          "description": "errorCapturado es instancia de ErrorDeValidacion",
+          "expression": "errorCapturado instanceof ErrorDeValidacion"
+        },
+        {
+          "description": "name es 'ErrorDeValidacion'",
+          "expression": "errorCapturado.name === 'ErrorDeValidacion'"
+        },
+        {
+          "description": "campo es 'email'",
+          "expression": "errorCapturado.campo === 'email'"
+        },
+        {
+          "description": "message es 'Formato inválido'",
+          "expression": "errorCapturado.message === 'Formato inválido'"
+        }
+      ],
+      "hints": [
+        "Usa `super(mensaje)` en el constructor para pasar el mensaje a la clase padre `Error`.",
+        "Asigna `this.name` y `this.campo` como propiedades adicionales.",
+        "El código inicial ya es correcto — analiza cómo `extends` hereda todas las propiedades de `Error`."
+      ]
+    }
+  ]
+}

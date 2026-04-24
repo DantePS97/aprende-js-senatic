@@ -1,0 +1,100 @@
+{
+  "id": "js-basico-m9-l1",
+  "title": "try/catch: capturar errores",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## try/catch: capturar errores\n\nCuando algo falla en JavaScript — una división inválida, un valor `undefined`, una petición que no llega — el programa lanza un **error** y se detiene. `try/catch` permite **capturar ese error** y decidir qué hacer en lugar de que todo explote.\n\n### Estructura básica\n\n```js\ntry {\n  // código que puede fallar\n  const resultado = operacionRiesgosa();\n  console.log(resultado);\n} catch (error) {\n  // se ejecuta SOLO si hubo un error\n  console.error('Algo salió mal:', error.message);\n}\n```\n\nSi el código dentro de `try` lanza un error, JavaScript salta inmediatamente al bloque `catch`. Si no hay error, `catch` se ignora por completo.\n\n### El objeto `error`\n\nEl `catch` recibe un objeto con información del error:\n\n```js\ntry {\n  null.propiedad; // TypeError\n} catch (error) {\n  console.log(error.name);    // 'TypeError'\n  console.log(error.message); // \"Cannot read properties of null\"\n  console.log(error.stack);   // traza de la pila de llamadas\n}\n```\n\n### `finally`: siempre se ejecuta\n\n```js\ntry {\n  const datos = JSON.parse(textoInvalido);\n} catch (error) {\n  console.error('JSON inválido');\n} finally {\n  console.log('Esto se ejecuta siempre, haya error o no');\n  // útil para cerrar conexiones, liberar recursos, etc.\n}\n```\n\n### Lanzar errores propios con `throw`\n\n```js\nfunction dividir(a, b) {\n  if (b === 0) throw new Error('No se puede dividir por cero');\n  return a / b;\n}\n```",
+    "examples": [
+      {
+        "code": "// Sin try/catch: el programa se detiene\n// JSON.parse('texto inválido'); // ← SyntaxError: rompe todo\n\n// Con try/catch: el error queda controlado\ntry {\n  const datos = JSON.parse('esto no es json');\n  console.log(datos);\n} catch (error) {\n  console.log('Error capturado:', error.name); // SyntaxError\n  console.log('Mensaje:', error.message);\n}\nconsole.log('El programa continúa...');",
+        "explanation": "Sin try/catch, un error detiene toda la ejecución. Con try/catch, el error se captura y el código puede seguir después del bloque."
+      },
+      {
+        "code": "function obtenerEdad(usuario) {\n  if (!usuario) throw new Error('Usuario requerido');\n  if (typeof usuario.edad !== 'number') throw new TypeError('La edad debe ser un número');\n  if (usuario.edad < 0) throw new RangeError('La edad no puede ser negativa');\n  return usuario.edad;\n}\n\ntry {\n  console.log(obtenerEdad(null));         // Error: Usuario requerido\n} catch (e) { console.error(e.message); }\n\ntry {\n  console.log(obtenerEdad({ edad: -5 })); // RangeError\n} catch (e) { console.error(e.message); }",
+        "explanation": "throw permite lanzar errores intencionalmente para señalar condiciones inválidas. Usa el tipo de error correcto: Error (general), TypeError (tipo incorrecto), RangeError (valor fuera de rango)."
+      },
+      {
+        "code": "async function cargarDatos(url) {\n  try {\n    const res = await fetch(url);\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n    return await res.json();\n  } catch (error) {\n    console.error('No se pudieron cargar los datos:', error.message);\n    return null; // valor seguro para continuar\n  } finally {\n    console.log('Intento de carga finalizado');\n  }\n}",
+        "explanation": "En código async, try/catch es la forma idiomática de manejar errores. finally garantiza que el log de auditoría o el cierre de recursos ocurra sin importar el resultado."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Capturar un error",
+      "prompt": "El siguiente código lanza un error. Envuélvelo en `try/catch` y asigna el mensaje del error a `mensajeError`.\n\n```js\nJSON.parse('no es json');\n```",
+      "starterCode": "let mensajeError;\n\ntry {\n  JSON.parse('no es json');\n} catch (error) {\n  mensajeError = error.message;\n}\n",
+      "tests": [
+        {
+          "description": "mensajeError es un string",
+          "expression": "typeof mensajeError === 'string'"
+        },
+        {
+          "description": "mensajeError no está vacío",
+          "expression": "mensajeError.length > 0"
+        }
+      ],
+      "hints": [
+        "Rodea la llamada a `JSON.parse` con `try { ... } catch (error) { ... }`.",
+        "Dentro del `catch`, asigna `error.message` a la variable `mensajeError`.",
+        "Solución: `try { JSON.parse('no es json'); } catch (error) { mensajeError = error.message; }`"
+      ]
+    },
+    {
+      "title": "Práctica: Lanzar errores con throw",
+      "prompt": "Implementa `validarEdad(edad)` que:\n- Lanza `new Error('Edad requerida')` si `edad` es `null` o `undefined`.\n- Lanza `new RangeError('Edad inválida')` si `edad < 0` o `edad > 120`.\n- Retorna `edad` si es válida.",
+      "starterCode": "function validarEdad(edad) {\n  if (edad === null || edad === undefined) throw new Error('Edad requerida');\n  if (edad < 0 || edad > 120) throw new RangeError('Edad inválida');\n  return edad;\n}\n",
+      "tests": [
+        {
+          "description": "validarEdad(25) retorna 25",
+          "expression": "validarEdad(25) === 25"
+        },
+        {
+          "description": "validarEdad(null) lanza Error",
+          "expression": "(() => { try { validarEdad(null); return false; } catch(e) { return e.message === 'Edad requerida'; } })()"
+        },
+        {
+          "description": "validarEdad(-1) lanza RangeError",
+          "expression": "(() => { try { validarEdad(-1); return false; } catch(e) { return e instanceof RangeError; } })()"
+        },
+        {
+          "description": "validarEdad(200) lanza RangeError",
+          "expression": "(() => { try { validarEdad(200); return false; } catch(e) { return e instanceof RangeError; } })()"
+        }
+      ],
+      "hints": [
+        "Para verificar `null` o `undefined` juntos: `edad == null` (doble igual) funciona para ambos, o usa `edad === null || edad === undefined`.",
+        "Usa `throw new RangeError('...')` para el error de rango, no un `Error` genérico.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Parsear JSON de forma segura",
+      "prompt": "Implementa `parsearSeguro(texto)`: intenta parsear el texto como JSON. Si tiene éxito, retorna el objeto. Si falla, retorna `null` (sin lanzar el error al llamador).",
+      "starterCode": "function parsearSeguro(texto) {\n  try {\n    return JSON.parse(texto);\n  } catch {\n    return null;\n  }\n}\n",
+      "tests": [
+        {
+          "description": "parsearSeguro('{\"nombre\":\"Ana\"}') retorna el objeto",
+          "expression": "parsearSeguro('{\"nombre\":\"Ana\"}').nombre === 'Ana'"
+        },
+        {
+          "description": "parsearSeguro('texto inválido') retorna null",
+          "expression": "parsearSeguro('texto inválido') === null"
+        },
+        {
+          "description": "parsearSeguro('[1,2,3]') retorna un array",
+          "expression": "Array.isArray(parsearSeguro('[1,2,3]'))"
+        },
+        {
+          "description": "parsearSeguro(null) retorna null sin lanzar error",
+          "expression": "parsearSeguro(null) === null"
+        }
+      ],
+      "hints": [
+        "Rodea `JSON.parse(texto)` con `try/catch` y retorna `null` en el `catch`.",
+        "En JS moderno puedes omitir el parámetro del catch si no lo usas: `catch { ... }` (sin paréntesis).",
+        "El código inicial ya es correcto — este patrón 'parsear o null' es muy común en proyectos reales."
+      ]
+    }
+  ]
+}

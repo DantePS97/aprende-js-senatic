@@ -1,0 +1,112 @@
+{
+  "id": "js-basico-m10-l3",
+  "title": "Fetch avanzado: headers, autenticación y manejo de errores",
+  "xpReward": 65,
+  "theory": {
+    "markdown": "## Fetch avanzado\n\nEn proyectos reales, las peticiones HTTP necesitan más configuración: autenticación, headers personalizados, y manejo robusto de errores de red vs. errores del servidor.\n\n### Headers personalizados\n\nLos headers son metadatos de la petición. Los más comunes:\n\n```js\nconst res = await fetch('/api/datos', {\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': `Bearer ${token}`,\n    'Accept': 'application/json'\n  }\n});\n```\n\n### Autenticación con token (JWT)\n\nEl patrón estándar en APIs modernas:\n\n```js\nconst token = localStorage.getItem('token');\n\nconst res = await fetch('/api/perfil', {\n  headers: {\n    'Authorization': `Bearer ${token}`\n  }\n});\n\nif (res.status === 401) {\n  // Token expirado — redirigir al login\n  window.location.href = '/login';\n}\n```\n\n### Una función fetch reutilizable\n\nEn lugar de repetir la configuración en cada petición, crea una función base:\n\n```js\nasync function apiFetch(ruta, opciones = {}) {\n  const token = localStorage.getItem('token');\n\n  const res = await fetch(`/api${ruta}`, {\n    ...opciones,\n    headers: {\n      'Content-Type': 'application/json',\n      'Authorization': token ? `Bearer ${token}` : '',\n      ...opciones.headers\n    }\n  });\n\n  if (!res.ok) {\n    const error = await res.json().catch(() => ({}));\n    throw new Error(error.message || `HTTP ${res.status}`);\n  }\n\n  return res.json();\n}\n\n// Uso simple\nconst usuario = await apiFetch('/usuarios/1');\nconst nuevo = await apiFetch('/posts', {\n  method: 'POST',\n  body: JSON.stringify({ titulo: 'Hola' })\n});\n```\n\n### PUT y DELETE\n\n```js\n// Actualizar\nawait fetch(`/api/tareas/${id}`, {\n  method: 'PUT',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ completada: true })\n});\n\n// Eliminar\nawait fetch(`/api/tareas/${id}`, { method: 'DELETE' });\n```",
+    "examples": [
+      {
+        "code": "// fetch con token de autorización\nasync function obtenerPerfil() {\n  const token = localStorage.getItem('accessToken');\n\n  const res = await fetch('/api/perfil', {\n    headers: { 'Authorization': `Bearer ${token}` }\n  });\n\n  if (res.status === 401) throw new Error('Sesión expirada');\n  if (!res.ok) throw new Error(`Error ${res.status}`);\n\n  return res.json();\n}",
+        "explanation": "El token se envía en el header Authorization con el prefijo 'Bearer'. El servidor valida el token en cada petición. Un 401 indica que el token expiró o es inválido — tiempo de re-autenticar."
+      },
+      {
+        "code": "// Función genérica para toda la API\nasync function api(ruta, { method = 'GET', body, headers = {} } = {}) {\n  const token = localStorage.getItem('token');\n  const opciones = {\n    method,\n    headers: {\n      'Content-Type': 'application/json',\n      ...(token && { 'Authorization': `Bearer ${token}` }),\n      ...headers\n    }\n  };\n  if (body) opciones.body = JSON.stringify(body);\n\n  const res = await fetch(`/api${ruta}`, opciones);\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return res.json();\n}\n\n// Todas las peticiones usan la misma base\nconst usuarios = await api('/usuarios');\nconst nuevo = await api('/posts', { method: 'POST', body: { titulo: 'Hola' } });\nawait api(`/tareas/${id}`, { method: 'DELETE' });",
+        "explanation": "Esta función centraliza la configuración: token, Content-Type y manejo de errores. Es el patrón que usarás en proyectos reales para evitar repetir código en cada fetch."
+      },
+      {
+        "code": "// Reintentos automáticos en caso de error de red\nasync function fetchConReintento(url, opciones = {}, intentos = 3) {\n  for (let i = 0; i < intentos; i++) {\n    try {\n      const res = await fetch(url, opciones);\n      if (!res.ok) throw new Error(`HTTP ${res.status}`);\n      return await res.json();\n    } catch (error) {\n      const esElUltimo = i === intentos - 1;\n      if (esElUltimo) throw error; // agota reintentos\n      await new Promise(r => setTimeout(r, 1000 * (i + 1))); // espera 1s, 2s...\n      console.log(`Reintentando... (intento ${i + 2}/${intentos})`);\n    }\n  }\n}",
+        "explanation": "El backoff exponencial (1s, 2s, 3s...) evita sobrecargar el servidor cuando hay problemas de red. Este patrón es estándar en SDKs de APIs profesionales."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Construir headers de autorización",
+      "prompt": "Implementa `crearHeaders(token)`: retorna un objeto de headers con `'Content-Type': 'application/json'`. Si `token` existe (no es null ni undefined), agrega `'Authorization': 'Bearer <token>'`.",
+      "starterCode": "function crearHeaders(token) {\n  const headers = { 'Content-Type': 'application/json' };\n  if (token) headers['Authorization'] = `Bearer ${token}`;\n  return headers;\n}\n\nconst conToken = crearHeaders('mi-token-123');\nconst sinToken = crearHeaders(null);\n",
+      "tests": [
+        {
+          "description": "Siempre incluye Content-Type",
+          "expression": "conToken['Content-Type'] === 'application/json' && sinToken['Content-Type'] === 'application/json'"
+        },
+        {
+          "description": "Con token incluye Authorization",
+          "expression": "conToken['Authorization'] === 'Bearer mi-token-123'"
+        },
+        {
+          "description": "Sin token no incluye Authorization",
+          "expression": "sinToken['Authorization'] === undefined"
+        }
+      ],
+      "hints": [
+        "Inicializa el objeto con `Content-Type` siempre presente.",
+        "Usa un `if (token)` para agregar el header de autorización condicionalmente.",
+        "Solución: El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Práctica: Manejar status codes",
+      "prompt": "Implementa `manejarStatus(status)` que retorna un mensaje según el status HTTP:\n- 200-299: `'éxito'`\n- 401: `'no autorizado'`\n- 404: `'no encontrado'`\n- 500 o más: `'error del servidor'`\n- Cualquier otro: `'desconocido'`",
+      "starterCode": "function manejarStatus(status) {\n  if (status >= 200 && status < 300) return 'éxito';\n  if (status === 401) return 'no autorizado';\n  if (status === 404) return 'no encontrado';\n  if (status >= 500) return 'error del servidor';\n  return 'desconocido';\n}\n",
+      "tests": [
+        {
+          "description": "200 → 'éxito'",
+          "expression": "manejarStatus(200) === 'éxito'"
+        },
+        {
+          "description": "201 → 'éxito'",
+          "expression": "manejarStatus(201) === 'éxito'"
+        },
+        {
+          "description": "401 → 'no autorizado'",
+          "expression": "manejarStatus(401) === 'no autorizado'"
+        },
+        {
+          "description": "404 → 'no encontrado'",
+          "expression": "manejarStatus(404) === 'no encontrado'"
+        },
+        {
+          "description": "500 → 'error del servidor'",
+          "expression": "manejarStatus(500) === 'error del servidor'"
+        },
+        {
+          "description": "302 → 'desconocido'",
+          "expression": "manejarStatus(302) === 'desconocido'"
+        }
+      ],
+      "hints": [
+        "Usa rangos para los status 2xx: `status >= 200 && status < 300`.",
+        "Verifica el 401 y 404 antes del rango 500+ para evitar que los sobrescriba.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Función API reutilizable",
+      "prompt": "Implementa `crearCliente(baseUrl)` que retorna un objeto con métodos `get(ruta)` y `post(ruta, datos)`. Ambos usan `mockFetch` (ya definido) e incluyen el header `Content-Type: application/json`.",
+      "starterCode": "function mockFetch(url, opciones = {}) {\n  const esPOST = opciones.method === 'POST';\n  return Promise.resolve({\n    ok: true,\n    status: esPOST ? 201 : 200,\n    json: () => Promise.resolve({ url, method: opciones.method || 'GET', body: opciones.body })\n  });\n}\n\nfunction crearCliente(baseUrl, _fetch = mockFetch) {\n  async function peticion(ruta, opciones = {}) {\n    const res = await _fetch(`${baseUrl}${ruta}`, {\n      ...opciones,\n      headers: { 'Content-Type': 'application/json', ...opciones.headers }\n    });\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n    return res.json();\n  }\n\n  return {\n    get: (ruta) => peticion(ruta),\n    post: (ruta, datos) => peticion(ruta, { method: 'POST', body: JSON.stringify(datos) })\n  };\n}\n\nconst cliente = crearCliente('https://api.ejemplo.com');\nconst getDatos = await cliente.get('/usuarios');\nconst postDatos = await cliente.post('/usuarios', { nombre: 'Ana' });\n",
+      "tests": [
+        {
+          "description": "get hace petición a la URL correcta",
+          "expression": "getDatos.url === 'https://api.ejemplo.com/usuarios'"
+        },
+        {
+          "description": "get usa método GET",
+          "expression": "getDatos.method === 'GET'"
+        },
+        {
+          "description": "post usa método POST",
+          "expression": "postDatos.method === 'POST'"
+        },
+        {
+          "description": "post serializa el body como JSON",
+          "expression": "postDatos.body === JSON.stringify({ nombre: 'Ana' })"
+        }
+      ],
+      "hints": [
+        "La función interna `peticion` centraliza la lógica — `get` y `post` simplemente la llaman con distintas opciones.",
+        "El spread `...opciones` permite que `post` añada `method` y `body` sin sobreescribir headers.",
+        "El código inicial ya es correcto — este patrón es similar a Axios o cualquier SDK de API."
+      ]
+    }
+  ]
+}

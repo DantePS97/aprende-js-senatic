@@ -1,0 +1,92 @@
+{
+  "id": "js-basico-m11-l1",
+  "title": "¿Qué es localStorage?",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## ¿Qué es localStorage?\n\n`localStorage` es un espacio de almacenamiento en el **navegador** donde puedes guardar datos que persisten incluso después de cerrar la pestaña o el navegador. Es como una pequeña base de datos del lado del cliente.\n\n### ¿Por qué es útil?\n\nSin localStorage, cada vez que el usuario recarga la página, todos los datos se pierden. Con localStorage puedes guardar:\n- Preferencias del usuario (tema oscuro/claro)\n- El progreso en un juego o curso\n- El carrito de compras\n- El token de sesión\n\n### Características clave\n\n- Almacena datos como **pares clave-valor** (ambos son strings)\n- Capacidad de ~5-10 MB por dominio\n- Los datos persisten hasta que se borren explícitamente\n- Solo accesible desde el mismo origen (dominio + protocolo)\n\n### API básica\n\n```js\n// Guardar\nlocalStorage.setItem('clave', 'valor');\n\n// Leer\nconst valor = localStorage.getItem('clave'); // 'valor' o null\n\n// Eliminar una clave\nlocalStorage.removeItem('clave');\n\n// Eliminar todo\nlocalStorage.clear();\n\n// Cuántas claves hay\nconsole.log(localStorage.length);\n```\n\n### ¡Importante! Solo guarda strings\n\n```js\nlocalStorage.setItem('numero', 42);      // guarda '42' (string)\nlocalStorage.setItem('activo', true);    // guarda 'true' (string)\n\nconst n = localStorage.getItem('numero');\nconsole.log(n);        // '42'\nconsole.log(n === 42); // false — es string, no número\n```\n\nPor eso, para guardar objetos se usa `JSON.stringify` y `JSON.parse`.",
+    "examples": [
+      {
+        "code": "// Guardar y leer un valor simple\nlocalStorage.setItem('idioma', 'es');\nlocalStorage.setItem('tema', 'oscuro');\n\nconst idioma = localStorage.getItem('idioma');\nconst tema = localStorage.getItem('tema');\n\nconsole.log(idioma); // 'es'\nconsole.log(tema);   // 'oscuro'\n\n// Leer clave que no existe\nconst noExiste = localStorage.getItem('xyz');\nconsole.log(noExiste); // null",
+        "explanation": "setItem guarda el par clave-valor. getItem recupera el valor o null si la clave no existe. Siempre verifica si el resultado es null antes de usarlo."
+      },
+      {
+        "code": "// Guardar un objeto usando JSON\nconst usuario = { nombre: 'Ana', nivel: 3, xp: 1250 };\n\n// Guardar: objeto → string\nlocalStorage.setItem('usuario', JSON.stringify(usuario));\n\n// Leer: string → objeto\nconst texto = localStorage.getItem('usuario');\nconst usuarioRecuperado = JSON.parse(texto);\n\nconsole.log(usuarioRecuperado.nombre); // 'Ana'\nconsole.log(usuarioRecuperado.xp);    // 1250",
+        "explanation": "Para guardar objetos o arrays, conviértelos con JSON.stringify antes de guardar. Al leer, usa JSON.parse para recuperar el objeto original. Este es el patrón estándar."
+      },
+      {
+        "code": "// Patrón seguro: leer con valor por defecto\nfunction leerODefault(clave, valorDefault) {\n  const texto = localStorage.getItem(clave);\n  if (texto === null) return valorDefault;\n  try {\n    return JSON.parse(texto);\n  } catch {\n    return valorDefault;\n  }\n}\n\nconst tema = leerODefault('tema', 'claro');\nconst puntos = leerODefault('puntos', 0);\n\nconsole.log(tema);   // 'claro' (si no había nada guardado)\nconsole.log(puntos); // 0",
+        "explanation": "Combina getItem + JSON.parse + try/catch + valor por defecto. Este patrón completo es el que usarás en proyectos reales para leer de localStorage de forma robusta."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Guardar y leer",
+      "prompt": "Guarda el valor `'JavaScript'` en localStorage con la clave `'lenguaje'`. Luego léelo y asígnalo a `lenguajeLeido`.",
+      "starterCode": "// Guarda 'JavaScript' con clave 'lenguaje'\nlocalStorage.setItem('lenguaje', 'JavaScript');\n\n// Lee el valor y asígnalo a lenguajeLeido\nconst lenguajeLeido = localStorage.getItem('lenguaje');\n",
+      "tests": [
+        {
+          "description": "lenguajeLeido es 'JavaScript'",
+          "expression": "lenguajeLeido === 'JavaScript'"
+        },
+        {
+          "description": "El valor guardado en localStorage es correcto",
+          "expression": "localStorage.getItem('lenguaje') === 'JavaScript'"
+        }
+      ],
+      "hints": [
+        "Usa `localStorage.setItem('clave', 'valor')` para guardar.",
+        "Usa `localStorage.getItem('clave')` para leer — retorna el valor o `null`.",
+        "Solución: `localStorage.setItem('lenguaje', 'JavaScript'); const lenguajeLeido = localStorage.getItem('lenguaje');`"
+      ]
+    },
+    {
+      "title": "Práctica: Guardar objeto con JSON",
+      "prompt": "Guarda el objeto `perfil` en localStorage bajo la clave `'perfil'` usando `JSON.stringify`. Luego recupéralo con `JSON.parse` y asígnalo a `perfilLeido`.",
+      "starterCode": "const perfil = { nombre: 'Sofía', nivel: 5, xp: 2300 };\n\n// Guarda el perfil como JSON\nlocalStorage.setItem('perfil', JSON.stringify(perfil));\n\n// Récuperalo y conviértelo a objeto\nconst perfilLeido = JSON.parse(localStorage.getItem('perfil'));\n",
+      "tests": [
+        {
+          "description": "perfilLeido es un objeto",
+          "expression": "typeof perfilLeido === 'object' && perfilLeido !== null"
+        },
+        {
+          "description": "perfilLeido.nombre es 'Sofía'",
+          "expression": "perfilLeido.nombre === 'Sofía'"
+        },
+        {
+          "description": "perfilLeido.xp es 2300",
+          "expression": "perfilLeido.xp === 2300"
+        }
+      ],
+      "hints": [
+        "Primero convierte con `JSON.stringify(perfil)` y guarda el resultado.",
+        "Al leer, primero `localStorage.getItem('perfil')` y luego `JSON.parse(...)` el resultado.",
+        "Solución: El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Aplicación: Leer con valor por defecto",
+      "prompt": "Implementa `leerStorage(clave, porDefecto)`: lee la clave de localStorage, parsea el JSON, y retorna el valor por defecto si la clave no existe o el JSON es inválido.",
+      "starterCode": "function leerStorage(clave, porDefecto) {\n  const texto = localStorage.getItem(clave);\n  if (texto === null) return porDefecto;\n  try {\n    return JSON.parse(texto);\n  } catch {\n    return porDefecto;\n  }\n}\n\n// Pruebas\nlocalStorage.setItem('puntos', '750');\nlocalStorage.setItem('datos', 'json-invalido');\n\nconst puntos = leerStorage('puntos', 0);\nconst noExiste = leerStorage('clave-inexistente', 'default');\nconst invalido = leerStorage('datos', 99);\n",
+      "tests": [
+        {
+          "description": "puntos es 750 (número, no string)",
+          "expression": "puntos === 750"
+        },
+        {
+          "description": "noExiste retorna 'default' (clave no existe)",
+          "expression": "noExiste === 'default'"
+        },
+        {
+          "description": "invalido retorna 99 (JSON inválido usa el default)",
+          "expression": "invalido === 99"
+        }
+      ],
+      "hints": [
+        "Si `getItem` retorna `null`, la clave no existe — retorna `porDefecto`.",
+        "Envuelve `JSON.parse` en try/catch para manejar JSON inválido.",
+        "El código inicial ya es correcto — este es el patrón robusto estándar."
+      ]
+    }
+  ]
+}

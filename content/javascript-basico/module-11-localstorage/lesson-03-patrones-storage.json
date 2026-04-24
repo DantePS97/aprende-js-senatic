@@ -1,0 +1,105 @@
+{
+  "id": "js-basico-m11-l3",
+  "title": "Patrones avanzados con localStorage",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Patrones avanzados con localStorage\n\nYa sabes hacer CRUD básico con localStorage. Ahora aprenderás patrones más sofisticados que usarás en proyectos reales: expiración de datos, namespacing, y sincronización entre pestañas.\n\n### Datos con expiración (TTL)\n\nLocalStorage no tiene expiración automática. El truco es guardar el dato junto con su timestamp y verificar al leer:\n\n```js\nfunction guardarConExpiracion(clave, valor, ttlMinutos) {\n  const datos = {\n    valor,\n    expira: Date.now() + ttlMinutos * 60 * 1000\n  };\n  localStorage.setItem(clave, JSON.stringify(datos));\n}\n\nfunction leerConExpiracion(clave) {\n  const texto = localStorage.getItem(clave);\n  if (!texto) return null;\n\n  const { valor, expira } = JSON.parse(texto);\n  if (Date.now() > expira) {\n    localStorage.removeItem(clave); // limpiar el expirado\n    return null;\n  }\n  return valor;\n}\n```\n\n### Namespacing — evitar colisiones\n\nSi varios módulos usan localStorage en el mismo dominio, los nombres pueden colisionar. Usa prefijos:\n\n```js\nconst storage = {\n  get: (clave) => JSON.parse(localStorage.getItem(`miApp:${clave}`) || 'null'),\n  set: (clave, valor) => localStorage.setItem(`miApp:${clave}`, JSON.stringify(valor)),\n  remove: (clave) => localStorage.removeItem(`miApp:${clave}`)\n};\n\nstorage.set('usuario', { nombre: 'Ana' }); // guarda como 'miApp:usuario'\nstorage.get('usuario');                     // lee 'miApp:usuario'\n```\n\n### Evento `storage` — sincronización entre pestañas\n\nCuando otra pestaña modifica localStorage, se dispara el evento `storage`:\n\n```js\nwindow.addEventListener('storage', (event) => {\n  if (event.key === 'tema') {\n    console.log('Tema cambiado en otra pestaña:', event.newValue);\n    aplicarTema(JSON.parse(event.newValue));\n  }\n});\n```\n\nEsto permite que los cambios de configuración se apliquen en todas las pestañas abiertas simultáneamente.",
+    "examples": [
+      {
+        "code": "// Caché con expiración — 5 minutos\nfunction cachear(clave, obtenerValor, ttlMin = 5) {\n  return async function() {\n    const texto = localStorage.getItem(`cache:${clave}`);\n    if (texto) {\n      const { valor, expira } = JSON.parse(texto);\n      if (Date.now() < expira) {\n        console.log('[caché] usando datos guardados');\n        return valor;\n      }\n    }\n    console.log('[caché] cargando datos frescos');\n    const valor = await obtenerValor();\n    localStorage.setItem(`cache:${clave}`, JSON.stringify({\n      valor,\n      expira: Date.now() + ttlMin * 60 * 1000\n    }));\n    return valor;\n  };\n}\n\nconst obtenerUsuarios = cachear('usuarios', () =>\n  fetch('https://jsonplaceholder.typicode.com/users').then(r => r.json())\n);\n\nawait obtenerUsuarios(); // carga de red\nawait obtenerUsuarios(); // usa caché (5 min)",
+        "explanation": "El patrón caché con TTL evita peticiones repetidas a la API. La primera llamada carga y guarda; las siguientes usan lo guardado hasta que expire. Esto reduce latencia y consumo de red."
+      },
+      {
+        "code": "// Storage con namespace — API limpia\nfunction crearStorage(namespace) {\n  const prefix = `${namespace}:`;\n  return {\n    get(clave) {\n      const v = localStorage.getItem(prefix + clave);\n      return v ? JSON.parse(v) : null;\n    },\n    set(clave, valor) {\n      localStorage.setItem(prefix + clave, JSON.stringify(valor));\n    },\n    remove(clave) {\n      localStorage.removeItem(prefix + clave);\n    },\n    limpiar() {\n      Object.keys(localStorage)\n        .filter(k => k.startsWith(prefix))\n        .forEach(k => localStorage.removeItem(k));\n    }\n  };\n}\n\nconst authStorage = crearStorage('auth');\nconst appStorage = crearStorage('app');\n\nauthStorage.set('token', 'abc123');\nappStorage.set('token', 'diferente'); // no colisiona\n\nconsole.log(authStorage.get('token')); // 'abc123'\nconsole.log(appStorage.get('token'));  // 'diferente'",
+        "explanation": "Cada módulo tiene su propio 'espacio de nombres'. auth:token y app:token son claves distintas. Además, limpiar() solo borra las claves del namespace propio, sin afectar los demás."
+      },
+      {
+        "code": "// Persistir el estado de la app (patrón Redux-like)\nconst CLAVE_ESTADO = 'appEstado';\n\nfunction cargarEstado() {\n  try {\n    const texto = localStorage.getItem(CLAVE_ESTADO);\n    return texto ? JSON.parse(texto) : undefined;\n  } catch {\n    return undefined;\n  }\n}\n\nfunction guardarEstado(estado) {\n  try {\n    localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));\n  } catch (error) {\n    console.warn('No se pudo persistir el estado:', error.message);\n  }\n}\n\n// Cargar estado inicial\nlet estado = cargarEstado() ?? {\n  usuario: null,\n  tema: 'oscuro',\n  progreso: {}\n};\n\n// Cada vez que cambia el estado, persistir\nestado.tema = 'claro';\nguardarEstado(estado);",
+        "explanation": "Este patrón es la base de cómo Redux Persist funciona. Carga el estado al inicio de la app y lo guarda cada vez que cambia. El try/catch en guardar previene errores si localStorage está lleno."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Datos con timestamp",
+      "prompt": "Implementa `guardarConFecha(clave, valor)` que guarda en localStorage un objeto con `{ valor, guardadoEn: Date.now() }`.\n\nLuego `leerConFecha(clave)` que retorna ese objeto o `null` si la clave no existe.",
+      "starterCode": "function guardarConFecha(clave, valor) {\n  const datos = { valor, guardadoEn: Date.now() };\n  localStorage.setItem(clave, JSON.stringify(datos));\n}\n\nfunction leerConFecha(clave) {\n  const texto = localStorage.getItem(clave);\n  if (!texto) return null;\n  return JSON.parse(texto);\n}\n\nguardarConFecha('config', { tema: 'oscuro' });\nconst leido = leerConFecha('config');\nconst noExiste = leerConFecha('no-existe');\n",
+      "tests": [
+        {
+          "description": "leido.valor.tema es 'oscuro'",
+          "expression": "leido.valor.tema === 'oscuro'"
+        },
+        {
+          "description": "leido.guardadoEn es un número",
+          "expression": "typeof leido.guardadoEn === 'number'"
+        },
+        {
+          "description": "leido.guardadoEn es reciente (últimos 5 segundos)",
+          "expression": "Date.now() - leido.guardadoEn < 5000"
+        },
+        {
+          "description": "leerConFecha de clave inexistente retorna null",
+          "expression": "noExiste === null"
+        }
+      ],
+      "hints": [
+        "`Date.now()` retorna el timestamp actual en milisegundos.",
+        "Guarda el objeto completo `{ valor, guardadoEn }` con `JSON.stringify`.",
+        "El código inicial ya es correcto."
+      ]
+    },
+    {
+      "title": "Práctica: Verificar expiración",
+      "prompt": "Implementa `estaExpirado(datos, ttlMinutos)`: recibe un objeto `{ valor, guardadoEn }` y retorna `true` si han pasado más de `ttlMinutos` desde `guardadoEn`.",
+      "starterCode": "function estaExpirado(datos, ttlMinutos) {\n  const ttlMs = ttlMinutos * 60 * 1000;\n  return Date.now() - datos.guardadoEn > ttlMs;\n}\n\n// Datos guardados hace 2 minutos (120000 ms)\nconst hace2min = { valor: 'test', guardadoEn: Date.now() - 120_000 };\n// Datos guardados hace 10 minutos\nconst hace10min = { valor: 'test', guardadoEn: Date.now() - 600_000 };\n\nconst expirado1 = estaExpirado(hace2min, 5);  // 2 min < 5 min → false\nconst expirado2 = estaExpirado(hace10min, 5); // 10 min > 5 min → true\n",
+      "tests": [
+        {
+          "description": "2 min de antiguedad, TTL 5 min → no expirado",
+          "expression": "expirado1 === false"
+        },
+        {
+          "description": "10 min de antiguedad, TTL 5 min → expirado",
+          "expression": "expirado2 === true"
+        },
+        {
+          "description": "Datos recientes (1s), TTL 1 min → no expirado",
+          "expression": "estaExpirado({ guardadoEn: Date.now() - 1000 }, 1) === false"
+        }
+      ],
+      "hints": [
+        "Convierte minutos a milisegundos: `ttlMinutos * 60 * 1000`.",
+        "Calcula cuánto tiempo pasó: `Date.now() - datos.guardadoEn`.",
+        "Compara: si el tiempo pasado es mayor que el TTL, está expirado.",
+        "Solución: `return Date.now() - datos.guardadoEn > ttlMinutos * 60 * 1000;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Storage con namespace",
+      "prompt": "Implementa `crearStorage(namespace)` que retorna un objeto con:\n- `set(clave, valor)`: guarda con prefijo `namespace + ':'`.\n- `get(clave)`: lee y parsea, retorna `null` si no existe.\n- `remove(clave)`: elimina la clave con prefijo.",
+      "starterCode": "function crearStorage(namespace) {\n  const prefix = namespace + ':';\n\n  return {\n    set(clave, valor) {\n      localStorage.setItem(prefix + clave, JSON.stringify(valor));\n    },\n    get(clave) {\n      const texto = localStorage.getItem(prefix + clave);\n      return texto !== null ? JSON.parse(texto) : null;\n    },\n    remove(clave) {\n      localStorage.removeItem(prefix + clave);\n    }\n  };\n}\n\nconst authStore = crearStorage('auth');\nconst uiStore = crearStorage('ui');\n\nauthStore.set('token', 'abc-123');\nuiStore.set('token', 'diferente');\n\nconst authToken = authStore.get('token');\nconst uiToken = uiStore.get('token');\n\nauthStore.remove('token');\nconst despuesDeRemover = authStore.get('token');\n",
+      "tests": [
+        {
+          "description": "authToken es 'abc-123'",
+          "expression": "authToken === 'abc-123'"
+        },
+        {
+          "description": "uiToken es 'diferente' (no colisiona)",
+          "expression": "uiToken === 'diferente'"
+        },
+        {
+          "description": "después de remove, retorna null",
+          "expression": "despuesDeRemover === null"
+        },
+        {
+          "description": "uiStore.token sigue existiendo tras remover de auth",
+          "expression": "uiStore.get('token') === 'diferente'"
+        }
+      ],
+      "hints": [
+        "El prefijo `namespace + ':'` hace que `auth:token` y `ui:token` sean claves distintas.",
+        "En `get`, verifica que el resultado de `getItem` no sea `null` antes de parsear.",
+        "El código inicial ya es correcto."
+      ]
+    }
+  ]
+}

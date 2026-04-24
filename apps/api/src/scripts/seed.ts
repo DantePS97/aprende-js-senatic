@@ -203,6 +203,63 @@ async function seed() {
   ]) await upsertLesson(mod8._id, l);
   console.log('✅  Módulo 8 listo (3 lecciones)');
 
+  // ─── Módulo 9: Manejo de Errores ─────────────────────────────────────────
+
+  let mod9 = await ModuleModel.findOne({ courseId: course._id, order: 9 });
+  if (!mod9) {
+    mod9 = await ModuleModel.create({
+      courseId: course._id,
+      order: 9,
+      title: 'Manejo de Errores',
+      description: 'Aprende a anticipar y manejar fallos en tu código de forma elegante',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'try/catch: capturar errores',    xpReward: 45, contentId: 'javascript-basico/module-09-errores/lesson-01-try-catch' },
+    { order: 2, title: 'Tipos de error en JavaScript',   xpReward: 45, contentId: 'javascript-basico/module-09-errores/lesson-02-tipos-de-error' },
+    { order: 3, title: 'Errores en código asíncrono',    xpReward: 50, contentId: 'javascript-basico/module-09-errores/lesson-03-errores-async' },
+  ]) await upsertLesson(mod9._id, l);
+  console.log('✅  Módulo 9 listo (3 lecciones)');
+
+  // ─── Módulo 10: JSON y Fetch API ──────────────────────────────────────────
+
+  let mod10 = await ModuleModel.findOne({ courseId: course._id, order: 10 });
+  if (!mod10) {
+    mod10 = await ModuleModel.create({
+      courseId: course._id,
+      order: 10,
+      title: 'JSON y Fetch API',
+      description: 'Conecta tu app con el mundo: consume APIs y maneja datos JSON',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'JSON: el lenguaje de los datos',                   xpReward: 45, contentId: 'javascript-basico/module-10-json-fetch/lesson-01-json' },
+    { order: 2, title: 'Fetch API: conectar con el mundo real',            xpReward: 60, contentId: 'javascript-basico/module-10-json-fetch/lesson-02-fetch' },
+    { order: 3, title: 'Fetch avanzado: headers y autenticación',          xpReward: 65, contentId: 'javascript-basico/module-10-json-fetch/lesson-03-fetch-avanzado' },
+  ]) await upsertLesson(mod10._id, l);
+  console.log('✅  Módulo 10 listo (3 lecciones)');
+
+  // ─── Módulo 11: localStorage ──────────────────────────────────────────────
+
+  let mod11 = await ModuleModel.findOne({ courseId: course._id, order: 11 });
+  if (!mod11) {
+    mod11 = await ModuleModel.create({
+      courseId: course._id,
+      order: 11,
+      title: 'localStorage',
+      description: 'Persiste datos en el navegador para crear experiencias que se recuerdan',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: '¿Qué es localStorage?',          xpReward: 40, contentId: 'javascript-basico/module-11-localstorage/lesson-01-que-es-localstorage' },
+    { order: 2, title: 'CRUD con localStorage',           xpReward: 50, contentId: 'javascript-basico/module-11-localstorage/lesson-02-crud-localstorage' },
+    { order: 3, title: 'Patrones avanzados de storage',   xpReward: 55, contentId: 'javascript-basico/module-11-localstorage/lesson-03-patrones-storage' },
+  ]) await upsertLesson(mod11._id, l);
+  console.log('✅  Módulo 11 listo (3 lecciones)');
+
   // ─── Curso: HTML y CSS Básico ─────────────────────────────────────────────
 
   let courseHtml = await CourseModel.findOne({ slug: 'html-css-basico' });
@@ -278,8 +335,8 @@ async function seed() {
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 2 + 3;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 15+15+20 + 15+20 + 20+25+30;
+  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 3 + 3 + 3 + 2 + 3;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 45+45+50 + 45+60+65 + 40+50+55 + 15+15+20 + 15+20 + 20+25+30;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();
