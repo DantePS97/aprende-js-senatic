@@ -6,13 +6,16 @@ import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 
 import { authRouter } from './routes/auth.routes';
+import { usersRouter } from './routes/users.routes';
 import { coursesRouter } from './routes/courses.routes';
 import { progressRouter } from './routes/progress.routes';
 import { achievementsRouter } from './routes/achievements.routes';
 import { forumRouter } from './routes/forum.routes';
 import { leaderboardRouter } from './routes/leaderboard.routes';
+import { leaguesRouter } from './routes/leagues.routes';
 import { syncRouter } from './routes/sync.routes';
 import adminRouter from './routes/admin/index';
+import { runLeagueCatchup, setupLeagueCron } from './lib/leagueCatchup';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -52,11 +55,13 @@ app.get('/health', (_req, res) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/achievements', achievementsRouter);
 app.use('/api/forum', forumRouter);
 app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/leagues', leaguesRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/admin', adminRouter);
 
@@ -88,6 +93,10 @@ async function bootstrap() {
     console.error('❌  Error conectando a MongoDB:', err);
     process.exit(1);
   }
+
+  // ─── League scheduler + boot catch-up ────────────────────────────────────
+  await runLeagueCatchup();
+  setupLeagueCron();
 
   app.listen(PORT, () => {
     console.log(`🚀  API corriendo en http://localhost:${PORT}`);

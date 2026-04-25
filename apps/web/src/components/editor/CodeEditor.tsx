@@ -1,20 +1,38 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { html } from '@codemirror/lang-html';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
+import { Compartment } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
+import { dracula } from '@uiw/codemirror-theme-dracula';
+import { githubLight } from '@uiw/codemirror-theme-github';
+import { material } from '@uiw/codemirror-theme-material';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import type { UserPreferences } from '@senatic/shared';
 
-interface CodeEditorProps {
-  value: string;
-  onChange: (value: string) => void;
-  readOnly?: boolean;
-  language?: 'javascript' | 'html';
-}
+// ─── Editor theme map ─────────────────────────────────────────────────────────
 
-// Extensión para personalizar el fondo del editor
+type EditorThemePref = UserPreferences['editorTheme'];
+
+const EDITOR_THEME_MAP: Record<EditorThemePref, Extension> = {
+  oneDark,
+  dracula,
+  githubLight,
+  material,
+};
+
+// ─── Compartment — module scope to avoid recreation on render ─────────────────
+// Note: assumes single CodeEditor instance per view. For multi-instance pages,
+// move to useRef inside the component.
+
+const themeCompartment = new Compartment();
+
+// ─── Custom layout theme (background, fonts, gutters) ────────────────────────
+
 const customTheme = EditorView.theme({
   '&': {
     backgroundColor: '#0F172A',
@@ -37,22 +55,55 @@ const customTheme = EditorView.theme({
   '.cm-focused': {
     outline: 'none',
   },
-  // Borde de foco accesible
+  // Accessible focus ring
   '&.cm-focused': {
     boxShadow: '0 0 0 2px #6366F1',
   },
 });
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface CodeEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  readOnly?: boolean;
+  language?: 'javascript' | 'html';
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export function CodeEditor({ value, onChange, readOnly = false, language = 'javascript' }: CodeEditorProps) {
+  const { preferences } = usePreferencesStore();
+  const { editorTheme } = preferences;
+
+  // Hold a reference to the EditorView for imperative Compartment.reconfigure calls
+  const viewRef = useRef<EditorView | null>(null);
+
   const handleChange = useCallback(
     (val: string) => {
       if (!readOnly) onChange(val);
     },
-    [onChange, readOnly]
+    [onChange, readOnly],
   );
+
+  // Capture EditorView on creation
+  const handleCreateEditor = useCallback((view: EditorView) => {
+    viewRef.current = view;
+  }, []);
+
+  // Live theme swap — fires on editorTheme preference change without unmounting
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    const resolved = EDITOR_THEME_MAP[editorTheme] ?? oneDark;
+    view.dispatch({
+      effects: themeCompartment.reconfigure(resolved),
+    });
+  }, [editorTheme]);
 
   const langExtension = language === 'html' ? html() : javascript({ jsx: false });
   const fileLabel = language === 'html' ? 'index.html' : 'script.js';
+  const initialTheme = EDITOR_THEME_MAP[editorTheme] ?? oneDark;
 
   return (
     <div className="rounded-lg overflow-hidden border border-slate-700">
@@ -66,8 +117,8 @@ export function CodeEditor({ value, onChange, readOnly = false, language = 'java
       <CodeMirror
         value={value}
         onChange={handleChange}
-        extensions={[langExtension, customTheme]}
-        theme={oneDark}
+        onCreateEditor={handleCreateEditor}
+        extensions={[langExtension, customTheme, themeCompartment.of(initialTheme)]}
         readOnly={readOnly}
         aria-label={language === 'html' ? 'Editor de código HTML' : 'Editor de código JavaScript'}
         basicSetup={{

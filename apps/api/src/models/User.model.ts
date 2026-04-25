@@ -1,6 +1,43 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+// ─── Preferences sub-document ─────────────────────────────────────────────────
+
+export interface IUserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  accentColor: 'indigo' | 'emerald' | 'rose' | 'amber' | 'violet';
+  editorTheme: 'oneDark' | 'dracula' | 'githubLight' | 'material';
+  fontSize: 'normal' | 'large';
+}
+
+const UserPreferencesSchema = new Schema<IUserPreferences>(
+  {
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'system'],
+      default: 'dark',
+    },
+    accentColor: {
+      type: String,
+      enum: ['indigo', 'emerald', 'rose', 'amber', 'violet'],
+      default: 'indigo',
+    },
+    editorTheme: {
+      type: String,
+      enum: ['oneDark', 'dracula', 'githubLight', 'material'],
+      default: 'oneDark',
+    },
+    fontSize: {
+      type: String,
+      enum: ['normal', 'large'],
+      default: 'normal',
+    },
+  },
+  { _id: false },
+);
+
+// ─── User document ────────────────────────────────────────────────────────────
+
 export interface IUser extends Document {
   email: string;
   passwordHash: string;
@@ -13,6 +50,9 @@ export interface IUser extends Document {
   isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
+  passwordResetTokenHash?: string;
+  passwordResetTokenExpiresAt?: Date;
+  preferences: IUserPreferences;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -63,6 +103,21 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
       index: true,
+    },
+    passwordResetTokenHash: {
+      type: String,
+      default: undefined,
+      select: false,
+      index: true, // lookup eficiente al validar/consumir el token
+    },
+    passwordResetTokenExpiresAt: {
+      type: Date,
+      default: undefined,
+      select: false,
+    },
+    preferences: {
+      type: UserPreferencesSchema,
+      default: () => ({}),
     },
   },
   {

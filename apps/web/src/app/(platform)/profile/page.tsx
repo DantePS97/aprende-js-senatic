@@ -5,6 +5,7 @@ import { LogOut, Trophy, Flame, Star, BookOpen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useProgressStore } from '@/store/progressStore';
+import { PersonalizationSection } from '@/components/profile/PersonalizationSection';
 import { XPBar } from '@/components/gamification/XPBar';
 import { StreakCounter } from '@/components/gamification/StreakCounter';
 import { api } from '@/lib/api';
@@ -155,6 +156,9 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Personalización */}
+      <PersonalizationSection />
     </div>
   );
 }

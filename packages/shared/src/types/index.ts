@@ -1,3 +1,7 @@
+import type { UserPreferences } from '../schemas/index';
+
+export type { Tier, WeeklyLeagueEntry, UserLeagueStatus, WeeklyLeagueResponse } from '../schemas/index';
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export type CourseLevel = 'basic' | 'intermediate';
@@ -26,6 +30,7 @@ export interface User {
   streak: number;
   lastActiveDate: string; // ISO date string
   isAdmin: boolean;
+  preferences?: UserPreferences;
   createdAt: string;
   updatedAt: string;
 }

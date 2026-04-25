@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, AuthTokens } from '@senatic/shared';
 import { api } from '@/lib/api';
+import { usePreferencesStore } from './preferencesStore';
 
 interface AuthState {
   user: User | null;
@@ -39,6 +40,9 @@ export const useAuthStore = create<AuthState>()(
           localStorage.setItem('refreshToken', tokens.refreshToken);
 
           set({ user, tokens, isAuthenticated: true, isAdmin: !!user.isAdmin, isLoading: false });
+          if (user.preferences) {
+            usePreferencesStore.getState().bootstrapFromServer(user.preferences);
+          }
         } catch (err: unknown) {
           const message =
             (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
@@ -58,6 +62,9 @@ export const useAuthStore = create<AuthState>()(
           localStorage.setItem('refreshToken', tokens.refreshToken);
 
           set({ user, tokens, isAuthenticated: true, isAdmin: !!user.isAdmin, isLoading: false });
+          if (user.preferences) {
+            usePreferencesStore.getState().bootstrapFromServer(user.preferences);
+          }
         } catch (err: unknown) {
           const message =
             (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
@@ -71,6 +78,13 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         set({ user: null, tokens: null, isAuthenticated: false, isAdmin: false });
+        // Reset preferences to defaults on logout
+        usePreferencesStore.getState().setPreferences({
+          theme: 'dark',
+          accentColor: 'indigo',
+          editorTheme: 'oneDark',
+          fontSize: 'normal',
+        });
       },
 
       updateUser: (updates) => {
@@ -90,6 +104,12 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         isAdmin: state.isAdmin,
       }),
+      // Re-apply server preferences on page refresh (rehydration from localStorage)
+      onRehydrateStorage: () => (rehydratedState) => {
+        if (rehydratedState?.user?.preferences) {
+          usePreferencesStore.getState().bootstrapFromServer(rehydratedState.user.preferences);
+        }
+      },
     }
   )
 );

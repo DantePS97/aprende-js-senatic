@@ -8,12 +8,21 @@
     --foreground: 248 250 252;    /* slate-50 */
     --surface: 30 41 59;          /* slate-800 */
     --border: 51 65 85;           /* slate-700 */
+
+    /* Accent color — overridden at runtime by applyPreferences (indigo default) */
+    --color-primary-400: 129 140 248;
+    --color-primary-500: 99 102 241;
+    --color-primary-600: 79 70 229;
+
+    /* Font size — overridden at runtime by applyPreferences */
+    --font-size-base: 1rem;
   }
 
   html {
     @apply bg-surface-900 text-slate-50;
     /* Previene el flash blanco en PWA */
     background-color: #0F172A;
+    font-size: var(--font-size-base);
   }
 
   body {

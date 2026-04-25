@@ -1,11 +1,22 @@
 import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
-import { registerSchema, loginSchema, refreshTokenSchema } from '@senatic/shared';
+import {
+  registerSchema,
+  loginSchema,
+  refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '@senatic/shared';
 import { UserModel } from '../models/User.model';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
 import { validate } from '../middleware/validate.middleware';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { updateStreak } from '../services/gamification.service';
+import {
+  requestPasswordReset,
+  validateResetToken,
+  resetPassword,
+} from '../services/auth.service';
 
 export const authRouter = Router();
 
@@ -14,6 +25,13 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { success: false, error: 'Demasiados intentos de autenticación. Intenta en 15 minutos.' },
+});
+
+// Rate limit más restrictivo para forgot-password (dispara envíos de email)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: 'Demasiadas solicitudes. Intenta en 15 minutos.' },
 });
 
 // ─── POST /api/auth/register ──────────────────────────────────────────────────
@@ -53,6 +71,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), async (req: 
           streak: user.streak,
           lastActiveDate: user.lastActiveDate,
           isAdmin: user.isAdmin,
+          preferences: user.preferences,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -104,6 +123,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
           streak: updatedStreak,
           lastActiveDate: new Date().toISOString(),
           isAdmin: user.isAdmin,
+          preferences: user.preferences,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -141,6 +161,75 @@ authRouter.post('/refresh', validate(refreshTokenSchema), async (req: Request, r
   }
 });
 
+// ─── POST /api/auth/forgot-password ──────────────────────────────────────────
+
+authRouter.post(
+  '/forgot-password',
+  forgotPasswordLimiter,
+  validate(forgotPasswordSchema),
+  async (req: Request, res: Response) => {
+    try {
+      await requestPasswordReset(req.body.email);
+    } catch (err) {
+      // Logueamos pero nunca revelamos el error al cliente (anti-enumeración)
+      console.error('[auth/forgot-password]', err);
+    }
+    // Siempre 200, sin importar si el email existe o si el envío falló
+    res.json({
+      success: true,
+      data: { message: 'Si el correo existe, recibirás un enlace en breve.' },
+    });
+  },
+);
+
+// ─── GET /api/auth/reset-password/validate ────────────────────────────────────
+
+authRouter.get(
+  '/reset-password/validate',
+  authLimiter,
+  async (req: Request, res: Response) => {
+    const token = String(req.query.token ?? '');
+
+    if (!token || token.length !== 64) {
+      res.status(400).json({ success: false, error: 'Token requerido.' });
+      return;
+    }
+
+    try {
+      const result = await validateResetToken(token);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      console.error('[auth/reset-password/validate]', err);
+      res.status(500).json({ success: false, error: 'Error al validar el enlace.' });
+    }
+  },
+);
+
+// ─── POST /api/auth/reset-password ───────────────────────────────────────────
+
+authRouter.post(
+  '/reset-password',
+  authLimiter,
+  validate(resetPasswordSchema),
+  async (req: Request, res: Response) => {
+    try {
+      await resetPassword(req.body.token, req.body.newPassword);
+      res.json({
+        success: true,
+        data: { message: 'Contraseña actualizada. Por favor inicia sesión.' },
+      });
+    } catch (err: unknown) {
+      const error = err as Error & { statusCode?: number };
+      if (error.statusCode === 400) {
+        res.status(400).json({ success: false, error: 'El enlace es inválido o ha expirado.' });
+        return;
+      }
+      console.error('[auth/reset-password]', err);
+      res.status(500).json({ success: false, error: 'Error al restablecer la contraseña.' });
+    }
+  },
+);
+
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
 authRouter.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
@@ -163,6 +252,7 @@ authRouter.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
         streak: user.streak,
         lastActiveDate: user.lastActiveDate,
         isAdmin: user.isAdmin,
+        preferences: user.preferences,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

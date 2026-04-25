@@ -61,7 +61,52 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="dark">
+    // suppressHydrationWarning: the anti-FOUC script mutates className/style before
+    // React hydrates, causing a mismatch that is intentional and safe to suppress.
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        {/*
+          Anti-FOUC: runs synchronously before first paint.
+          Reads persisted preferences from localStorage and applies
+          theme class, accent CSS vars, and font-size BEFORE React hydrates.
+          dangerouslySetInnerHTML is safe here — no user data, fully static script.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  var ACCENT={
+    indigo: ['129 140 248','99 102 241','79 70 229'],
+    emerald:['52 211 153','16 185 129','5 150 105'],
+    rose:   ['251 113 133','244 63 94','225 29 72'],
+    amber:  ['251 191 36','245 158 11','217 119 6'],
+    violet: ['167 139 250','139 92 246','124 58 237']
+  };
+  var p={theme:'dark',accentColor:'indigo',fontSize:'normal'};
+  try{
+    var raw=localStorage.getItem('senatic-preferences');
+    if(raw){
+      var stored=JSON.parse(raw);
+      var prefs=stored&&stored.state&&stored.state.preferences;
+      if(prefs){
+        if(prefs.theme)       p.theme=prefs.theme;
+        if(prefs.accentColor) p.accentColor=prefs.accentColor;
+        if(prefs.fontSize)    p.fontSize=prefs.fontSize;
+      }
+    }
+  }catch(e){}
+  var h=document.documentElement;
+  if(p.theme==='dark')      h.classList.add('dark');
+  else if(p.theme==='light')h.classList.remove('dark');
+  else if(window.matchMedia('(prefers-color-scheme: dark)').matches)h.classList.add('dark');
+  var s=ACCENT[p.accentColor]||ACCENT.indigo;
+  h.style.setProperty('--color-primary-400',s[0]);
+  h.style.setProperty('--color-primary-500',s[1]);
+  h.style.setProperty('--color-primary-600',s[2]);
+  h.style.fontSize=p.fontSize==='large'?'18px':'16px';
+})();`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans`}>
         <ServiceWorkerRegister />
         {children}

@@ -8,12 +8,13 @@ const config: Config = {
       colors: {
         // Paleta principal SENATIC EdTech
         primary: {
-          DEFAULT: '#6366F1', // Indigo
+          // Driven by CSS custom properties — accent color is switchable at runtime
+          DEFAULT: 'rgb(var(--color-primary-500) / <alpha-value>)',
           50: '#EEF2FF',
           100: '#E0E7FF',
-          400: '#818CF8',
-          500: '#6366F1',
-          600: '#4F46E5',
+          400: 'rgb(var(--color-primary-400) / <alpha-value>)',
+          500: 'rgb(var(--color-primary-500) / <alpha-value>)',
+          600: 'rgb(var(--color-primary-600) / <alpha-value>)',
           700: '#4338CA',
         },
         success: {
