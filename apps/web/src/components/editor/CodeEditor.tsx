@@ -31,13 +31,20 @@ const EDITOR_THEME_MAP: Record<EditorThemePref, Extension> = {
 
 const themeCompartment = new Compartment();
 
-// ─── Custom layout theme (fonts, spacing, focus — NO color overrides) ────────
-// Colors (background, gutters, text) are intentionally left to the selected
-// theme (oneDark / githubLight / …). Putting color here would override the
-// active theme and make theme-switching appear broken.
+// ─── Custom layout + frame theme ─────────────────────────────────────────────
+// This extension is placed LAST in the extensions array so its background/gutter
+// declarations always win over the active editor theme (oneDark, githubLight…).
+//
+// Background colours read from CSS custom properties defined in globals.css:
+//   --editor-surface / --editor-border / --editor-gutter-fg
+// Those variables flip between light and dark values when html.dark is toggled,
+// so the editor frame always matches the app theme regardless of which syntax
+// theme the user has selected. `var()` references in StyleModule CSS strings are
+// evaluated dynamically by the browser — they update without any JS dispatch.
 
 const customTheme = EditorView.theme({
   '&': {
+    backgroundColor: 'var(--editor-surface)',
     borderRadius: '0.5rem',
     fontSize: '14px',
     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
@@ -46,13 +53,18 @@ const customTheme = EditorView.theme({
     padding: '12px 0',
     minHeight: '200px',
   },
+  '.cm-gutters': {
+    backgroundColor: 'var(--editor-surface)',
+    borderRight: '1px solid var(--editor-border)',
+    color: 'var(--editor-gutter-fg)',
+  },
   '.cm-line': {
     padding: '0 12px 0 8px',
   },
   '.cm-focused': {
     outline: 'none',
   },
-  // Accessible focus ring (accent-agnostic — uses a fixed indigo for now)
+  // Accessible focus ring
   '&.cm-focused': {
     boxShadow: '0 0 0 2px #6366F1',
   },
@@ -115,7 +127,7 @@ export function CodeEditor({ value, onChange, readOnly = false, language = 'java
         value={value}
         onChange={handleChange}
         onCreateEditor={handleCreateEditor}
-        extensions={[langExtension, customTheme, themeCompartment.of(initialTheme)]}
+        extensions={[langExtension, themeCompartment.of(initialTheme), customTheme]}
         readOnly={readOnly}
         aria-label={language === 'html' ? 'Editor de código HTML' : 'Editor de código JavaScript'}
         basicSetup={{

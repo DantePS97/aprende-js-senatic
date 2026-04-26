@@ -16,6 +16,12 @@
     --surface:     255 255 255;    /* white     — elevated     */
     --foreground:  15 23 42;       /* slate-900 — base text    */
 
+    /* Code editor frame — background/gutter adapt to app theme;
+       syntax colors come from the selected editor theme (oneDark, etc.) */
+    --editor-surface:    #f8fafc;  /* slate-50  */
+    --editor-border:     #e2e8f0;  /* slate-200 */
+    --editor-gutter-fg:  #94a3b8;  /* slate-400 */
+
     /* Accent color — overridden at runtime by applyPreferences (indigo default) */
     --color-primary-400: 129 140 248;
     --color-primary-500: 99 102 241;
@@ -31,6 +37,10 @@
     --surface-800: 30 41 59;       /* slate-800 */
     --surface:     30 41 59;       /* slate-800 */
     --foreground:  248 250 252;    /* slate-50  */
+
+    --editor-surface:    #0f172a;  /* slate-900 */
+    --editor-border:     #1e293b;  /* slate-800 */
+    --editor-gutter-fg:  #475569;  /* slate-600 */
   }
 
   html {
