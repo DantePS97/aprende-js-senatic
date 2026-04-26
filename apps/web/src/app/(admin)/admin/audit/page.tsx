@@ -37,7 +37,7 @@ function ActionBadge({ action }: { action: string }) {
     UPDATE: 'bg-blue-100 text-blue-700',
     DELETE: 'bg-red-100 text-red-700',
     REORDER: 'bg-amber-100 text-amber-700',
-    PROMOTE: 'bg-indigo-100 text-indigo-700',
+    PROMOTE: 'bg-primary-100 text-primary-700',
     DEMOTE: 'bg-purple-100 text-purple-700',
   };
   const normalized = action.toUpperCase();
@@ -228,7 +228,7 @@ export default function AuditPage() {
 
       {loading && (
         <div className="flex justify-center py-4">
-          <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-primary-500" />
         </div>
       )}
     </div>

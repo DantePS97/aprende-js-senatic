@@ -73,7 +73,7 @@ function ExampleFieldset({
           rows={2}
           placeholder="Explica qué hace el código anterior..."
           className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm resize-y
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
     </fieldset>
@@ -106,7 +106,7 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
               );
             }
             return (
-              <code className="text-indigo-700 bg-indigo-50 rounded px-1 py-0.5 text-xs font-mono">
+              <code className="text-primary-700 bg-primary-50 rounded px-1 py-0.5 text-xs font-mono">
                 {children}
               </code>
             );
@@ -127,7 +127,7 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
             </ol>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-indigo-400 bg-indigo-50 px-4 py-2 rounded-r-lg my-3 text-sm text-gray-700">
+            <blockquote className="border-l-4 border-primary-400 bg-primary-50 px-4 py-2 rounded-r-lg my-3 text-sm text-gray-700">
               {children}
             </blockquote>
           ),
@@ -311,7 +311,7 @@ export default function LessonContentPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
       </div>
     );
   }
@@ -363,8 +363,8 @@ export default function LessonContentPage() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600
-                       rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600
+                       rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? 'Guardando...' : 'Guardar'}
@@ -403,8 +403,8 @@ export default function LessonContentPage() {
                       examples: [...prev.examples, { code: '', explanation: '' }],
                     }))
                   }
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700
-                             bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700
+                             bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Agregar ejemplo
@@ -442,8 +442,8 @@ export default function LessonContentPage() {
                       exercises: [...prev.exercises, { ...DEFAULT_EXERCISE }],
                     }))
                   }
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700
-                             bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700
+                             bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Agregar ejercicio

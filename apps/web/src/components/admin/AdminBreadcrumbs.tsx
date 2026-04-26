@@ -31,7 +31,7 @@ export function AdminBreadcrumbs({ items }: AdminBreadcrumbsProps) {
             ) : (
               <Link
                 href={item.href}
-                className="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors truncate max-w-[200px]"
+                className="text-primary-600 hover:text-primary-700 hover:underline transition-colors truncate max-w-[200px]"
               >
                 {item.label}
               </Link>

@@ -141,7 +141,7 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ej: Introducción a las variables"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
@@ -159,7 +159,7 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
             value={xpReward}
             onChange={(e) => setXpReward(Number(e.target.value))}
             className="w-full sm:w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-400">Entre 10 y 1000 XP</p>
         </div>
@@ -171,7 +171,7 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
             type="checkbox"
             checked={isPublished}
             onChange={(e) => setIsPublished(e.target.checked)}
-            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
           />
           <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
             Publicar lección
@@ -191,8 +191,8 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600
-                       rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600
+                       rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear Lección'}
@@ -202,10 +202,10 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
 
       {/* Edit content button (edit mode only) */}
       {isEdit && lessonId && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 flex items-center justify-between">
+        <div className="bg-primary-50 border border-primary-200 rounded-xl p-5 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-indigo-800">Contenido de la lección</h2>
-            <p className="text-xs text-indigo-600 mt-0.5">
+            <h2 className="text-sm font-semibold text-primary-700">Contenido de la lección</h2>
+            <p className="text-xs text-primary-600 mt-0.5">
               Edita la teoría, ejemplos y ejercicios de esta lección.
             </p>
           </div>
@@ -216,8 +216,8 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
                 `/admin/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/content`
               )
             }
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600
-                       rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600
+                       rounded-lg hover:bg-primary-700 transition-colors"
           >
             <FileText className="w-4 h-4" />
             Editar Contenido

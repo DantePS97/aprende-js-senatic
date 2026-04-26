@@ -22,7 +22,7 @@ export function PublishToggle({ id, isPublished, onToggle, disabled = false }: P
       <span
         className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent
                     transition-colors duration-200 ease-in-out focus:outline-none
-                    ${isPublished ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                    ${isPublished ? 'bg-primary-600' : 'bg-gray-300'}`}
       >
         {/* Thumb */}
         <span
@@ -31,7 +31,7 @@ export function PublishToggle({ id, isPublished, onToggle, disabled = false }: P
                       ${isPublished ? 'translate-x-4' : 'translate-x-0'}`}
         />
       </span>
-      <span className={`text-xs font-medium ${isPublished ? 'text-indigo-700' : 'text-gray-400'}`}>
+      <span className={`text-xs font-medium ${isPublished ? 'text-primary-700' : 'text-gray-400'}`}>
         {isPublished ? 'Publicado' : 'Borrador'}
       </span>
     </button>

@@ -143,8 +143,8 @@ export default function CoursesPage() {
         <button
           type="button"
           onClick={() => router.push('/admin/courses/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium
-                     rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium
+                     rounded-lg hover:bg-primary-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nuevo Curso
@@ -180,7 +180,7 @@ export default function CoursesPage() {
           renderExtra={(course) => (
             <Link
               href={`/admin/courses/${course._id}`}
-              className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline whitespace-nowrap"
+              className="text-xs text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap"
             >
               Ver módulos
             </Link>

@@ -92,7 +92,7 @@ export default function UsersPage() {
             placeholder="usuario@ejemplo.com"
             disabled={loading}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
                        disabled:bg-gray-50 disabled:text-gray-400"
           />
         </div>
@@ -102,8 +102,8 @@ export default function UsersPage() {
             type="button"
             onClick={() => handleAction('promote')}
             disabled={!isValid || loading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600
-                       rounded-lg hover:bg-indigo-700 transition-colors
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600
+                       rounded-lg hover:bg-primary-700 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (

@@ -171,7 +171,7 @@ export default function AnalyticsExercisesPage() {
           value={selectedLesson}
           onChange={(e) => setSelectedLesson(e.target.value)}
           className="text-sm border border-gray-600 rounded-lg px-3 py-2 bg-surface-800 text-slate-200
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[220px]"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-[220px]"
         >
           <option value="">Todas las lecciones</option>
           {lessonOptions.map((l) => (

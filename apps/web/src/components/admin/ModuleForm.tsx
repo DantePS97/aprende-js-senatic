@@ -202,7 +202,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ej: Variables y tipos de datos"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
@@ -219,7 +219,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descripción del módulo..."
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-y
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
@@ -230,7 +230,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
             type="checkbox"
             checked={isPublished}
             onChange={(e) => setIsPublished(e.target.checked)}
-            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
           />
           <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
             Publicar módulo
@@ -250,8 +250,8 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600
-                       rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600
+                       rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear Módulo'}
@@ -269,8 +269,8 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
               onClick={() =>
                 router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/new`)
               }
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700
-                         bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700
+                         bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
             >
               + Nueva Lección
             </button>

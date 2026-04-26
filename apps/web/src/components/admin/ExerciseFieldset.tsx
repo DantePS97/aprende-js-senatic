@@ -84,7 +84,7 @@ export function ExerciseFieldset({
           onChange={(e) => update({ title: e.target.value })}
           placeholder="Ej: Básico, Práctica, Aplicación"
           className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
@@ -99,7 +99,7 @@ export function ExerciseFieldset({
           rows={2}
           placeholder="Describe qué debe hacer el estudiante..."
           className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm resize-y
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
@@ -114,7 +114,7 @@ export function ExerciseFieldset({
           rows={4}
           placeholder="// Código que verá el estudiante al iniciar"
           className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-mono resize-y
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
@@ -129,7 +129,7 @@ export function ExerciseFieldset({
           rows={4}
           placeholder={'[\n  { "description": "Debe retornar 5", "expression": "suma(2, 3) === 5" }\n]'}
           className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-mono resize-y
-                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
@@ -145,7 +145,7 @@ export function ExerciseFieldset({
             {data.hints.map((hint, hi) => (
               <span
                 key={hi}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-700
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-100 text-primary-700
                            text-xs rounded-full"
               >
                 {hint}
@@ -153,7 +153,7 @@ export function ExerciseFieldset({
                   type="button"
                   onClick={() => removeHint(hi)}
                   aria-label={`Eliminar pista: ${hint}`}
-                  className="hover:text-indigo-900 transition-colors"
+                  className="hover:text-primary-700 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -172,14 +172,14 @@ export function ExerciseFieldset({
               onKeyDown={handleHintKeyDown}
               placeholder="Escribe una pista y presiona Enter o +"
               className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={addHint}
               disabled={!hintInput.trim()}
-              className="px-2.5 py-1.5 text-indigo-600 bg-indigo-50 border border-indigo-200
-                         rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-40"
+              className="px-2.5 py-1.5 text-primary-600 bg-primary-50 border border-primary-200
+                         rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-40"
               aria-label="Agregar pista"
             >
               <Plus className="w-4 h-4" />

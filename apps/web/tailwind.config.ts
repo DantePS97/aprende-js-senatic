@@ -8,14 +8,16 @@ const config: Config = {
       colors: {
         // Paleta principal SENATIC EdTech
         primary: {
-          // Driven by CSS custom properties — accent color is switchable at runtime
+          // 400/500/600 driven by CSS custom properties — accent is switchable at runtime
           DEFAULT: 'rgb(var(--color-primary-500) / <alpha-value>)',
-          50: '#EEF2FF',
-          100: '#E0E7FF',
+          50:  '#EEF2FF',  // fixed light tint — used in admin form sections
+          100: '#E0E7FF',  // fixed light tint
+          200: '#C7D2FE',  // fixed light tint — border on secondary admin buttons
+          300: 'rgb(var(--color-primary-400) / 0.6)',
           400: 'rgb(var(--color-primary-400) / <alpha-value>)',
           500: 'rgb(var(--color-primary-500) / <alpha-value>)',
           600: 'rgb(var(--color-primary-600) / <alpha-value>)',
-          700: '#4338CA',
+          700: '#4338CA',  // fixed dark shade — hover on primary buttons
         },
         success: {
           DEFAULT: '#10B981', // Emerald

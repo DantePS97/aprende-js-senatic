@@ -20,7 +20,7 @@ const LEVEL_LABELS: Record<number, string> = {
 const LEVEL_COLORS: Record<number, string> = {
   1: 'bg-slate-700 text-slate-300',
   2: 'bg-blue-900/50 text-blue-300',
-  3: 'bg-indigo-900/50 text-indigo-300',
+  3: 'bg-primary-600/20 text-primary-400',
   4: 'bg-purple-900/50 text-purple-300',
   5: 'bg-amber-900/50 text-amber-300',
 };
@@ -43,12 +43,12 @@ function StudentRow({ student, onClick }: { student: StudentSummary; onClick: ()
   return (
     <tr
       onClick={onClick}
-      className="border-t border-gray-100 hover:bg-indigo-50 cursor-pointer transition-colors"
+      className="border-t border-gray-100 hover:bg-primary-50 cursor-pointer transition-colors"
     >
       {/* Nombre */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
             {initials}
           </div>
           <div className="min-w-0">
@@ -139,7 +139,7 @@ export default function StudentsPage() {
             placeholder="Buscar por nombre o correo…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
@@ -153,7 +153,7 @@ export default function StudentsPage() {
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {list.loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-400 text-sm">

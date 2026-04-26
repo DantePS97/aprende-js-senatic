@@ -36,7 +36,7 @@ export function CodeTextarea({
   return (
     <div
       className="flex border border-gray-300 rounded-lg overflow-hidden
-                 font-mono text-sm focus-within:ring-2 focus-within:ring-indigo-500
+                 font-mono text-sm focus-within:ring-2 focus-within:ring-primary-500
                  focus-within:border-transparent"
     >
       {/* Line numbers */}

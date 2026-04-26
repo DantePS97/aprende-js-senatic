@@ -164,7 +164,7 @@ export default function StudentProfilePage() {
 
       {profile.loading && (
         <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -172,19 +172,19 @@ export default function StudentProfilePage() {
         <>
           {/* ─── Header ─────────────────────────────────────────────────── */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-5">
-            <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl font-bold shrink-0">
+            <div className="w-16 h-16 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xl font-bold shrink-0">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-gray-900 truncate">{d.displayName}</h1>
               <p className="text-sm text-gray-500 truncate">{d.email}</p>
-              <span className="mt-1 inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full">
+              <span className="mt-1 inline-block px-2 py-0.5 bg-primary-50 text-primary-700 text-xs font-semibold rounded-full">
                 {LEVEL_LABELS[d.level] ?? `Nivel ${d.level}`}
               </span>
             </div>
             {/* Progress ring (simplified) */}
             <div className="text-center shrink-0">
-              <div className="text-3xl font-black text-indigo-600">{pctComplete}%</div>
+              <div className="text-3xl font-black text-primary-600">{pctComplete}%</div>
               <div className="text-xs text-gray-400 mt-0.5">del curso completado</div>
               <div className="text-xs text-gray-500 mt-0.5">{d.completedLessons} / {d.totalLessons} lecciones</div>
             </div>

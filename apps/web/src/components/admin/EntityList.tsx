@@ -89,7 +89,7 @@ export function EntityList<T extends EntityItem>({
                 type="button"
                 onClick={() => onEdit(item)}
                 aria-label={`Editar ${item.title}`}
-                className="flex-shrink-0 p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
+                className="flex-shrink-0 p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50
                            rounded-lg transition-colors"
               >
                 <Pencil className="w-4 h-4" />
