@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { adminApi } from '@/lib/admin-api';
@@ -72,7 +72,7 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
       .finally(() => setLoading(false));
   }, [isEdit, moduleId]);
 
-  const fetchLessons = async () => {
+  const fetchLessons = useCallback(async () => {
     if (!moduleId) return;
     setLoadingLessons(true);
     try {
@@ -83,11 +83,11 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
     } finally {
       setLoadingLessons(false);
     }
-  };
+  }, [moduleId]);
 
   useEffect(() => {
     if (isEdit && moduleId) fetchLessons();
-  }, [isEdit, moduleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isEdit, moduleId, fetchLessons]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

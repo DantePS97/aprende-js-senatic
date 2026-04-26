@@ -97,11 +97,11 @@ export function ExercisePanel({
 
   // ─── Mutators ────────────────────────────────────────────────────────────────
 
-  function update(patch: Partial<ExerciseState>) {
+  const update = useCallback((patch: Partial<ExerciseState>) => {
     setStates((prev) =>
       prev.map((st, i) => (i === current ? { ...st, ...patch } : st))
     );
-  }
+  }, [current]);
 
   const handleRun = useCallback(async () => {
     update({ isRunning: true, output: [], error: null, testResults: [] });
@@ -127,8 +127,7 @@ export function ExercisePanel({
         hintsUsed: s.hintsUsed,
       }).catch(() => {});
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.code, exercise.tests, exercise.title, current, lessonId, s.hintsUsed]);
+  }, [update, s.code, exercise.type, exercise.tests, exercise.title, current, lessonId, s.hintsUsed]);
 
   const handleReset = () => {
     update({

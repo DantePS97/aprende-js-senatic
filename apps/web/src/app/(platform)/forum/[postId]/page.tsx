@@ -48,7 +48,6 @@ export default function ForumThreadPage() {
       })
       .catch(() => router.push('/forum'))
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, router]);
 
   const handleUpvote = async () => {

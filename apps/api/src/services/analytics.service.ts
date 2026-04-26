@@ -31,6 +31,57 @@ interface QueryParams {
   courseId?: string;
 }
 
+// ─── Aggregation result shapes ────────────────────────────────────────────────
+
+interface DateCountRow      { _id: string; count: number }
+interface StreakBucketRow   { _id: number | '31+'; count: number }
+interface WeeklyRow         { _id: { year: number; week: number }; count: number }
+interface CompletedCountRow { _id: mongoose.Types.ObjectId }
+interface CompletedLessonsRow { _id: mongoose.Types.ObjectId; completedLessons: number }
+
+interface LessonStatsRow {
+  _id: mongoose.Types.ObjectId;
+  totalAttempts: number;
+  completions: number;
+  avgTimeMs: number | null;
+  lesson?:  { title?: string; moduleId?: mongoose.Types.ObjectId };
+  module?:  { title?: string; courseId?: mongoose.Types.ObjectId; order?: number };
+  course?:  { title?: string };
+}
+
+interface ProgressAggRow {
+  lessonId: mongoose.Types.ObjectId;
+  status: 'not_started' | 'in_progress' | 'completed';
+  xpEarned: number;
+  attempts: number;
+  hintsUsed: number;
+  completedAt?: Date;
+  lesson?:  { title?: string; moduleId?: mongoose.Types.ObjectId };
+  module?:  { title?: string; courseId?: mongoose.Types.ObjectId; order?: number };
+}
+
+interface ExerciseStatsRow {
+  lessonId: mongoose.Types.ObjectId;
+  lessonTitle: string;
+  exerciseIndex: number;
+  exerciseTitle: string;
+  totalStudents: number;
+  passedStudents: number;
+  passRate: number;
+  avgAttempts: number;
+  avgHints: number;
+}
+
+interface UserLeanDoc {
+  _id: mongoose.Types.ObjectId;
+  displayName: string;
+  email: string;
+  xp: number;
+  level: number;
+  streak: number;
+  lastActiveDate?: Date;
+}
+
 function defaultRange(from?: Date, to?: Date): { from: Date; to: Date } {
   const t = to ?? new Date();
   const f = from ?? new Date(t.getTime() - 30 * 86400000);
@@ -104,7 +155,7 @@ export async function getOverview(params: QueryParams = {}): Promise<AnalyticsOv
   const levelDistribution: Record<string, number> = {};
   for (const l of levelAgg) levelDistribution[String(l._id)] = l.count;
 
-  const rawPoints: DailyPoint[] = dailyAgg.map((d: any) => ({ date: d._id, count: d.count }));
+  const rawPoints: DailyPoint[] = dailyAgg.map((d: DateCountRow) => ({ date: d._id, count: d.count }));
   const dailyCompletions = fillDateGaps(rawPoints, from, to);
 
   return {
@@ -183,7 +234,7 @@ export async function getLessonsStats(params: QueryParams = {}): Promise<Analyti
     { $sort: { completions: -1 } },
   ]);
 
-  const lessons: AnalyticsLesson[] = agg.map((row: any) => ({
+  const lessons: AnalyticsLesson[] = agg.map((row: LessonStatsRow) => ({
     lessonId: String(row._id),
     title: row.lesson?.title ?? '(sin título)',
     courseId: String(row.module?.courseId ?? ''),
@@ -241,18 +292,18 @@ export async function getRetention(params: QueryParams = {}): Promise<AnalyticsR
   ]);
 
   const dailyActiveUsers = fillDateGaps(
-    dauAgg.map((d: any) => ({ date: d._id, count: d.count })),
+    dauAgg.map((d: DateCountRow) => ({ date: d._id, count: d.count })),
     from,
     to,
   );
 
   const bucketLabels: StreakBucketLabel[] = ['0', '1-3', '4-7', '8-14', '15-30', '31+'];
-  const streakBuckets: StreakBucket[] = streakAgg.map((b: any, i: number) => ({
+  const streakBuckets: StreakBucket[] = streakAgg.map((b: StreakBucketRow, i: number) => ({
     bucket: (b._id === '31+' ? '31+' : bucketLabels[i] ?? '31+') as StreakBucketLabel,
     count: b.count,
   }));
 
-  const weeklyRetention: DailyPoint[] = weeklyAgg.map((w: any) => ({
+  const weeklyRetention: DailyPoint[] = weeklyAgg.map((w: WeeklyRow) => ({
     date: `${w._id.year}-W${String(w._id.week).padStart(2, '0')}`,
     count: w.count,
   }));
@@ -297,7 +348,7 @@ export async function getFunnel(params: QueryParams & { courseId: string }): Pro
         { $group: { _id: '$userId', count: { $sum: 1 } } },
         { $match: { count: { $gte: lessonIds.length } } },
       ]);
-      return completedCounts.map((r: any) => r._id);
+      return completedCounts.map((r: CompletedCountRow) => r._id);
     })(),
   ]);
 
@@ -338,10 +389,10 @@ export async function getStudentList(): Promise<StudentsListResponse> {
   ]);
 
   const completedMap = new Map<string, number>(
-    completedAgg.map((p: any) => [String(p._id), p.completedLessons]),
+    completedAgg.map((p: CompletedLessonsRow) => [String(p._id), p.completedLessons]),
   );
 
-  const students: StudentSummary[] = users.map((u: any) => ({
+  const students: StudentSummary[] = (users as UserLeanDoc[]).map((u) => ({
     id: String(u._id),
     displayName: u.displayName,
     email: u.email,
@@ -401,7 +452,7 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile 
 
   if (!user) return null;
 
-  const progress: StudentLessonProgress[] = progressAgg.map((p: any) => ({
+  const progress: StudentLessonProgress[] = progressAgg.map((p: ProgressAggRow) => ({
     lessonId: String(p.lessonId),
     lessonTitle: p.lesson?.title ?? '(sin título)',
     moduleTitle: p.module?.title ?? '(sin módulo)',
@@ -433,19 +484,18 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile 
     { $sort: { _id: 1 } },
   ]);
 
-  const rawPoints: DailyPoint[] = dailyAgg.map((d: any) => ({ date: d._id, count: d.count }));
+  const rawPoints: DailyPoint[] = dailyAgg.map((d: DateCountRow) => ({ date: d._id, count: d.count }));
   const dailyActivity = fillDateGaps(rawPoints, from, to);
 
+  const u = user as UserLeanDoc;
   return {
-    id: String((user as any)._id),
-    displayName: (user as any).displayName,
-    email: (user as any).email,
-    xp: (user as any).xp,
-    level: (user as any).level,
-    streak: (user as any).streak,
-    lastActiveDate: (user as any).lastActiveDate
-      ? ((user as any).lastActiveDate as Date).toISOString()
-      : null,
+    id: String(u._id),
+    displayName: u.displayName,
+    email: u.email,
+    xp: u.xp,
+    level: u.level,
+    streak: u.streak,
+    lastActiveDate: u.lastActiveDate ? u.lastActiveDate.toISOString() : null,
     completedLessons: progress.filter((p) => p.status === 'completed').length,
     totalLessons,
     dailyActivity,
@@ -505,7 +555,7 @@ export async function getExercisesAnalytics(
     { $sort: { lessonId: 1, exerciseIndex: 1 } },
   ]);
 
-  const exercises: ExerciseAnalyticsItem[] = agg.map((row: any) => ({
+  const exercises: ExerciseAnalyticsItem[] = agg.map((row: ExerciseStatsRow) => ({
     lessonId: String(row.lessonId),
     lessonTitle: row.lessonTitle,
     exerciseIndex: row.exerciseIndex,
