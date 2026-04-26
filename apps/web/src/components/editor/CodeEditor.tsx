@@ -31,11 +31,13 @@ const EDITOR_THEME_MAP: Record<EditorThemePref, Extension> = {
 
 const themeCompartment = new Compartment();
 
-// ─── Custom layout theme (background, fonts, gutters) ────────────────────────
+// ─── Custom layout theme (fonts, spacing, focus — NO color overrides) ────────
+// Colors (background, gutters, text) are intentionally left to the selected
+// theme (oneDark / githubLight / …). Putting color here would override the
+// active theme and make theme-switching appear broken.
 
 const customTheme = EditorView.theme({
   '&': {
-    backgroundColor: '#0F172A',
     borderRadius: '0.5rem',
     fontSize: '14px',
     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
@@ -44,18 +46,13 @@ const customTheme = EditorView.theme({
     padding: '12px 0',
     minHeight: '200px',
   },
-  '.cm-gutters': {
-    backgroundColor: '#0F172A',
-    borderRight: '1px solid #1E293B',
-    color: '#475569',
-  },
   '.cm-line': {
     padding: '0 12px 0 8px',
   },
   '.cm-focused': {
     outline: 'none',
   },
-  // Accessible focus ring
+  // Accessible focus ring (accent-agnostic — uses a fixed indigo for now)
   '&.cm-focused': {
     boxShadow: '0 0 0 2px #6366F1',
   },

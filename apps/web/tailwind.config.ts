@@ -28,11 +28,13 @@ const config: Config = {
           500: '#F59E0B',
         },
         surface: {
-          DEFAULT: '#1E293B', // Slate 800
+          // 800 and 900 are driven by CSS custom properties so they respond
+          // to theme switching (light/dark) without touching component classes.
+          DEFAULT: 'rgb(var(--surface) / <alpha-value>)',
           50: '#F8FAFC',
           100: '#F1F5F9',
-          800: '#1E293B',
-          900: '#0F172A',
+          800: 'rgb(var(--surface-800) / <alpha-value>)',
+          900: 'rgb(var(--surface-900) / <alpha-value>)',
         },
       },
       fontFamily: {
