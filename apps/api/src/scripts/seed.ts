@@ -291,8 +291,11 @@ async function seed() {
     { order: 1, title: '¿Qué es HTML?',       xpReward: 15, contentId: 'html-css-basico/module-01-estructura/lesson-01-que-es-html' },
     { order: 2, title: 'Headings y párrafos', xpReward: 15, contentId: 'html-css-basico/module-01-estructura/lesson-02-headings-parrafos' },
     { order: 3, title: 'Listas en HTML',      xpReward: 20, contentId: 'html-css-basico/module-01-estructura/lesson-03-listas' },
+    { order: 4, title: 'Imágenes',            xpReward: 20, contentId: 'html-css-basico/module-01-estructura/lesson-04-imagenes' },
+    { order: 5, title: 'Formularios',         xpReward: 25, contentId: 'html-css-basico/module-01-estructura/lesson-05-formularios' },
+    { order: 6, title: 'HTML semántico',      xpReward: 25, contentId: 'html-css-basico/module-01-estructura/lesson-06-semantica' },
   ]) await upsertLesson(htmlMod1._id, l);
-  console.log('✅  Módulo HTML 1 listo (3 lecciones)');
+  console.log('✅  Módulo HTML 1 listo (6 lecciones)');
 
   // ─── Módulo 2: Texto y Enlaces ────────────────────────────────────────────
 
@@ -309,8 +312,9 @@ async function seed() {
   for (const l of [
     { order: 1, title: 'Énfasis en texto', xpReward: 15, contentId: 'html-css-basico/module-02-texto-enlaces/lesson-01-enfasis-texto' },
     { order: 2, title: 'Hipervínculos',    xpReward: 20, contentId: 'html-css-basico/module-02-texto-enlaces/lesson-02-hipervinculos' },
+    { order: 3, title: 'Rutas y anclas',   xpReward: 20, contentId: 'html-css-basico/module-02-texto-enlaces/lesson-03-rutas-y-anclas' },
   ]) await upsertLesson(htmlMod2._id, l);
-  console.log('✅  Módulo HTML 2 listo (2 lecciones)');
+  console.log('✅  Módulo HTML 2 listo (3 lecciones)');
 
   // ─── Módulo 3: Introducción a CSS ─────────────────────────────────────────
 
@@ -328,15 +332,55 @@ async function seed() {
     { order: 1, title: 'Selectores CSS',    xpReward: 20, contentId: 'html-css-basico/module-03-css/lesson-01-selectores' },
     { order: 2, title: 'Colores y texto',   xpReward: 25, contentId: 'html-css-basico/module-03-css/lesson-02-colores-texto' },
     { order: 3, title: 'El modelo de caja', xpReward: 30, contentId: 'html-css-basico/module-03-css/lesson-03-box-model' },
+    { order: 4, title: 'Unidades CSS',      xpReward: 25, contentId: 'html-css-basico/module-03-css/lesson-04-unidades' },
+    { order: 5, title: 'Display',           xpReward: 30, contentId: 'html-css-basico/module-03-css/lesson-05-display' },
+    { order: 6, title: 'Flexbox',           xpReward: 35, contentId: 'html-css-basico/module-03-css/lesson-06-flexbox' },
+    { order: 7, title: 'Pseudo-clases',     xpReward: 30, contentId: 'html-css-basico/module-03-css/lesson-07-pseudoclases' },
   ]) await upsertLesson(htmlMod3._id, l);
-  console.log('✅  Módulo HTML 3 listo (3 lecciones)');
+  console.log('✅  Módulo HTML 3 listo (7 lecciones)');
+
+  // ─── Módulo 4: Layout ─────────────────────────────────────────────────────
+
+  let htmlMod4 = await ModuleModel.findOne({ courseId: courseHtml._id, order: 4 });
+  if (!htmlMod4) {
+    htmlMod4 = await ModuleModel.create({
+      courseId: courseHtml._id,
+      order: 4,
+      title: 'Layout',
+      description: 'Controla la posición y el apilamiento de los elementos en la página',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Position',  xpReward: 35, contentId: 'html-css-basico/module-04-layout/lesson-01-position' },
+    { order: 2, title: 'z-index',   xpReward: 40, contentId: 'html-css-basico/module-04-layout/lesson-02-z-index' },
+  ]) await upsertLesson(htmlMod4._id, l);
+  console.log('✅  Módulo HTML 4 listo (2 lecciones)');
+
+  // ─── Módulo 5: Responsive ─────────────────────────────────────────────────
+
+  let htmlMod5 = await ModuleModel.findOne({ courseId: courseHtml._id, order: 5 });
+  if (!htmlMod5) {
+    htmlMod5 = await ModuleModel.create({
+      courseId: courseHtml._id,
+      order: 5,
+      title: 'Diseño Responsive',
+      description: 'Haz que tus páginas se vean bien en cualquier dispositivo',
+    });
+  }
+
+  for (const l of [
+    { order: 1, title: 'Viewport y meta tag', xpReward: 25, contentId: 'html-css-basico/module-05-responsive/lesson-01-viewport-meta' },
+    { order: 2, title: 'Media Queries',       xpReward: 35, contentId: 'html-css-basico/module-05-responsive/lesson-02-media-queries' },
+  ]) await upsertLesson(htmlMod5._id, l);
+  console.log('✅  Módulo HTML 5 listo (2 lecciones)');
 
   // ─── Logros ───────────────────────────────────────────────────────────────
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 3 + 3 + 3 + 2 + 3;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 45+45+50 + 45+60+65 + 40+50+55 + 15+15+20 + 15+20 + 20+25+30;
+  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 3 + 3 + 6 + 3 + 7 + 2 + 2;
+  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 45+45+50 + 45+60+65 + 40+50+55 + 15+15+20+20+25+25 + 15+20+20 + 20+25+30+25+30+35+30 + 35+40 + 25+35;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();
