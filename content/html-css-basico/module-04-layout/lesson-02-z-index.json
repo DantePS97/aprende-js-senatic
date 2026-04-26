@@ -1,0 +1,58 @@
+{
+  "theory": {
+    "markdown": "## z-index y contextos de apilamiento\n\nCuando los elementos se superponen, el navegador los apila en un orden. `z-index` controla quién queda encima.\n\n### Regla básica\n\n```css\n.fondo  { position: absolute; z-index: 1; }\n.encima { position: absolute; z-index: 2; }  /* queda por encima */\n```\n\nMayor `z-index` = más al frente. Los valores pueden ser cualquier entero, incluyendo negativos.\n\n**Importante:** `z-index` solo funciona en elementos con `position` distinto a `static`. En un elemento `static`, `z-index` se ignora.\n\n### Contexto de apilamiento\n\nCada elemento con `position` + `z-index` (o con ciertas propiedades como `opacity < 1`, `transform`, `filter`) crea su propio **contexto de apilamiento**. Dentro de ese contexto, los hijos se apilan entre sí de forma independiente.\n\n```css\n/* Dos contextos independientes */\n.modal   { position: fixed; z-index: 100; }\n.tooltip { position: absolute; z-index: 9999; } /* dentro de un padre con z-index bajo */\n```\n\nSi el padre del tooltip tiene `z-index: 1`, el tooltip nunca quedará encima del modal aunque tenga `z-index: 9999` — porque se compara el z-index del padre (1) vs. el modal (100).\n\n### Patrones comunes\n\n```css\n/* Escala de z-index por capas */\n.base     { z-index: 0; }    /* contenido normal */\n.dropdown { z-index: 10; }   /* menús desplegables */\n.modal    { z-index: 100; }  /* ventanas modales */\n.toast    { z-index: 200; }  /* notificaciones */\n```\n\nUsar múltiplos de 10 o 100 deja espacio para insertar capas intermedias sin reescribir todo.",
+    "examples": [
+      {
+        "code": "<style>\n  .contenedor {\n    position: relative;\n    height: 120px;\n  }\n  .caja {\n    position: absolute;\n    width: 100px;\n    height: 100px;\n    border: 2px solid black;\n  }\n  .azul  { background: #BFDBFE; left: 0;   top: 0;  z-index: 1; }\n  .roja  { background: #FECACA; left: 40px; top: 20px; z-index: 2; }\n  .verde { background: #BBF7D0; left: 80px; top: 10px; z-index: 1; }\n</style>\n\n<div class=\"contenedor\">\n  <div class=\"caja azul\">z:1</div>\n  <div class=\"caja roja\">z:2</div>\n  <div class=\"caja verde\">z:1</div>\n</div>",
+        "explanation": "La caja roja queda encima de ambas porque tiene z-index: 2. Azul y verde tienen el mismo z-index, así que el orden en el HTML decide cuál va encima."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Superponer dos cajas",
+      "prompt": "Crea un `<div>` con clase `contenedor` con `position: relative` y `height: 150px`. Dentro, crea:\n- Un `<div class=\"fondo\">` con `position: absolute`, `z-index: 1`, `width: 100px`, `height: 100px`\n- Un `<div class=\"frente\">` con `position: absolute`, `z-index: 2`, `width: 100px`, `height: 100px`, `left: 30px`, `top: 20px`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>z-index</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el contenedor con las dos cajas -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'contenedor'",
+          "expression": "!!doc.querySelector('.contenedor')"
+        },
+        {
+          "description": "El contenedor tiene position: relative",
+          "expression": "win.getComputedStyle(doc.querySelector('.contenedor')).position === 'relative'"
+        },
+        {
+          "description": "Existe un elemento con clase 'fondo'",
+          "expression": "!!doc.querySelector('.fondo')"
+        },
+        {
+          "description": "El .fondo tiene position: absolute",
+          "expression": "win.getComputedStyle(doc.querySelector('.fondo')).position === 'absolute'"
+        },
+        {
+          "description": "El .fondo tiene z-index: 1",
+          "expression": "win.getComputedStyle(doc.querySelector('.fondo')).zIndex === '1'"
+        },
+        {
+          "description": "Existe un elemento con clase 'frente'",
+          "expression": "!!doc.querySelector('.frente')"
+        },
+        {
+          "description": "El .frente tiene position: absolute",
+          "expression": "win.getComputedStyle(doc.querySelector('.frente')).position === 'absolute'"
+        },
+        {
+          "description": "El .frente tiene z-index: 2",
+          "expression": "win.getComputedStyle(doc.querySelector('.frente')).zIndex === '2'"
+        }
+      ],
+      "hints": [
+        "z-index solo funciona si el elemento tiene position distinto a static",
+        "El .frente con z-index: 2 quedará por encima del .fondo con z-index: 1",
+        "El contenedor necesita position: relative para ser el contexto de referencia"
+      ]
+    }
+  ]
+}

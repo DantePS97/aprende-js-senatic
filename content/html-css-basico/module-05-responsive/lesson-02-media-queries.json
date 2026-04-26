@@ -1,0 +1,46 @@
+{
+  "theory": {
+    "markdown": "## Media Queries\n\nUna media query aplica estilos CSS solo cuando se cumple una condición — generalmente el ancho de la ventana. Es la herramienta fundamental del diseño responsive.\n\n### Sintaxis\n\n```css\n@media (condición) {\n  /* Estilos que aplican solo si la condición es verdadera */\n}\n```\n\n### Breakpoints comunes\n\n```css\n/* Móvil: < 768px  (estilos base, sin media query) */\n/* Tablet: ≥ 768px */\n@media (min-width: 768px) { ... }\n\n/* Desktop: ≥ 1024px */\n@media (min-width: 1024px) { ... }\n\n/* Desktop grande: ≥ 1280px */\n@media (min-width: 1280px) { ... }\n```\n\n### Mobile-first: la forma correcta\n\nEscribe primero los estilos para móvil (sin media query) y luego **amplía** para pantallas más grandes con `min-width`. Es más fácil de mantener y tiene mejor rendimiento:\n\n```css\n/* Móvil: una columna */\n.galeria {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n}\n\n/* Tablet y superior: dos columnas */\n@media (min-width: 768px) {\n  .galeria {\n    flex-direction: row;\n    flex-wrap: wrap;\n  }\n  .galeria .item {\n    width: calc(50% - 8px);\n  }\n}\n\n/* Desktop: tres columnas */\n@media (min-width: 1024px) {\n  .galeria .item {\n    width: calc(33.333% - 11px);\n  }\n}\n```\n\n### Desktop-first: el enfoque que debes evitar\n\n`max-width` aplica estilos para pantallas MENORES a un tamaño. Terminas escribiendo CSS para sobreescribir estilos de desktop en cada breakpoint — es más difícil de mantener:\n\n```css\n/* Evitar: desktop-first */\n@media (max-width: 768px) { ... } /* ← sobreescribiendo todo en mobile */\n```\n\n### Consejo práctico\n\nNo inventes breakpoints por tamaños de dispositivos específicos. Define breakpoints donde tu diseño **se rompe** visualmente — ese es el momento de agregar uno.",
+    "examples": [
+      {
+        "code": "<style>\n  /* Móvil: base */\n  .tarjetas {\n    display: flex;\n    flex-direction: column;\n    gap: 16px;\n    padding: 16px;\n  }\n  .tarjeta {\n    border: 1px solid #CBD5E1;\n    padding: 16px;\n    border-radius: 8px;\n  }\n\n  /* Tablet y superior */\n  @media (min-width: 768px) {\n    .tarjetas {\n      flex-direction: row;\n      flex-wrap: wrap;\n    }\n    .tarjeta {\n      width: calc(50% - 8px);\n    }\n  }\n</style>\n\n<div class=\"tarjetas\">\n  <div class=\"tarjeta\"><h3>HTML</h3><p>Estructura</p></div>\n  <div class=\"tarjeta\"><h3>CSS</h3><p>Estilos</p></div>\n  <div class=\"tarjeta\"><h3>JavaScript</h3><p>Comportamiento</p></div>\n</div>",
+        "explanation": "Mobile-first: en móvil las tarjetas van en columna. A partir de 768px van en fila con flex-wrap."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Layout responsive mobile-first",
+      "prompt": "Crea un `<div>` con clase `layout` que contenga **2 divs** con clase `columna`. Aplica en CSS:\n- Estilo base (móvil): `.layout` con `display: flex` y `flex-direction: column`\n- Media query `@media (min-width: 768px)`: `.layout` con `flex-direction: row`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Responsive</title>\n    <style>\n      /* Estilos base (móvil) */\n\n      /* Media query tablet */\n    </style>\n  </head>\n  <body>\n    <!-- Crea div.layout con 2 div.columna dentro -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'layout'",
+          "expression": "!!doc.querySelector('.layout')"
+        },
+        {
+          "description": "El .layout tiene display: flex",
+          "expression": "win.getComputedStyle(doc.querySelector('.layout')).display === 'flex'"
+        },
+        {
+          "description": "Existen exactamente 2 elementos con clase 'columna'",
+          "expression": "doc.querySelectorAll('.columna').length === 2"
+        },
+        {
+          "description": "Los .columna son hijos directos de .layout",
+          "expression": "doc.querySelectorAll('.layout > .columna').length === 2"
+        },
+        {
+          "description": "Existe una media query con min-width: 768px en el CSS",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.media && Array.from(r.media).some(m => m.includes('768px'))); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Primero escribe .layout { display: flex; flex-direction: column; } sin media query",
+        "Luego agrega @media (min-width: 768px) { .layout { flex-direction: row; } }",
+        "Mobile-first significa que los estilos base son para móvil y se amplían hacia arriba"
+      ]
+    }
+  ]
+}

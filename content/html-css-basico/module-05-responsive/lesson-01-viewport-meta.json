@@ -1,0 +1,54 @@
+{
+  "theory": {
+    "markdown": "## El viewport y el meta tag\n\nAntes de escribir una sola media query, hay un paso que muchos principiantes omiten y que rompe todo el diseño responsive: el **meta viewport tag**.\n\n### El problema\n\nLos dispositivos móviles, por defecto, simulan un viewport de ~980px y escalan la página para que quepa. El resultado: tu diseño se ve como la versión de escritorio encogida, ilegible.\n\n### La solución\n\n```html\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n```\n\nEste tag va en el `<head>` de TODAS tus páginas. Le dice al navegador:\n- `width=device-width` — el viewport tiene el ancho real del dispositivo\n- `initial-scale=1` — no hacer zoom inicial\n\n### ¿Qué es el viewport?\n\nEl viewport es el área visible del navegador. En desktop es la ventana. En mobile es la pantalla.\n\nLas unidades `vw` y `vh` que ya conoces son porcentajes del viewport:\n```css\n.hero {\n  width: 100vw;   /* 100% del ancho del viewport */\n  height: 100vh;  /* 100% del alto del viewport */\n}\n```\n\nCon el meta viewport correcto, `100vw` en un iPhone de 390px de ancho = 390px. Sin él, `100vw` podría ser 980px.\n\n### Página base bien configurada\n\n```html\n<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Mi página responsive</title>\n  </head>\n  <body>\n    ...\n  </body>\n</html>\n```\n\nEsta es la plantilla correcta. Nunca construyas una página sin estos dos metas.",
+    "examples": [
+      {
+        "code": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Página responsive</title>\n    <style>\n      body {\n        margin: 0;\n        font-family: sans-serif;\n      }\n      .hero {\n        width: 100vw;\n        height: 100vh;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        background: #EFF6FF;\n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"hero\">\n      <h1>Hola mundo</h1>\n    </div>\n  </body>\n</html>",
+        "explanation": "Página base con meta viewport correctamente configurado y una sección hero que ocupa toda la pantalla."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Página con meta viewport",
+      "prompt": "Crea una página HTML completa con:\n- El meta tag `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">`\n- El meta tag `<meta charset=\"UTF-8\">`\n- Un `<h1>` con el texto `Página responsive`\n- Un `<div>` con clase `hero` con `height: 100vh` en CSS",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <!-- Agrega los meta tags aquí -->\n    <title>Responsive</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Escribe tu HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el meta tag charset",
+          "expression": "!!doc.querySelector('meta[charset]')"
+        },
+        {
+          "description": "Existe el meta viewport",
+          "expression": "!!doc.querySelector('meta[name=\"viewport\"]')"
+        },
+        {
+          "description": "El meta viewport tiene content correcto",
+          "expression": "doc.querySelector('meta[name=\"viewport\"]')?.getAttribute('content')?.includes('width=device-width') ?? false"
+        },
+        {
+          "description": "El meta viewport incluye initial-scale=1",
+          "expression": "doc.querySelector('meta[name=\"viewport\"]')?.getAttribute('content')?.includes('initial-scale=1') ?? false"
+        },
+        {
+          "description": "Existe un h1 con texto 'Página responsive'",
+          "expression": "doc.querySelector('h1')?.textContent?.trim() === 'Página responsive'"
+        },
+        {
+          "description": "Existe un div con clase 'hero'",
+          "expression": "!!doc.querySelector('div.hero')"
+        },
+        {
+          "description": "El .hero tiene height: 100vh",
+          "expression": "win.getComputedStyle(doc.querySelector('.hero')).height !== ''"
+        }
+      ],
+      "hints": [
+        "El meta viewport va en el <head>, antes del <title>",
+        "El content debe ser exactamente: width=device-width, initial-scale=1",
+        "100vh es igual a la altura total visible del navegador"
+      ]
+    }
+  ]
+}

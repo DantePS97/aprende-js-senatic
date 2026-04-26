@@ -1,0 +1,54 @@
+{
+  "theory": {
+    "markdown": "## Flexbox\n\nFlexbox es el sistema de layout moderno de CSS. Resuelve el problema de organizar elementos en filas o columnas de forma flexible sin cálculos complejos.\n\n### Activar flexbox\n\nSe aplica al **contenedor padre** con `display: flex`:\n```css\n.contenedor { display: flex; }\n```\nTodos los hijos directos se convierten automáticamente en **flex items**.\n\n### Dirección: flex-direction\n\n```css\n.contenedor { flex-direction: row; }    /* fila (por defecto) → */\n.contenedor { flex-direction: column; } /* columna ↓ */\n```\n\n### Alineación horizontal: justify-content\n\n```css\njustify-content: flex-start;    /* al inicio (por defecto) */\njustify-content: center;        /* centrado */\njustify-content: flex-end;      /* al final */\njustify-content: space-between; /* espacio entre items */\njustify-content: space-around;  /* espacio alrededor de cada item */\n```\n\n### Alineación vertical: align-items\n\n```css\nalign-items: stretch;     /* estira para llenar (por defecto) */\nalign-items: center;      /* centrado verticalmente */\nalign-items: flex-start;  /* alineado arriba */\nalign-items: flex-end;    /* alineado abajo */\n```\n\n### Ejemplo típico: tarjetas en fila\n\n```css\n.galeria {\n  display: flex;\n  gap: 16px;              /* espacio entre items */\n  justify-content: center;\n  align-items: flex-start;\n}\n```\n\n`gap` define el espacio entre items sin necesidad de margins.\n\n### El poder real\n\nCentrar algo vertical y horizontalmente — algo históricamente difícil en CSS — con flexbox es trivial:\n```css\n.centrar {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .tarjetas {\n    display: flex;\n    gap: 16px;\n    justify-content: space-between;\n  }\n  .tarjeta {\n    border: 1px solid #CBD5E1;\n    padding: 16px;\n    width: 30%;\n  }\n</style>\n\n<div class=\"tarjetas\">\n  <div class=\"tarjeta\"><h3>HTML</h3><p>Estructura</p></div>\n  <div class=\"tarjeta\"><h3>CSS</h3><p>Estilos</p></div>\n  <div class=\"tarjeta\"><h3>JS</h3><p>Comportamiento</p></div>\n</div>",
+        "explanation": "Tres tarjetas distribuidas en fila con espacio entre ellas usando flexbox."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería con flexbox",
+      "prompt": "Crea un `<div>` con clase `galeria` que contenga **3 divs** con clase `item`. Aplica en CSS:\n- `.galeria`: `display: flex`, `gap: 16px`, `justify-content: center`\n- `.item`: `padding: 16px`, `border: 1px solid black`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Flexbox</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea div.galeria con 3 div.item dentro -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'galeria'",
+          "expression": "!!doc.querySelector('.galeria')"
+        },
+        {
+          "description": "La galeria tiene display: flex",
+          "expression": "win.getComputedStyle(doc.querySelector('.galeria')).display === 'flex'"
+        },
+        {
+          "description": "La galeria tiene justify-content: center",
+          "expression": "win.getComputedStyle(doc.querySelector('.galeria')).justifyContent === 'center'"
+        },
+        {
+          "description": "Existen exactamente 3 elementos con clase 'item'",
+          "expression": "doc.querySelectorAll('.item').length === 3"
+        },
+        {
+          "description": "Los .item son hijos directos de .galeria",
+          "expression": "doc.querySelectorAll('.galeria > .item').length === 3"
+        },
+        {
+          "description": "Los .item tienen padding de 16px",
+          "expression": "win.getComputedStyle(doc.querySelector('.item')).paddingTop === '16px'"
+        },
+        {
+          "description": "Los .item tienen border sólido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.item' && r.style.border.includes('solid')); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "display: flex va en el contenedor padre (.galeria), no en los hijos",
+        "Los 3 div.item deben ser hijos DIRECTOS del div.galeria",
+        "gap: 16px agrega espacio entre los items sin necesidad de margin"
+      ]
+    }
+  ]
+}

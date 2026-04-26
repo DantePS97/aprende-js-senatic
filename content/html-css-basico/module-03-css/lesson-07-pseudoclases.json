@@ -1,0 +1,50 @@
+{
+  "theory": {
+    "markdown": "## Pseudo-clases CSS\n\nUna pseudo-clase selecciona un elemento según su **estado** o su **posición** en el DOM. Se escriben con dos puntos (`:`) después del selector.\n\n### Estados interactivos\n\n**`:hover`** — cuando el cursor está sobre el elemento:\n```css\nbutton:hover { background-color: #2563EB; }\na:hover { text-decoration: underline; }\n```\n\n**`:focus`** — cuando el elemento tiene el foco (por clic o teclado):\n```css\ninput:focus { outline: 2px solid #3B82F6; }\n```\nEsencial para accesibilidad: los usuarios de teclado necesitan ver qué elemento está activo.\n\n**`:active`** — en el instante en que se hace clic:\n```css\nbutton:active { transform: scale(0.98); }\n```\n\n### Pseudo-clases estructurales\n\n**`:first-child`** — el primer hijo de su padre:\n```css\nli:first-child { font-weight: bold; }\n```\n\n**`:last-child`** — el último hijo de su padre:\n```css\nli:last-child { border-bottom: none; }\n```\n\n**`:nth-child(n)`** — el hijo en la posición n:\n```css\ntr:nth-child(even) { background: #F1F5F9; } /* filas pares */\ntr:nth-child(odd)  { background: white; }   /* filas impares */\n```\n\n### Combinando selectores y pseudo-clases\n\n```css\n/* Solo los enlaces dentro de nav al hacer hover */\nnav a:hover { color: #3B82F6; }\n\n/* El primer párrafo dentro de article */\narticle p:first-child { font-size: 1.1rem; }\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .btn {\n    padding: 10px 24px;\n    background: #3B82F6;\n    color: white;\n    border: none;\n    cursor: pointer;\n  }\n  .btn:hover  { background: #2563EB; }\n  .btn:active { transform: scale(0.97); }\n</style>\n\n<button class=\"btn\">Haz clic aquí</button>",
+        "explanation": "Botón con estados hover y active — feedback visual para el usuario."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Botón con estados hover y focus",
+      "prompt": "Crea un `<button>` con clase `boton` y aplica en CSS:\n- Estado normal: `background-color: #3B82F6` y `color: white`\n- Estado `:hover`: `background-color: #1D4ED8`\n- Estado `:focus`: `outline: 2px solid #93C5FD`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Pseudo-clases</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea tu button.boton aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'boton'",
+          "expression": "!!doc.querySelector('.boton')"
+        },
+        {
+          "description": "El .boton es un elemento <button>",
+          "expression": "doc.querySelector('.boton')?.tagName?.toLowerCase() === 'button'"
+        },
+        {
+          "description": "El .boton tiene background-color: #3B82F6 en estado normal",
+          "expression": "win.getComputedStyle(doc.querySelector('.boton')).backgroundColor === 'rgb(59, 130, 246)'"
+        },
+        {
+          "description": "El .boton tiene color: white en estado normal",
+          "expression": "win.getComputedStyle(doc.querySelector('.boton')).color === 'rgb(255, 255, 255)'"
+        },
+        {
+          "description": "Existe una regla CSS para .boton:hover",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.boton:hover'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe una regla CSS para .boton:focus",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.boton:focus'); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Escribe tres bloques en el CSS: .boton { }, .boton:hover { } y .boton:focus { }",
+        "La pseudo-clase va pegada al selector sin espacio: .boton:hover",
+        "#1D4ED8 es un azul más oscuro que #3B82F6 — el hover da feedback visual"
+      ]
+    }
+  ]
+}

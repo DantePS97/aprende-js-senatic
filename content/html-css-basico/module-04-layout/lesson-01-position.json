@@ -1,0 +1,54 @@
+{
+  "theory": {
+    "markdown": "## La propiedad position\n\n`position` controla cómo un elemento se ubica en la página y cómo interactúa con el flujo normal del documento.\n\n### `static` (por defecto)\n\nTodos los elementos tienen `position: static` por defecto. Siguen el flujo normal del documento. Las propiedades `top`, `left`, `right`, `bottom` no tienen efecto.\n\n### `relative`\n\nEl elemento se desplaza **respecto a su posición original**, pero sigue ocupando ese espacio en el flujo:\n```css\n.caja {\n  position: relative;\n  top: 10px;   /* baja 10px desde su posición normal */\n  left: 20px;  /* se mueve 20px a la derecha */\n}\n```\nSu uso más común: crear un contexto de posicionamiento para hijos absolutos.\n\n### `absolute`\n\nEl elemento sale del flujo del documento y se posiciona respecto al **ancestro posicionado más cercano** (con `position` distinto a `static`). Si no hay ninguno, se posiciona respecto al viewport:\n```css\n.padre   { position: relative; }  /* contexto de referencia */\n.hijo    {\n  position: absolute;\n  top: 0;\n  right: 0;   /* esquina superior derecha del padre */\n}\n```\n\n### `fixed`\n\nEl elemento se posiciona respecto al **viewport** y no se mueve al hacer scroll. Ideal para barras de navegación fijas:\n```css\n.navbar {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n}\n```\n\n### `sticky`\n\nActúa como `relative` hasta que el usuario hace scroll y llega al umbral definido, donde se vuelve `fixed`:\n```css\n.encabezado-tabla {\n  position: sticky;\n  top: 0;   /* se pega cuando llega al top del viewport */\n}\n```\n\n### z-index — quién queda encima\n\nCuando los elementos se superponen, `z-index` decide el orden de apilamiento. Mayor número = más adelante:\n```css\n.modal    { position: fixed; z-index: 100; }\n.overlay  { position: fixed; z-index: 90; }\n```\n`z-index` solo funciona en elementos con `position` distinto a `static`.",
+    "examples": [
+      {
+        "code": "<style>\n  .tarjeta {\n    position: relative;\n    width: 200px;\n    height: 120px;\n    border: 1px solid #CBD5E1;\n    padding: 16px;\n  }\n  .badge {\n    position: absolute;\n    top: -8px;\n    right: -8px;\n    background: #EF4444;\n    color: white;\n    border-radius: 50%;\n    width: 24px;\n    height: 24px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 12px;\n  }\n</style>\n\n<div class=\"tarjeta\">\n  <p>Notificaciones</p>\n  <span class=\"badge\">3</span>\n</div>",
+        "explanation": "Badge posicionado en la esquina de una tarjeta: el padre tiene position: relative y el badge tiene position: absolute."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Badge sobre una tarjeta",
+      "prompt": "Crea un `<div>` con clase `tarjeta` y dentro un `<span>` con clase `badge`. Aplica en CSS:\n- `.tarjeta`: `position: relative`, `width: 150px`, `height: 100px`, `border: 1px solid black`\n- `.badge`: `position: absolute`, `top: 0`, `right: 0`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Position</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea div.tarjeta con span.badge dentro -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento con clase 'tarjeta'",
+          "expression": "!!doc.querySelector('.tarjeta')"
+        },
+        {
+          "description": "La .tarjeta tiene position: relative",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).position === 'relative'"
+        },
+        {
+          "description": "La .tarjeta tiene width: 150px",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).width === '150px'"
+        },
+        {
+          "description": "La .tarjeta tiene height: 100px",
+          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).height === '100px'"
+        },
+        {
+          "description": "Existe un elemento con clase 'badge'",
+          "expression": "!!doc.querySelector('.badge')"
+        },
+        {
+          "description": "El .badge tiene position: absolute",
+          "expression": "win.getComputedStyle(doc.querySelector('.badge')).position === 'absolute'"
+        },
+        {
+          "description": "El .badge está dentro de .tarjeta",
+          "expression": "!!doc.querySelector('.tarjeta .badge')"
+        }
+      ],
+      "hints": [
+        "El padre necesita position: relative para que el hijo absolute lo use como referencia",
+        "Sin position: relative en el padre, el badge se posicionaría respecto a toda la página",
+        "top: 0 y right: 0 ubican el badge en la esquina superior derecha del padre"
+      ]
+    }
+  ]
+}

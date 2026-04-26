@@ -1,0 +1,54 @@
+{
+  "theory": {
+    "markdown": "## Rutas y anclas\n\n### Rutas absolutas vs. relativas\n\nCuando escribes el `href` de un enlace (o el `src` de una imagen), tienes dos opciones:\n\n**Ruta absoluta** — incluye el protocolo y dominio completo:\n```html\n<a href=\"https://www.ejemplo.com/productos\">Ver productos</a>\n```\nÚsala para enlaces a otros sitios web.\n\n**Ruta relativa** — es relativa al archivo actual:\n```html\n<!-- Archivo en la misma carpeta -->\n<a href=\"contacto.html\">Contacto</a>\n\n<!-- Archivo en una subcarpeta -->\n<a href=\"paginas/about.html\">Sobre mí</a>\n\n<!-- Archivo en la carpeta padre -->\n<a href=\"../index.html\">Volver al inicio</a>\n```\nÚsala para navegar entre páginas de tu propio proyecto.\n\n### Anclas — enlazar a una sección\n\nPuedes enlazar directamente a una sección de la misma página usando el atributo `id`:\n\n**Paso 1** — asigna un `id` al elemento destino:\n```html\n<h2 id=\"contacto\">Contacto</h2>\n```\n\n**Paso 2** — crea el enlace con `#` seguido del id:\n```html\n<a href=\"#contacto\">Ir a la sección de contacto</a>\n```\n\nAl hacer clic, el navegador hace scroll hasta el elemento con ese `id`. También puedes enlazar a una sección de otra página:\n```html\n<a href=\"about.html#equipo\">Conoce al equipo</a>\n```\n\n### Regla práctica\n\n| Destino | Tipo de ruta |\n|--------|-------------|\n| Otro sitio web | Absoluta (`https://...`) |\n| Otra página del mismo proyecto | Relativa (`pagina.html`) |\n| Sección en la misma página | Ancla (`#id`) |",
+    "examples": [
+      {
+        "code": "<!-- Menú de navegación con anclas -->\n<nav>\n  <a href=\"#inicio\">Inicio</a>\n  <a href=\"#servicios\">Servicios</a>\n  <a href=\"#contacto\">Contacto</a>\n</nav>\n\n<h2 id=\"inicio\">Inicio</h2>\n<p>Bienvenido a nuestra página.</p>\n\n<h2 id=\"servicios\">Servicios</h2>\n<p>Ofrecemos diseño y desarrollo web.</p>\n\n<h2 id=\"contacto\">Contacto</h2>\n<p>Escríbenos a info@ejemplo.com</p>",
+        "explanation": "Menú de navegación que enlaza a secciones de la misma página usando anclas con id."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Navegación con anclas",
+      "prompt": "Crea una página con navegación interna:\n- Un `<nav>` con dos enlaces de ancla: uno con `href=\"#sobre-mi\"` y otro con `href=\"#proyectos\"`\n- Un `<h2>` con `id=\"sobre-mi\"` y texto `Sobre mí`\n- Un `<h2>` con `id=\"proyectos\"` y texto `Proyectos`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Mi portafolio</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento <nav>",
+          "expression": "!!doc.querySelector('nav')"
+        },
+        {
+          "description": "Hay un enlace con href='#sobre-mi'",
+          "expression": "!!doc.querySelector('a[href=\"#sobre-mi\"]')"
+        },
+        {
+          "description": "Hay un enlace con href='#proyectos'",
+          "expression": "!!doc.querySelector('a[href=\"#proyectos\"]')"
+        },
+        {
+          "description": "Existe un h2 con id='sobre-mi'",
+          "expression": "!!doc.querySelector('h2[id=\"sobre-mi\"]')"
+        },
+        {
+          "description": "El h2#sobre-mi tiene el texto 'Sobre mí'",
+          "expression": "doc.querySelector('h2[id=\"sobre-mi\"]')?.textContent?.trim() === 'Sobre mí'"
+        },
+        {
+          "description": "Existe un h2 con id='proyectos'",
+          "expression": "!!doc.querySelector('h2[id=\"proyectos\"]')"
+        },
+        {
+          "description": "El h2#proyectos tiene el texto 'Proyectos'",
+          "expression": "doc.querySelector('h2[id=\"proyectos\"]')?.textContent?.trim() === 'Proyectos'"
+        }
+      ],
+      "hints": [
+        "El ancla se escribe con # antes del id: href=\"#nombre-del-id\"",
+        "El id en el elemento destino NO lleva #: id=\"nombre-del-id\"",
+        "Los textos deben coincidir exactamente: 'Sobre mí' y 'Proyectos'"
+      ]
+    }
+  ]
+}

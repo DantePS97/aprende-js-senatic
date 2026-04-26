@@ -1,0 +1,50 @@
+{
+  "theory": {
+    "markdown": "## Unidades en CSS\n\nCSS tiene varios tipos de unidades para definir tamaños. Elegir la correcta marca la diferencia entre un diseño rígido y uno flexible.\n\n### Unidades absolutas\n\n**`px`** (píxeles) — el tamaño es fijo, sin importar el contexto:\n```css\np { font-size: 16px; }\n.caja { width: 300px; }\n```\nÚsalos cuando necesitas precisión fija: bordes, sombras, valores pequeños.\n\n### Unidades relativas\n\n**`em`** — relativo al `font-size` del elemento padre:\n```css\n/* Si el padre tiene font-size: 16px */\np { font-size: 1.5em; } /* = 24px */\n```\nCuidado: se acumulan. Un `em` dentro de otro `em` se multiplica.\n\n**`rem`** (root em) — relativo al `font-size` del elemento raíz (`<html>`). Más predecible que `em`:\n```css\n/* Si html tiene font-size: 16px (valor por defecto del navegador) */\nh1 { font-size: 2rem; }   /* = 32px siempre */\np  { font-size: 1rem; }   /* = 16px siempre */\n```\n`rem` es la unidad recomendada para tipografía.\n\n**`%`** — porcentaje del elemento padre:\n```css\n.contenedor { width: 100%; }   /* ocupa todo el ancho del padre */\n.mitad      { width: 50%; }    /* ocupa la mitad del padre */\n```\n\n### Unidades de viewport\n\n**`vw`** / **`vh`** — porcentaje del ancho/alto de la ventana del navegador:\n```css\n.hero { height: 100vh; } /* ocupa toda la altura visible */\n.banner { width: 100vw; } /* ocupa todo el ancho visible */\n```\n\n### Cuándo usar cada una\n\n| Unidad | Usar para |\n|--------|----------|\n| `px` | Bordes, sombras, valores precisos |\n| `rem` | Tipografía, espaciado general |\n| `%` | Anchos fluidos dentro de un contenedor |\n| `vw`/`vh` | Secciones que llenan la pantalla |",
+    "examples": [
+      {
+        "code": "<style>\n  html { font-size: 16px; }\n\n  .titulo  { font-size: 2rem; }    /* 32px */\n  .subtitulo { font-size: 1.25rem; } /* 20px */\n  .cuerpo  { font-size: 1rem; }    /* 16px */\n\n  .contenedor { width: 100%; }\n  .columna    { width: 50%; }\n</style>\n\n<div class=\"contenedor\">\n  <h1 class=\"titulo\">Título</h1>\n  <h2 class=\"subtitulo\">Subtítulo</h2>\n  <p class=\"cuerpo\">Texto del cuerpo.</p>\n</div>",
+        "explanation": "Escala tipográfica usando rem — todos los tamaños son predecibles y proporcionales."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Escala tipográfica con rem",
+      "prompt": "Crea una página con:\n- Un `<h1>` con clase `titulo` con `font-size: 2rem`\n- Un `<p>` con clase `cuerpo` con `font-size: 1rem`\n- Un `<div>` con clase `contenedor` con `width: 80%`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Unidades</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Escribe tu HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un h1 con clase 'titulo'",
+          "expression": "!!doc.querySelector('h1.titulo')"
+        },
+        {
+          "description": "El h1.titulo tiene font-size de 2rem (32px)",
+          "expression": "win.getComputedStyle(doc.querySelector('h1.titulo')).fontSize === '32px'"
+        },
+        {
+          "description": "Existe un p con clase 'cuerpo'",
+          "expression": "!!doc.querySelector('p.cuerpo')"
+        },
+        {
+          "description": "El p.cuerpo tiene font-size de 1rem (16px)",
+          "expression": "win.getComputedStyle(doc.querySelector('p.cuerpo')).fontSize === '16px'"
+        },
+        {
+          "description": "Existe un div con clase 'contenedor'",
+          "expression": "!!doc.querySelector('div.contenedor')"
+        },
+        {
+          "description": "El div.contenedor tiene width: 80%",
+          "expression": "win.getComputedStyle(doc.querySelector('div.contenedor')).width !== ''"
+        }
+      ],
+      "hints": [
+        "El navegador usa font-size: 16px por defecto en el elemento html, así que 2rem = 32px",
+        "Aplica las clases en el HTML: <h1 class=\"titulo\"> y <p class=\"cuerpo\">",
+        "Para el div.contenedor, usa width: 80% en el CSS"
+      ]
+    }
+  ]
+}

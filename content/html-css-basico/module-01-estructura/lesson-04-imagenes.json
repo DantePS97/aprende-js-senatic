@@ -1,0 +1,46 @@
+{
+  "theory": {
+    "markdown": "## Imágenes en HTML\n\nLas imágenes se insertan con el elemento `<img>`. Es un elemento **vacío** — no tiene etiqueta de cierre porque no envuelve contenido.\n\n```html\n<img src=\"foto.jpg\" alt=\"Descripción de la foto\">\n```\n\nTiene dos atributos obligatorios:\n\n- `src` — la ruta a la imagen (dónde está el archivo)\n- `alt` — texto alternativo que describe la imagen\n\n**¿Por qué es importante el `alt`?** Los lectores de pantalla lo leen para personas con discapacidad visual. Si la imagen no carga, el navegador muestra este texto. Sin `alt`, tu página no es accesible.\n\n### Rutas de imágenes\n\n**Relativa** — la imagen está en tu proyecto:\n```html\n<img src=\"imagenes/perro.jpg\" alt=\"Un perro labrador\">\n<img src=\"../logo.png\" alt=\"Logo de la empresa\">\n```\n\n**Absoluta** — una URL completa de internet:\n```html\n<img src=\"https://ejemplo.com/foto.jpg\" alt=\"Foto del sitio\">\n```\n\n### Dimensiones\n\nPuedes controlar el tamaño con `width` y `height` (en píxeles):\n\n```html\n<img src=\"foto.jpg\" alt=\"Mi foto\" width=\"300\" height=\"200\">\n```\n\nSi solo defines uno de los dos, el navegador mantiene la proporción original.",
+    "examples": [
+      {
+        "code": "<h1>Mi galería</h1>\n<img src=\"https://picsum.photos/300/200\" alt=\"Imagen de ejemplo\" width=\"300\" height=\"200\">\n<p>Una imagen de muestra.</p>",
+        "explanation": "Imagen con src absoluto, alt descriptivo y dimensiones definidas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Agrega una imagen a tu página",
+      "prompt": "Crea una página que contenga:\n- Un `<h1>` con el texto `Mi galería de fotos`\n- Una `<img>` con `src=\"https://picsum.photos/200\"`, `alt=\"Foto de muestra\"` y `width=\"200\"`\n- Un `<p>` debajo de la imagen con cualquier texto",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Galería</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un h1 con el texto 'Mi galería de fotos'",
+          "expression": "doc.querySelector('h1')?.textContent?.trim() === 'Mi galería de fotos'"
+        },
+        {
+          "description": "Existe una imagen (<img>)",
+          "expression": "!!doc.querySelector('img')"
+        },
+        {
+          "description": "La imagen tiene el atributo alt con valor 'Foto de muestra'",
+          "expression": "doc.querySelector('img')?.getAttribute('alt') === 'Foto de muestra'"
+        },
+        {
+          "description": "La imagen tiene width=\"200\"",
+          "expression": "doc.querySelector('img')?.getAttribute('width') === '200'"
+        },
+        {
+          "description": "Existe un párrafo después de la imagen",
+          "expression": "!!doc.querySelector('p')"
+        }
+      ],
+      "hints": [
+        "<img> no tiene etiqueta de cierre: <img src=\"...\" alt=\"...\">",
+        "El atributo alt debe decir exactamente 'Foto de muestra'",
+        "El atributo width debe ser '200' (sin px)"
+      ]
+    }
+  ]
+}

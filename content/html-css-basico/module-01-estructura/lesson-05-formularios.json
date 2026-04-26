@@ -1,0 +1,46 @@
+{
+  "theory": {
+    "markdown": "## Formularios en HTML\n\nLos formularios permiten recoger datos del usuario: nombres, contraseñas, opiniones, selecciones.\n\nTodo formulario vive dentro de `<form>`:\n\n```html\n<form>\n  <!-- campos aquí -->\n</form>\n```\n\n### Los elementos esenciales\n\n**`<input>`** — el campo más versátil. El atributo `type` cambia su comportamiento:\n\n```html\n<input type=\"text\" placeholder=\"Tu nombre\">\n<input type=\"email\" placeholder=\"correo@ejemplo.com\">\n<input type=\"password\" placeholder=\"Contraseña\">\n<input type=\"number\" placeholder=\"Tu edad\">\n```\n\n**`<label>`** — etiqueta que describe un campo. Conectarla con su input mejora la accesibilidad:\n\n```html\n<label for=\"nombre\">Nombre completo</label>\n<input id=\"nombre\" type=\"text\">\n```\n\nCuando el `for` del label coincide con el `id` del input, al hacer clic en el label el cursor va al campo.\n\n**`<textarea>`** — campo de texto multilínea:\n\n```html\n<textarea rows=\"4\" placeholder=\"Escribe tu mensaje...\"></textarea>\n```\n\n**`<button>`** — botón para enviar o interactuar:\n\n```html\n<button type=\"submit\">Enviar</button>\n```\n\n### Ejemplo completo\n\n```html\n<form>\n  <label for=\"email\">Correo electrónico</label>\n  <input id=\"email\" type=\"email\" placeholder=\"tu@correo.com\">\n\n  <label for=\"mensaje\">Mensaje</label>\n  <textarea id=\"mensaje\" rows=\"4\"></textarea>\n\n  <button type=\"submit\">Enviar</button>\n</form>\n```",
+    "examples": [
+      {
+        "code": "<form>\n  <label for=\"usuario\">Nombre de usuario</label>\n  <input id=\"usuario\" type=\"text\" placeholder=\"Escribe tu nombre\">\n\n  <label for=\"clave\">Contraseña</label>\n  <input id=\"clave\" type=\"password\" placeholder=\"••••••••\">\n\n  <button type=\"submit\">Iniciar sesión</button>\n</form>",
+        "explanation": "Formulario de inicio de sesión con labels conectados a sus inputs mediante id/for."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Formulario de contacto",
+      "prompt": "Crea un formulario con:\n- Un `<input>` de tipo `text` con `id=\"nombre\"`\n- Un `<label>` con `for=\"nombre\"` y el texto `Nombre`\n- Un `<input>` de tipo `email` con `id=\"email\"`\n- Un `<label>` con `for=\"email\"` y el texto `Correo`\n- Un `<button>` de tipo `submit` con el texto `Enviar`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Contacto</title>\n  </head>\n  <body>\n    <h1>Contáctanos</h1>\n    <form>\n      <!-- Escribe tu código aquí -->\n    </form>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un input de tipo text con id='nombre'",
+          "expression": "doc.querySelector('input[type=\"text\"][id=\"nombre\"]') !== null"
+        },
+        {
+          "description": "Existe un label con for='nombre' y texto 'Nombre'",
+          "expression": "doc.querySelector('label[for=\"nombre\"]')?.textContent?.trim() === 'Nombre'"
+        },
+        {
+          "description": "Existe un input de tipo email con id='email'",
+          "expression": "doc.querySelector('input[type=\"email\"][id=\"email\"]') !== null"
+        },
+        {
+          "description": "Existe un label con for='email' y texto 'Correo'",
+          "expression": "doc.querySelector('label[for=\"email\"]')?.textContent?.trim() === 'Correo'"
+        },
+        {
+          "description": "Existe un botón de tipo submit con texto 'Enviar'",
+          "expression": "doc.querySelector('button[type=\"submit\"]')?.textContent?.trim() === 'Enviar'"
+        }
+      ],
+      "hints": [
+        "Usa el atributo 'for' en el label y el atributo 'id' en el input con el mismo valor para conectarlos",
+        "El tipo de input se define con type=\"text\", type=\"email\", etc.",
+        "El botón debe tener type=\"submit\" y el texto exacto 'Enviar'"
+      ]
+    }
+  ]
+}

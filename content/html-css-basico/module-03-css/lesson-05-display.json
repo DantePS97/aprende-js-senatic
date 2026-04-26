@@ -1,0 +1,50 @@
+{
+  "theory": {
+    "markdown": "## La propiedad display\n\n`display` controla cómo un elemento ocupa espacio en la página. Es una de las propiedades más importantes de CSS.\n\n### Los valores principales\n\n**`block`** — el elemento ocupa toda la línea. El siguiente elemento empieza en una línea nueva:\n```css\ndiv, p, h1, header, section { display: block; } /* comportamiento por defecto */\n```\n- Acepta `width`, `height`, `margin` y `padding` en todos los lados\n\n**`inline`** — el elemento ocupa solo el espacio de su contenido. Fluye dentro del texto:\n```css\nspan, a, strong, em { display: inline; } /* comportamiento por defecto */\n```\n- **No** acepta `width` ni `height`\n- Los `margin` y `padding` verticales no tienen efecto\n\n**`inline-block`** — fluye como inline pero acepta dimensiones como block:\n```css\n.etiqueta { display: inline-block; width: 100px; height: 30px; }\n```\nMuy útil para botones, etiquetas, o ítems de menú en línea.\n\n**`none`** — oculta el elemento completamente. No ocupa espacio:\n```css\n.oculto { display: none; }\n```\n\n### Comparación visual\n\n```\ndisplay: block        → [====== ocupa toda la línea ======]\n                        [===== siguiente en nueva línea ===]\n\ndisplay: inline       → texto [enlace] más texto [otro]\n\ndisplay: inline-block → [item] [item] [item] en fila\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .menu-item {\n    display: inline-block;\n    padding: 8px 16px;\n    background: #3B82F6;\n    color: white;\n  }\n</style>\n\n<nav>\n  <a class=\"menu-item\" href=\"#\">Inicio</a>\n  <a class=\"menu-item\" href=\"#\">Proyectos</a>\n  <a class=\"menu-item\" href=\"#\">Contacto</a>\n</nav>",
+        "explanation": "inline-block permite que los enlaces se muestren en fila con padding y dimensiones definidas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Botones en línea con inline-block",
+      "prompt": "Crea dos elementos `<a>` con clase `btn` y aplica en CSS:\n- `display: inline-block`\n- `padding: 8px 16px`\n- `background-color: #3B82F6`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Display</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea tus dos enlaces con clase btn -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existen al menos 2 elementos con clase 'btn'",
+          "expression": "doc.querySelectorAll('.btn').length >= 2"
+        },
+        {
+          "description": "Los elementos .btn son etiquetas <a>",
+          "expression": "doc.querySelector('.btn')?.tagName?.toLowerCase() === 'a'"
+        },
+        {
+          "description": "El .btn tiene display: inline-block",
+          "expression": "win.getComputedStyle(doc.querySelector('.btn')).display === 'inline-block'"
+        },
+        {
+          "description": "El .btn tiene padding-top de 8px",
+          "expression": "win.getComputedStyle(doc.querySelector('.btn')).paddingTop === '8px'"
+        },
+        {
+          "description": "El .btn tiene padding-left de 16px",
+          "expression": "win.getComputedStyle(doc.querySelector('.btn')).paddingLeft === '16px'"
+        },
+        {
+          "description": "El .btn tiene background-color #3B82F6",
+          "expression": "win.getComputedStyle(doc.querySelector('.btn')).backgroundColor === 'rgb(59, 130, 246)'"
+        }
+      ],
+      "hints": [
+        "Crea dos <a class=\"btn\"> en el body",
+        "En el CSS: .btn { display: inline-block; padding: 8px 16px; background-color: #3B82F6; }",
+        "padding: 8px 16px aplica 8px arriba/abajo y 16px izquierda/derecha"
+      ]
+    }
+  ]
+}

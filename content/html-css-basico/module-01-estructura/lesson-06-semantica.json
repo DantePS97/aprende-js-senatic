@@ -1,0 +1,62 @@
+{
+  "theory": {
+    "markdown": "## HTML semántico\n\nAntes de HTML5, las páginas usaban `<div>` para todo. El problema: un `<div>` no dice nada sobre qué contiene. HTML5 introdujo elementos **semánticos** — etiquetas que describen el significado de su contenido.\n\n### Los elementos semánticos principales\n\n```html\n<header>   <!-- Cabecera: logo, navegación principal -->\n<nav>      <!-- Menú de navegación -->\n<main>     <!-- Contenido principal de la página -->\n<section>  <!-- Sección temática dentro del contenido -->\n<article>  <!-- Contenido independiente (post, noticia) -->\n<aside>    <!-- Contenido relacionado pero secundario -->\n<footer>   <!-- Pie de página: copyright, contacto -->\n```\n\n### Estructura típica de una página\n\n```html\n<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Mi sitio</title>\n  </head>\n  <body>\n    <header>\n      <h1>Mi Blog</h1>\n      <nav>\n        <a href=\"/\">Inicio</a>\n        <a href=\"/about\">Sobre mí</a>\n      </nav>\n    </header>\n\n    <main>\n      <article>\n        <h2>Mi primer post</h2>\n        <p>Contenido del artículo...</p>\n      </article>\n    </main>\n\n    <footer>\n      <p>&copy; 2025 Mi Blog</p>\n    </footer>\n  </body>\n</html>\n```\n\n### ¿Por qué importa?\n\n1. **Accesibilidad** — los lectores de pantalla entienden la estructura y navegan por secciones\n2. **SEO** — los buscadores entienden qué es contenido principal vs. secundario\n3. **Mantenibilidad** — el código se lee como un documento, no como una sopa de `<div>`",
+    "examples": [
+      {
+        "code": "<header>\n  <h1>Tienda Online</h1>\n  <nav>\n    <a href=\"/productos\">Productos</a>\n    <a href=\"/contacto\">Contacto</a>\n  </nav>\n</header>\n\n<main>\n  <section>\n    <h2>Ofertas del día</h2>\n    <p>Descuentos de hasta 50%.</p>\n  </section>\n</main>\n\n<footer>\n  <p>Contacto: info@tienda.com</p>\n</footer>",
+        "explanation": "Estructura semántica de una tienda online con header, nav, main, section y footer."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Estructura semántica de un blog",
+      "prompt": "Crea la estructura semántica de una página de blog con:\n- Un `<header>` que contenga un `<h1>` con el texto `Mi Blog`\n- Un `<nav>` dentro del header con al menos un `<a>`\n- Un `<main>` que contenga un `<article>` con un `<h2>`\n- Un `<footer>` con un `<p>`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Mi Blog</title>\n  </head>\n  <body>\n    <!-- Escribe tu código aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un elemento <header>",
+          "expression": "!!doc.querySelector('header')"
+        },
+        {
+          "description": "El header contiene un h1 con texto 'Mi Blog'",
+          "expression": "doc.querySelector('header h1')?.textContent?.trim() === 'Mi Blog'"
+        },
+        {
+          "description": "Existe un <nav> dentro del header",
+          "expression": "!!doc.querySelector('header nav')"
+        },
+        {
+          "description": "El nav tiene al menos un enlace (<a>)",
+          "expression": "doc.querySelectorAll('nav a').length >= 1"
+        },
+        {
+          "description": "Existe un elemento <main>",
+          "expression": "!!doc.querySelector('main')"
+        },
+        {
+          "description": "El main contiene un <article>",
+          "expression": "!!doc.querySelector('main article')"
+        },
+        {
+          "description": "El article tiene un <h2>",
+          "expression": "!!doc.querySelector('article h2')"
+        },
+        {
+          "description": "Existe un elemento <footer>",
+          "expression": "!!doc.querySelector('footer')"
+        },
+        {
+          "description": "El footer contiene un párrafo",
+          "expression": "!!doc.querySelector('footer p')"
+        }
+      ],
+      "hints": [
+        "Los elementos semánticos se anidan: <header> contiene <nav>, <main> contiene <article>",
+        "El h1 con texto 'Mi Blog' debe estar dentro del <header>",
+        "El <nav> va dentro del <header> y tiene enlaces <a>"
+      ]
+    }
+  ]
+}

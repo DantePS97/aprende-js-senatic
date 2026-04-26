@@ -25,11 +25,11 @@
         },
         {
           "description": "El border de .tarjeta tiene 2px de grosor",
-          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).borderTopWidth === '2px'"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && r.style.border.includes('2px')); } catch(e) { return false; } })"
         },
         {
           "description": "El border de .tarjeta es sólido",
-          "expression": "win.getComputedStyle(doc.querySelector('.tarjeta')).borderTopStyle === 'solid'"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && r.style.border.includes('solid')); } catch(e) { return false; } })"
         }
       ],
       "hints": [
