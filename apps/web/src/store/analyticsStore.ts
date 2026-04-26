@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '@/lib/api';
+import { api, getApiError } from '@/lib/api';
 import type {
   DateRangeParams,
   AnalyticsOverview,
@@ -56,8 +56,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/analytics/overview', { params: buildParams(params) });
       set({ overview: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ overview: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar resumen' } });
+    } catch (e: unknown) {
+      set({ overview: { data: null, loading: false, error: getApiError(e, 'Error al cargar resumen') } });
     }
   },
 
@@ -66,8 +66,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/analytics/lessons', { params: buildParams(params) });
       set({ lessons: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ lessons: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar lecciones' } });
+    } catch (e: unknown) {
+      set({ lessons: { data: null, loading: false, error: getApiError(e, 'Error al cargar lecciones') } });
     }
   },
 
@@ -76,8 +76,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/analytics/retention', { params: buildParams(params) });
       set({ retention: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ retention: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar retención' } });
+    } catch (e: unknown) {
+      set({ retention: { data: null, loading: false, error: getApiError(e, 'Error al cargar retención') } });
     }
   },
 
@@ -86,8 +86,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/analytics/funnel', { params: buildParams(params) });
       set({ funnel: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ funnel: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar embudo' } });
+    } catch (e: unknown) {
+      set({ funnel: { data: null, loading: false, error: getApiError(e, 'Error al cargar embudo') } });
     }
   },
 
@@ -97,8 +97,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
       const params = lessonId ? { lessonId } : {};
       const { data } = await api.get('/admin/analytics/exercises', { params });
       set({ exercises: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ exercises: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar ejercicios' } });
+    } catch (e: unknown) {
+      set({ exercises: { data: null, loading: false, error: getApiError(e, 'Error al cargar ejercicios') } });
     }
   },
 
@@ -107,8 +107,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/analytics/heatmap', { params: buildParams(params) });
       set({ heatmap: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
-      set({ heatmap: { data: null, loading: false, error: e.response?.data?.error ?? 'Error al cargar mapa de calor' } });
+    } catch (e: unknown) {
+      set({ heatmap: { data: null, loading: false, error: getApiError(e, 'Error al cargar mapa de calor') } });
     }
   },
 }));

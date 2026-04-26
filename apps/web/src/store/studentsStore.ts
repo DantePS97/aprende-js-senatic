@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '@/lib/api';
+import { api, getApiError } from '@/lib/api';
 import type { StudentsListResponse, StudentProfile } from '@senatic/shared';
 
 interface PanelState<T> {
@@ -29,12 +29,12 @@ export const useStudentsStore = create<StudentsStore>((set) => ({
     try {
       const { data } = await api.get('/admin/students');
       set({ list: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
+    } catch (e: unknown) {
       set({
         list: {
           data: null,
           loading: false,
-          error: e.response?.data?.error ?? 'Error al cargar estudiantes',
+          error: getApiError(e, 'Error al cargar estudiantes'),
         },
       });
     }
@@ -45,12 +45,12 @@ export const useStudentsStore = create<StudentsStore>((set) => ({
     try {
       const { data } = await api.get(`/admin/students/${id}`);
       set({ profile: { data: data.data, loading: false, error: null } });
-    } catch (e: any) {
+    } catch (e: unknown) {
       set({
         profile: {
           data: null,
           loading: false,
-          error: e.response?.data?.error ?? 'Error al cargar perfil',
+          error: getApiError(e, 'Error al cargar perfil'),
         },
       });
     }

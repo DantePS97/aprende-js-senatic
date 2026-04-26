@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, isAxiosError } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -53,3 +53,11 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ─── Error helper ─────────────────────────────────────────────────────────────
+
+/** Extrae el mensaje de un error de Axios; usa `fallback` para cualquier otro tipo. */
+export function getApiError(e: unknown, fallback: string): string {
+  if (isAxiosError(e)) return (e.response?.data as { error?: string })?.error ?? fallback;
+  return fallback;
+}
