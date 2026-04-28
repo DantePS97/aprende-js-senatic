@@ -9,6 +9,7 @@ import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { SkeletonList } from './SkeletonRow';
 import { useToastStore } from '@/store/toastStore';
+import { useAdminEntityForm } from '@/hooks/useAdminEntityForm';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,30 +48,23 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(false);
-  const [existingUpdatedAt, setExistingUpdatedAt] = useState('');
 
   const [lessons, setLessons] = useState<LessonDoc[]>([]);
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [pendingReorder, setPendingReorder] = useState<string | null>(null);
   const [deleteLessonTarget, setDeleteLessonTarget] = useState<LessonDoc | null>(null);
 
-  const [loading, setLoading] = useState(isEdit);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isEdit || !moduleId) return;
-    adminApi.modules.get(moduleId)
-      .then((data) => {
-        const mod = data as ModuleDoc;
-        setTitle(mod.title);
-        setDescription(mod.description ?? '');
-        setIsPublished(mod.isPublished);
-        setExistingUpdatedAt(mod.updatedAt);
-      })
-      .catch(() => setError('No se pudo cargar el módulo.'))
-      .finally(() => setLoading(false));
-  }, [isEdit, moduleId]);
+  const { loading, saving, error, setError, existingUpdatedAt, withSubmit } = useAdminEntityForm({
+    isEdit,
+    entityId: moduleId,
+    fetcher: (id) => adminApi.modules.get(id) as Promise<ModuleDoc>,
+    onFetched: (mod) => {
+      setTitle(mod.title);
+      setDescription(mod.description ?? '');
+      setIsPublished(mod.isPublished);
+    },
+    fetchErrorMsg: 'No se pudo cargar el módulo.',
+  });
 
   const fetchLessons = useCallback(async () => {
     if (!moduleId) return;
@@ -91,36 +85,23 @@ export function ModuleForm({ mode, courseId, moduleId }: ModuleFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    try {
-      if (isEdit && moduleId) {
-        await adminApi.modules.update(moduleId, {
-          title,
-          description,
-          isPublished,
-          updatedAt: existingUpdatedAt,
-        });
-        addToast('success', 'Módulo guardado correctamente.');
-        router.push(`/admin/courses/${courseId}`);
-      } else {
-        await adminApi.modules.create({ courseId, title, description, isPublished });
-        addToast('success', 'Módulo creado correctamente.');
-        router.push(`/admin/courses/${courseId}`);
-      }
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code;
-      if (code === 'STALE_ENTITY') {
-        setError('Otro administrador modificó este módulo. Recarga la página para ver los últimos cambios.');
-        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
-      } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
-        setError('No se pudo guardar el módulo. Intenta de nuevo.');
-      }
-    } finally {
-      setSaving(false);
-    }
+    await withSubmit(
+      async () => {
+        if (isEdit && moduleId) {
+          await adminApi.modules.update(moduleId, { title, description, isPublished, updatedAt: existingUpdatedAt });
+          addToast({ type: 'success', message: 'Módulo guardado correctamente.' });
+          router.push(`/admin/courses/${courseId}`);
+        } else {
+          await adminApi.modules.create({ courseId, title, description, isPublished });
+          addToast({ type: 'success', message: 'Módulo creado correctamente.' });
+          router.push(`/admin/courses/${courseId}`);
+        }
+      },
+      {
+        staleMsg: 'Otro administrador modificó este módulo. Recarga la página para ver los últimos cambios.',
+        generalMsg: 'No se pudo guardar el módulo. Intenta de nuevo.',
+      },
+    );
   };
 
   const handleLessonReorder = async (id: string, direction: 'up' | 'down') => {

@@ -2,11 +2,19 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import { app } from './app';
 import { runLeagueCatchup, setupLeagueCron } from './lib/leagueCatchup';
+import { validateEnv } from './lib/env';
 
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 async function bootstrap() {
+  try {
+    validateEnv();
+  } catch (err) {
+    console.error('❌  Error de configuración:', (err as Error).message);
+    process.exit(1);
+  }
+
   if (!MONGODB_URI) {
     console.error('❌  MONGODB_URI no está configurado. Revisa tu archivo .env');
     process.exit(1);

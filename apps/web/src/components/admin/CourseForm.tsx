@@ -9,6 +9,7 @@ import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { SkeletonList } from './SkeletonRow';
 import { useToastStore } from '@/store/toastStore';
+import { useAdminEntityForm } from '@/hooks/useAdminEntityForm';
 import type { CourseCreateInput } from '@senatic/shared';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ function toSlug(title: string): string {
   return title
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
@@ -58,45 +59,33 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
   const isEdit = mode === 'edit';
   const addToast = useToastStore((s) => s.addToast);
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [level, setLevel] = useState<'basic' | 'intermediate'>('basic');
   const [iconEmoji, setIconEmoji] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [existingSlug, setExistingSlug] = useState('');
-  const [existingUpdatedAt, setExistingUpdatedAt] = useState('');
 
-  // Module list (edit mode)
   const [modules, setModules] = useState<ModuleDoc[]>([]);
   const [loadingModules, setLoadingModules] = useState(false);
   const [pendingReorder, setPendingReorder] = useState<string | null>(null);
   const [deleteModuleTarget, setDeleteModuleTarget] = useState<ModuleDoc | null>(null);
 
-  // UI state
-  const [loading, setLoading] = useState(isEdit);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, saving, error, setError, existingUpdatedAt, withSubmit } = useAdminEntityForm({
+    isEdit,
+    entityId: courseId,
+    fetcher: (id) => adminApi.courses.get(id) as Promise<CourseDoc>,
+    onFetched: (course) => {
+      setTitle(course.title);
+      setDescription(course.description);
+      setLevel(course.level);
+      setIconEmoji(course.iconEmoji ?? '');
+      setIsPublished(course.isPublished);
+      setExistingSlug(course.slug);
+    },
+    fetchErrorMsg: 'No se pudo cargar el curso.',
+  });
 
-  // Fetch existing course in edit mode
-  useEffect(() => {
-    if (!isEdit || !courseId) return;
-    adminApi.courses.get(courseId)
-      .then((data) => {
-        const course = data as CourseDoc;
-        setTitle(course.title);
-        setDescription(course.description);
-        setLevel(course.level);
-        setIconEmoji(course.iconEmoji ?? '');
-        setIsPublished(course.isPublished);
-        setExistingSlug(course.slug);
-        setExistingUpdatedAt(course.updatedAt);
-      })
-      .catch(() => setError('No se pudo cargar el curso.'))
-      .finally(() => setLoading(false));
-  }, [isEdit, courseId]);
-
-  // Fetch modules in edit mode
   const fetchModules = useCallback(async () => {
     if (!courseId) return;
     setLoadingModules(true);
@@ -116,40 +105,24 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    const payload: CourseCreateInput = {
-      title,
-      description,
-      level,
-      iconEmoji: iconEmoji || undefined,
-      isPublished,
-    };
-
-    try {
-      if (isEdit && courseId) {
-        await adminApi.courses.update(courseId, { ...payload, updatedAt: existingUpdatedAt });
-      } else {
-        await adminApi.courses.create(payload);
-      }
-      addToast('success', 'Curso guardado correctamente.');
-      router.push('/admin/courses');
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code;
-      if (code === 'STALE_ENTITY') {
-        setError('Otro administrador modificó este curso. Recarga la página para ver los últimos cambios.');
-        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
-      } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
-        setError('No se pudo guardar el curso. Intenta de nuevo.');
-      }
-    } finally {
-      setSaving(false);
-    }
+    const payload: CourseCreateInput = { title, description, level, iconEmoji: iconEmoji || undefined, isPublished };
+    await withSubmit(
+      async () => {
+        if (isEdit && courseId) {
+          await adminApi.courses.update(courseId, { ...payload, updatedAt: existingUpdatedAt });
+        } else {
+          await adminApi.courses.create(payload);
+        }
+        addToast({ type: 'success', message: 'Curso guardado correctamente.' });
+        router.push('/admin/courses');
+      },
+      {
+        staleMsg: 'Otro administrador modificó este curso. Recarga la página para ver los últimos cambios.',
+        generalMsg: 'No se pudo guardar el curso. Intenta de nuevo.',
+      },
+    );
   };
 
-  // Module handlers
   const handleModuleReorder = async (id: string, direction: 'up' | 'down') => {
     setPendingReorder(id);
     try {
@@ -205,7 +178,6 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
         </h1>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
           <AlertCircle className="w-4 h-4 shrink-0" />
@@ -213,7 +185,6 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
         </div>
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
         {/* Title */}
         <div className="space-y-1.5">
@@ -362,7 +333,6 @@ export function CourseForm({ mode, courseId }: CourseFormProps) {
         </div>
       )}
 
-      {/* Delete module modal */}
       <ConfirmDeleteModal
         isOpen={!!deleteModuleTarget}
         entityTitle={deleteModuleTarget?.title ?? ''}

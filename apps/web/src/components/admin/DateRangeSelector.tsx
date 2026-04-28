@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MS_PER_DAY } from '@/lib/constants';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 type Preset = '7d' | '30d' | '90d' | 'custom';
@@ -54,7 +55,7 @@ export function DateRangeSelector() {
   }
 
   function handleApplyCustom() {
-    const diff = (new Date(to).getTime() - new Date(from).getTime()) / 86400000;
+    const diff = (new Date(to).getTime() - new Date(from).getTime()) / MS_PER_DAY;
     if (diff < 0) { setRangeError('La fecha de inicio debe ser anterior al fin'); return; }
     if (diff > 365) { setRangeError('El rango no puede superar 365 días'); return; }
     setRangeError('');

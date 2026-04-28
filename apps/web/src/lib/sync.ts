@@ -45,7 +45,7 @@ export async function syncOfflineProgress(): Promise<void> {
 
     // Mostrar nuevos logros si hay
     if (result.newAchievements.length > 0) {
-      const { showAchievement } = await import('@/store/uiStore').then((m) => m.useUiStore.getState());
+      const { showAchievement } = await import('@/store/toastStore').then((m) => m.useToastStore.getState());
       for (const achievement of result.newAchievements) {
         showAchievement(achievement);
       }

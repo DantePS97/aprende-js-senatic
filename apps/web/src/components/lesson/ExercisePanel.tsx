@@ -49,7 +49,121 @@ function makeInitialState(exercise: LessonExercise): ExerciseState {
   };
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+interface ExerciseStepperProps {
+  exercises: LessonExercise[];
+  current: number;
+  states: ExerciseState[];
+  isCompleted: boolean | undefined;
+  onSelect: (idx: number) => void;
+  labelFn: (idx: number) => string;
+}
+
+function ExerciseStepper({ exercises, current, states, isCompleted, onSelect, labelFn }: ExerciseStepperProps) {
+  if (exercises.length <= 1) return null;
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-1">
+      {exercises.map((_, idx) => {
+        const done = states[idx].passed || (idx === 0 && isCompleted);
+        const active = idx === current;
+        return (
+          <button
+            key={idx}
+            onClick={() => onSelect(idx)}
+            className={`
+              flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+              whitespace-nowrap transition-all duration-150 border
+              ${active
+                ? 'bg-primary-500/20 border-primary-500/60 text-primary-300'
+                : done
+                ? 'bg-success-DEFAULT/10 border-success-DEFAULT/30 text-success-400 hover:bg-success-DEFAULT/20'
+                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300'
+              }
+            `}
+          >
+            {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+            {labelFn(idx)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+interface LessonCompletionBannerProps {
+  exercises: LessonExercise[];
+  states: ExerciseState[];
+  hasNext: boolean;
+  onNextLesson: () => void;
+  onSelectExercise: (idx: number) => void;
+  labelFn: (idx: number) => string;
+}
+
+function LessonCompletionBanner({
+  exercises,
+  states,
+  hasNext,
+  onNextLesson,
+  onSelectExercise,
+  labelFn,
+}: LessonCompletionBannerProps) {
+  return (
+    <div className="card space-y-4 animate-bounce-in">
+      <div className="text-center">
+        <p className="text-success-400 font-bold text-lg">¡Lección completada!</p>
+        <p className="text-xs text-slate-500 mt-1">
+          {hasNext ? 'Continúa con la siguiente lección' : 'Has terminado el módulo'}
+        </p>
+      </div>
+
+      {exercises.length > 1 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-slate-400 font-medium">Sigue practicando — ejercicios extra:</p>
+          {exercises.slice(1).map((_, idx) => {
+            const realIdx = idx + 1;
+            const done = states[realIdx]?.passed;
+            return (
+              <button
+                key={realIdx}
+                onClick={() => onSelectExercise(realIdx)}
+                className={`
+                  w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                  border transition-colors text-left
+                  ${done
+                    ? 'border-success-DEFAULT/30 bg-success-DEFAULT/10 text-success-400'
+                    : 'border-slate-700 hover:border-slate-500 text-slate-300 hover:bg-slate-800'
+                  }
+                `}
+              >
+                {done
+                  ? <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  : <Circle className="w-4 h-4 shrink-0 text-slate-500" />
+                }
+                {labelFn(realIdx)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <button
+        onClick={onNextLesson}
+        className="w-full flex items-center justify-center gap-2 py-3 px-6
+                   bg-primary-500 hover:bg-primary-600 text-white font-semibold
+                   rounded-lg transition-colors duration-200"
+      >
+        {hasNext ? (
+          <>Siguiente lección <ArrowRight className="w-4 h-4" /></>
+        ) : (
+          <>Ver mapa del curso <LayoutGrid className="w-4 h-4" /></>
+        )}
+      </button>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function ExercisePanel({
   exercises,
@@ -61,12 +175,8 @@ export function ExercisePanel({
   hasNext,
 }: ExercisePanelProps) {
   const [current, setCurrent] = useState(0);
-  // Estado independiente por ejercicio
-  const [states, setStates] = useState<ExerciseState[]>(() =>
-    exercises.map(makeInitialState)
-  );
+  const [states, setStates] = useState<ExerciseState[]>(() => exercises.map(makeInitialState));
 
-  // Cuando cambian los ejercicios (nueva lección), reiniciar todo
   useEffect(() => {
     setCurrent(0);
     setStates(exercises.map(makeInitialState));
@@ -79,18 +189,15 @@ export function ExercisePanel({
     exercise.type === 'html' ? exercise.starterCode : ''
   );
 
-  // La lección está completa cuando el ejercicio principal (índice 0) fue aprobado
   const mainPassed = states[0].passed || isCompleted;
   const allPassed = s.testResults.length > 0 && s.testResults.every((r) => r.passed);
 
-  // Debounced live preview
   useEffect(() => {
     if (exercise.type !== 'html') return;
     const id = setTimeout(() => setPreviewSrcdoc(s.code), 400);
     return () => clearTimeout(id);
   }, [s.code, exercise.type]);
 
-  // Reset preview when exercise changes
   useEffect(() => {
     if (exercise.type === 'html') setPreviewSrcdoc(exercise.starterCode ?? '');
   }, [exercise]);
@@ -98,9 +205,7 @@ export function ExercisePanel({
   // ─── Mutators ────────────────────────────────────────────────────────────────
 
   const update = useCallback((patch: Partial<ExerciseState>) => {
-    setStates((prev) =>
-      prev.map((st, i) => (i === current ? { ...st, ...patch } : st))
-    );
+    setStates((prev) => prev.map((st, i) => (i === current ? { ...st, ...patch } : st)));
   }, [current]);
 
   const handleRun = useCallback(async () => {
@@ -109,14 +214,8 @@ export function ExercisePanel({
       exercise.type === 'html'
         ? await runHtmlSandbox({ code: s.code, tests: exercise.tests })
         : await runInSandbox({ code: s.code, tests: exercise.tests });
-    update({
-      output: result.output,
-      error: result.error,
-      testResults: result.testResults,
-      isRunning: false,
-    });
+    update({ output: result.output, error: result.error, testResults: result.testResults, isRunning: false });
 
-    // Telemetría de ejercicio — fire and forget, no bloquea al estudiante
     if (lessonId) {
       const passed = result.testResults.length > 0 && result.testResults.every((r) => r.passed);
       api.post('/progress/exercise', {
@@ -130,27 +229,12 @@ export function ExercisePanel({
   }, [update, s.code, exercise.type, exercise.tests, exercise.title, current, lessonId, s.hintsUsed]);
 
   const handleReset = () => {
-    update({
-      code: exercise.starterCode,
-      output: [],
-      error: null,
-      testResults: [],
-      submitted: false,
-      passed: false,
-      hintsUsed: 0,
-    });
+    update({ code: exercise.starterCode, output: [], error: null, testResults: [], submitted: false, passed: false, hintsUsed: 0 });
   };
 
-  const handleHintsUsed = (n: number) => update({ hintsUsed: n });
-
   const handleSubmit = async () => {
-    // Solo el ejercicio principal (índice 0) envía progreso al servidor
-    if (current === 0) {
-      update({ submitted: true, passed: allPassed });
-      await onComplete(allPassed, s.hintsUsed);
-    } else {
-      update({ submitted: true, passed: allPassed });
-    }
+    update({ submitted: true, passed: allPassed });
+    if (current === 0) await onComplete(allPassed, s.hintsUsed);
   };
 
   // ─── UI helpers ──────────────────────────────────────────────────────────────
@@ -158,7 +242,6 @@ export function ExercisePanel({
   const isCurrentCompleted = s.passed || (current === 0 && isCompleted);
   const showCompletedBanner = current === 0 && (states[0].passed || isCompleted);
 
-  // Label por defecto si el JSON no trae título
   function exerciseLabel(idx: number) {
     const ex = exercises[idx];
     if (ex.title) return ex.title;
@@ -171,38 +254,14 @@ export function ExercisePanel({
 
   return (
     <div className="space-y-4">
-      {/* Stepper — solo visible cuando hay más de un ejercicio */}
-      {exercises.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {exercises.map((_, idx) => {
-            const done = states[idx].passed || (idx === 0 && isCompleted);
-            const active = idx === current;
-            return (
-              <button
-                key={idx}
-                onClick={() => setCurrent(idx)}
-                className={`
-                  flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-                  whitespace-nowrap transition-all duration-150 border
-                  ${active
-                    ? 'bg-primary-500/20 border-primary-500/60 text-primary-300'
-                    : done
-                    ? 'bg-success-DEFAULT/10 border-success-DEFAULT/30 text-success-400 hover:bg-success-DEFAULT/20'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300'
-                  }
-                `}
-              >
-                {done ? (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                ) : (
-                  <Circle className="w-3.5 h-3.5" />
-                )}
-                {exerciseLabel(idx)}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <ExerciseStepper
+        exercises={exercises}
+        current={current}
+        states={states}
+        isCompleted={isCompleted}
+        onSelect={setCurrent}
+        labelFn={exerciseLabel}
+      />
 
       {/* Consigna */}
       <div className="card">
@@ -277,16 +336,12 @@ export function ExercisePanel({
       <Console lines={s.output.map((t) => ({ text: t }))} error={s.error} isEmpty />
 
       {/* Tests */}
-      <TestRunner
-        tests={exercise.tests}
-        results={s.testResults}
-        isRunning={s.isRunning}
-      />
+      <TestRunner tests={exercise.tests} results={s.testResults} isRunning={s.isRunning} />
 
       {/* Pistas */}
-      <HintSystem hints={exercise.hints} onHintUsed={handleHintsUsed} />
+      <HintSystem hints={exercise.hints} onHintUsed={(n) => update({ hintsUsed: n })} />
 
-      {/* Botón de entrega — cuando todos los tests pasan y aún no se envió */}
+      {/* Enviar cuando todos los tests pasan */}
       {allPassed && !s.submitted && !isCurrentCompleted && (
         <button
           onClick={handleSubmit}
@@ -299,12 +354,10 @@ export function ExercisePanel({
         </button>
       )}
 
-      {/* Ejercicio extra completado → ir al siguiente o al principal */}
+      {/* Ejercicio extra completado */}
       {current > 0 && isCurrentCompleted && !showCompletedBanner && (
         <div className="card text-center space-y-3 animate-bounce-in">
-          <p className="text-success-400 font-semibold text-sm">
-            ✓ Ejercicio extra completado
-          </p>
+          <p className="text-success-400 font-semibold text-sm">✓ Ejercicio extra completado</p>
           {current < exercises.length - 1 ? (
             <button
               onClick={() => setCurrent(current + 1)}
@@ -321,63 +374,16 @@ export function ExercisePanel({
         </div>
       )}
 
-      {/* Estado completado del ejercicio PRINCIPAL + navegación */}
+      {/* Banner de lección completada + navegación */}
       {showCompletedBanner && (
-        <div className="card space-y-4 animate-bounce-in">
-          <div className="text-center">
-            <p className="text-success-400 font-bold text-lg">¡Lección completada!</p>
-            <p className="text-xs text-slate-500 mt-1">
-              {hasNext ? 'Continúa con la siguiente lección' : 'Has terminado el módulo'}
-            </p>
-          </div>
-
-          {/* Ejercicios extra disponibles */}
-          {exercises.length > 1 && (
-            <div className="space-y-1.5">
-              <p className="text-xs text-slate-400 font-medium">
-                Sigue practicando — ejercicios extra:
-              </p>
-              {exercises.slice(1).map((_, idx) => {
-                const realIdx = idx + 1;
-                const done = states[realIdx]?.passed;
-                return (
-                  <button
-                    key={realIdx}
-                    onClick={() => setCurrent(realIdx)}
-                    className={`
-                      w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm
-                      border transition-colors text-left
-                      ${done
-                        ? 'border-success-DEFAULT/30 bg-success-DEFAULT/10 text-success-400'
-                        : 'border-slate-700 hover:border-slate-500 text-slate-300 hover:bg-slate-800'
-                      }
-                    `}
-                  >
-                    {done
-                      ? <CheckCircle2 className="w-4 h-4 shrink-0" />
-                      : <Circle className="w-4 h-4 shrink-0 text-slate-500" />
-                    }
-                    {exerciseLabel(realIdx)}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Navegación a siguiente lección */}
-          <button
-            onClick={onNextLesson}
-            className="w-full flex items-center justify-center gap-2 py-3 px-6
-                       bg-primary-500 hover:bg-primary-600 text-white font-semibold
-                       rounded-lg transition-colors duration-200"
-          >
-            {hasNext ? (
-              <>Siguiente lección <ArrowRight className="w-4 h-4" /></>
-            ) : (
-              <>Ver mapa del curso <LayoutGrid className="w-4 h-4" /></>
-            )}
-          </button>
-        </div>
+        <LessonCompletionBanner
+          exercises={exercises}
+          states={states}
+          hasNext={hasNext}
+          onNextLesson={onNextLesson}
+          onSelectExercise={setCurrent}
+          labelFn={exerciseLabel}
+        />
       )}
     </div>
   );

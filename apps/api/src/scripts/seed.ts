@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
 import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
 import { LessonModel } from '../models/Lesson.model';
-import { seedAchievements } from '../services/gamification.service';
+import { seedAchievements } from './seed-achievements';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 

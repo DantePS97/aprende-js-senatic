@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
     const fetchAudit = async () => {
       try {
         const result = await adminApi.audit.list({ limit: 10, offset: 0 });
-        setAuditEntries(result.data ?? []);
+        setAuditEntries((result.data as AuditEntry[]) ?? []);
       } catch {
         // Non-critical — audit can fail silently
       } finally {

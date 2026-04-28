@@ -1,79 +1,94 @@
-import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
-import ServiceWorkerRegister from '@/components/layout/ServiceWorkerRegister';
-import './globals.css';
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import ServiceWorkerRegister from "@/components/layout/ServiceWorkerRegister";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aprende-js.vercel.app';
+const BASE_URL =
+	process.env.NEXT_PUBLIC_SITE_URL ?? "https://aprende-js.vercel.app";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: {
-    default: 'AprendeJS — SENATIC',
-    template: '%s | AprendeJS',
-  },
-  description: 'Aprende JavaScript desde cero con lecciones interactivas, gamificación y práctica real. Funciona sin internet.',
-  manifest: '/manifest.json',
-  keywords: ['javascript', 'programación', 'aprender', 'educación', 'SENATIC', 'Colombia', 'secundaria'],
-  authors: [{ name: 'SENATIC' }],
-  openGraph: {
-    type: 'website',
-    locale: 'es_CO',
-    url: BASE_URL,
-    siteName: 'AprendeJS',
-    title: 'AprendeJS — Aprende JavaScript gratis',
-    description: 'Lecciones interactivas de JavaScript con gamificación. Para estudiantes de secundaria en Colombia.',
-    images: [{ url: '/icons/icon-512.png', width: 512, height: 512, alt: 'AprendeJS' }],
-  },
-  twitter: {
-    card: 'summary',
-    title: 'AprendeJS — SENATIC',
-    description: 'Aprende JavaScript desde cero. Gratis, offline y gamificado.',
-    images: ['/icons/icon-512.png'],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'AprendeJS',
-  },
-  icons: {
-    shortcut: '/favicon.ico',
-    icon: [
-      { url: '/favicon.ico' },
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-  },
+	metadataBase: new URL(BASE_URL),
+	title: {
+		default: "PS Learning App",
+		template: "%s | PS Learning App",
+	},
+	description:
+		"Aprende JavaScript desde cero con lecciones interactivas, gamificación y práctica real. Funciona sin internet.",
+	manifest: "/manifest.json",
+	keywords: [
+		"javascript",
+		"programación",
+		"aprender",
+		"educación",
+		"PS Development Studio",
+		"Colombia",
+		"secundaria",
+	],
+	authors: [{ name: "PS Development Studio" }],
+	openGraph: {
+		type: "website",
+		locale: "es_CO",
+		url: BASE_URL,
+		siteName: "AprendeJS",
+		title: "AprendeJS — Aprende JavaScript gratis",
+		description:
+			"Lecciones interactivas de JavaScript con gamificación. Para estudiantes de secundaria en Colombia.",
+		images: [
+			{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "AprendeJS" },
+		],
+	},
+	twitter: {
+		card: "summary",
+		title: "PS Learning App",
+		description: "Aprende JavaScript desde cero. Gratis, offline y gamificado.",
+		images: ["/icons/icon-512.png"],
+	},
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "black-translucent",
+		title: "PS Learning App",
+	},
+	icons: {
+		shortcut: "/favicon.ico",
+		icon: [
+			{ url: "/favicon.ico" },
+			{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+			{ url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+		],
+		apple: [
+			{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+		],
+	},
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0F172A',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
+	themeColor: "#0F172A",
+	width: "device-width",
+	initialScale: 1,
+	maximumScale: 1,
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    // suppressHydrationWarning: the anti-FOUC script mutates className/style before
-    // React hydrates, causing a mismatch that is intentional and safe to suppress.
-    <html lang="es" suppressHydrationWarning>
-      <head>
-        {/*
+	return (
+		// suppressHydrationWarning: the anti-FOUC script mutates className/style before
+		// React hydrates, causing a mismatch that is intentional and safe to suppress.
+		<html lang="es" suppressHydrationWarning>
+			<head>
+				{/*
           Anti-FOUC: runs synchronously before first paint.
           Reads persisted preferences from localStorage and applies
           theme class, accent CSS vars, and font-size BEFORE React hydrates.
           dangerouslySetInnerHTML is safe here — no user data, fully static script.
         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(function(){
   var ACCENT={
     indigo: ['129 140 248','99 102 241','79 70 229'],
     emerald:['52 211 153','16 185 129','5 150 105'],
@@ -104,13 +119,13 @@ export default function RootLayout({
   h.style.setProperty('--color-primary-600',s[2]);
   h.style.fontSize=p.fontSize==='large'?'18px':'16px';
 })();`,
-          }}
-        />
-      </head>
-      <body className={`${inter.variable} font-sans`}>
-        <ServiceWorkerRegister />
-        {children}
-      </body>
-    </html>
-  );
+					}}
+				/>
+			</head>
+			<body className={`${inter.variable} font-sans`}>
+				<ServiceWorkerRegister />
+				{children}
+			</body>
+		</html>
+	);
 }

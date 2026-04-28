@@ -290,7 +290,7 @@ export default function LessonContentPage() {
 
     try {
       const saved = (await adminApi.lessons.content.update(lessonId, payload)) as { updatedAt?: string };
-      addToast('success', 'Contenido guardado ✓');
+      addToast({ type: 'success', message: 'Contenido guardado ✓' });
       setStale(false);
       setDirty(false);
       // Use the PUT response directly — no extra GET needed
@@ -298,10 +298,10 @@ export default function LessonContentPage() {
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;
       if (code === 'STALE_ENTITY') {
-        addToast('warning', 'El contenido fue modificado por otro admin. Recarga para ver los cambios.');
+        addToast({ type: 'warning', message: 'El contenido fue modificado por otro admin. Recarga para ver los cambios.' });
         setStale(true);
       } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
+        addToast({ type: 'error', message: 'Error inesperado. Intenta de nuevo.' });
       }
     } finally {
       setSaving(false);

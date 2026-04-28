@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { MS_PER_DAY } from '../lib/constants';
 import { ProgressModel } from '../models/Progress.model';
 import { UserModel } from '../models/User.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
@@ -106,7 +107,7 @@ leaderboardRouter.get('/weekly', requireAuth, async (req: AuthRequest, res: Resp
       success: true,
       data: {
         weekStart: fmt(start),
-        weekEnd: fmt(new Date(end.getTime() - 86_400_000)), // último día (domingo)
+        weekEnd: fmt(new Date(end.getTime() - MS_PER_DAY)), // último día (domingo)
         rankings,
         currentUser,
       },

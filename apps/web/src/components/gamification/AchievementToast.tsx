@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star, Zap } from 'lucide-react';
-import { useUiStore } from '@/store/uiStore';
+import { useToastStore } from '@/store/toastStore';
 
 export function ToastContainer() {
-  const { toasts, removeToast } = useUiStore();
+  const { toasts, removeToast } = useToastStore();
 
   return (
     <div

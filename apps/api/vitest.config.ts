@@ -5,5 +5,6 @@ export default mergeConfig(sharedConfig, {
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
   },
 });

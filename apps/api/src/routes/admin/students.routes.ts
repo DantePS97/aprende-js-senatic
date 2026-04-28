@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import type { AuthRequest } from '../../middleware/auth.middleware';
 import { cached } from '../../lib/cache';
-import { getStudentList, getStudentProfile } from '../../services/analytics.service';
+import { getStudentList, getStudentProfile } from '../../services/analytics';
 
 const router = Router();
 

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, FileText } from 'lucide-react';
 import { adminApi } from '@/lib/admin-api';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { SkeletonList } from './SkeletonRow';
 import { useToastStore } from '@/store/toastStore';
+import { useAdminEntityForm } from '@/hooks/useAdminEntityForm';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,64 +38,38 @@ export function LessonForm({ mode, courseId, moduleId, lessonId }: LessonFormPro
   const [title, setTitle] = useState('');
   const [xpReward, setXpReward] = useState(50);
   const [isPublished, setIsPublished] = useState(false);
-  const [existingUpdatedAt, setExistingUpdatedAt] = useState('');
 
-  const [loading, setLoading] = useState(isEdit);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isEdit || !lessonId) return;
-    adminApi.lessons.get(lessonId)
-      .then((data) => {
-        const lesson = data as LessonDoc;
-        setTitle(lesson.title);
-        setXpReward(lesson.xpReward);
-        setIsPublished(lesson.isPublished);
-        setExistingUpdatedAt(lesson.updatedAt);
-      })
-      .catch(() => setError('No se pudo cargar la lección.'))
-      .finally(() => setLoading(false));
-  }, [isEdit, lessonId]);
+  const { loading, saving, error, existingUpdatedAt, withSubmit } = useAdminEntityForm({
+    isEdit,
+    entityId: lessonId,
+    fetcher: (id) => adminApi.lessons.get(id) as Promise<LessonDoc>,
+    onFetched: (lesson) => {
+      setTitle(lesson.title);
+      setXpReward(lesson.xpReward);
+      setIsPublished(lesson.isPublished);
+    },
+    fetchErrorMsg: 'No se pudo cargar la lección.',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    try {
-      if (isEdit && lessonId) {
-        await adminApi.lessons.update(lessonId, {
-          title,
-          xpReward,
-          isPublished,
-          updatedAt: existingUpdatedAt,
-        });
-        addToast('success', 'Lección guardada correctamente.');
-        router.push(`/admin/courses/${courseId}/modules/${moduleId}`);
-      } else {
-        const created = (await adminApi.lessons.create({
-          moduleId,
-          title,
-          xpReward,
-          isPublished,
-        })) as LessonDoc;
-        addToast('success', 'Lección creada correctamente.');
-        // Redirect to edit page so the admin can add content
-        router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/${created._id}`);
-      }
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code;
-      if (code === 'STALE_ENTITY') {
-        setError('Otro administrador modificó esta lección. Recarga la página para ver los últimos cambios.');
-        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
-      } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
-        setError('No se pudo guardar la lección. Intenta de nuevo.');
-      }
-    } finally {
-      setSaving(false);
-    }
+    await withSubmit(
+      async () => {
+        if (isEdit && lessonId) {
+          await adminApi.lessons.update(lessonId, { title, xpReward, isPublished, updatedAt: existingUpdatedAt });
+          addToast({ type: 'success', message: 'Lección guardada correctamente.' });
+          router.push(`/admin/courses/${courseId}/modules/${moduleId}`);
+        } else {
+          const created = (await adminApi.lessons.create({ moduleId, title, xpReward, isPublished })) as LessonDoc;
+          addToast({ type: 'success', message: 'Lección creada correctamente.' });
+          router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/${created._id}`);
+        }
+      },
+      {
+        staleMsg: 'Otro administrador modificó esta lección. Recarga la página para ver los últimos cambios.',
+        generalMsg: 'No se pudo guardar la lección. Intenta de nuevo.',
+      },
+    );
   };
 
   if (loading) {

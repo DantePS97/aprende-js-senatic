@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MS_PER_DAY } from '../constants';
 
 export const dateRangeSchema = z
   .object({
@@ -10,7 +11,7 @@ export const dateRangeSchema = z
     (data) => {
       if (data.from && data.to) {
         const diff =
-          (new Date(data.to).getTime() - new Date(data.from).getTime()) / 86400000;
+          (new Date(data.to).getTime() - new Date(data.from).getTime()) / MS_PER_DAY;
         return diff >= 0 && diff <= 365;
       }
       return true;

@@ -6,10 +6,10 @@ import { ArrowLeft, BookOpen, Code2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useProgressStore } from '@/store/progressStore';
 import { useAuthStore } from '@/store/authStore';
-import { useUiStore } from '@/store/uiStore';
+import { useToastStore } from '@/store/toastStore';
 import { TheoryPanel } from '@/components/lesson/TheoryPanel';
 import { ExercisePanel } from '@/components/lesson/ExercisePanel';
-import type { LessonContent } from '@senatic/shared';
+import type { LessonContent, LessonExercise } from '@senatic/shared';
 
 type Tab = 'theory' | 'exercise';
 
@@ -31,7 +31,7 @@ export default function LessonPage() {
   const router = useRouter();
   const { submitLesson } = useProgressStore();
   const { updateUser, user } = useAuthStore();
-  const { showXpGain, showAchievement, showLevelUp } = useUiStore();
+  const { showXpGain, showAchievement, showLevelUp } = useToastStore();
 
   const [data, setData] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,8 +103,8 @@ export default function LessonPage() {
   const hasNext = !!data.lesson.nextLessonId;
 
   // Normalizar: el JSON puede tener "exercises" (nuevo) o "exercise" (legado)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const legacyContent = data.content as any;
+  type LegacyContent = LessonContent & { exercise?: LessonExercise };
+  const legacyContent = data.content as LegacyContent;
   const exercises: LessonContent['exercises'] =
     Array.isArray(data.content.exercises) && data.content.exercises.length > 0
       ? data.content.exercises

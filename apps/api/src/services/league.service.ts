@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { MS_PER_DAY } from '../lib/constants';
 import { ProgressModel } from '../models/Progress.model';
 import { UserModel } from '../models/User.model';
 import { WeeklyLeagueResultModel } from '../models/WeeklyLeagueResult.model';
@@ -67,7 +68,7 @@ export async function getCurrentWeekStatus(userId: string): Promise<UserLeagueSt
 
 export async function getWeeklyLeague(): Promise<WeeklyLeagueResponse> {
   const { start, end } = getWeekBounds();
-  const weekEnd = fmtDate(new Date(end.getTime() - 86_400_000));
+  const weekEnd = fmtDate(new Date(end.getTime() - MS_PER_DAY));
 
   const xpRows = await aggregateWeekXp(start, end);
   if (xpRows.length === 0) {

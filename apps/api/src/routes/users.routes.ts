@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { updatePreferencesSchema } from '@senatic/shared';
 import { UserModel } from '../models/User.model';
-import { validate } from '../middleware/validate.middleware';
+import { validateBody } from '../middleware/validate.middleware';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 
 export const usersRouter = Router();
@@ -13,7 +13,7 @@ export const usersRouter = Router();
 usersRouter.patch(
   '/me/preferences',
   requireAuth,
-  validate(updatePreferencesSchema),
+  validateBody(updatePreferencesSchema),
   async (req: AuthRequest, res: Response) => {
     try {
       // Construir $set con dot-notation: { 'preferences.theme': 'dark', ... }

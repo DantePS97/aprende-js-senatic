@@ -6,14 +6,14 @@ import { LessonModel } from '../models/Lesson.model';
 import { UserModel } from '../models/User.model';
 import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
-import { validate } from '../middleware/validate.middleware';
+import { validateBody } from '../middleware/validate.middleware';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
 
 export const progressRouter = Router();
 
 // ─── POST /api/progress ───────────────────────────────────────────────────────
 
-progressRouter.post('/', requireAuth, validate(submitProgressSchema), async (req: AuthRequest, res: Response) => {
+progressRouter.post('/', requireAuth, validateBody(submitProgressSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { lessonId, passed, hintsUsed, completedAt } = req.body;
     const userId = req.user!.userId;

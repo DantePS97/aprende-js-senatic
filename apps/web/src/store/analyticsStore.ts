@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, getApiError } from '@/lib/api';
+import { type PanelState, initialPanel } from './storeUtils';
 import type {
   DateRangeParams,
   AnalyticsOverview,
@@ -9,16 +10,6 @@ import type {
   ExercisesAnalyticsResponse,
   ActivityHeatmapResponse,
 } from '@senatic/shared';
-
-interface PanelState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-}
-
-function initialPanel<T>(): PanelState<T> {
-  return { data: null, loading: false, error: null };
-}
 
 function buildParams(params?: DateRangeParams): Record<string, string> {
   const q: Record<string, string> = {};

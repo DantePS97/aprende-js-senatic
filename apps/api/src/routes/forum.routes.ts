@@ -4,7 +4,7 @@ import { createPostSchema, createReplySchema } from '@senatic/shared';
 import { ForumPostModel, ForumReplyModel } from '../models/ForumPost.model';
 import { UserModel } from '../models/User.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
-import { validate } from '../middleware/validate.middleware';
+import { validateBody } from '../middleware/validate.middleware';
 
 export const forumRouter = Router();
 
@@ -68,7 +68,7 @@ forumRouter.get('/posts', requireAuth, async (req: AuthRequest, res: Response) =
 
 // ─── POST /api/forum/posts ────────────────────────────────────────────────────
 
-forumRouter.post('/posts', requireAuth, validate(createPostSchema), async (req: AuthRequest, res: Response) => {
+forumRouter.post('/posts', requireAuth, validateBody(createPostSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { title, body, tags } = req.body;
 
@@ -155,7 +155,7 @@ forumRouter.get('/posts/:id', requireAuth, async (req: AuthRequest, res: Respons
 
 // ─── POST /api/forum/posts/:id/replies ────────────────────────────────────────
 
-forumRouter.post('/posts/:id/replies', requireAuth, validate(createReplySchema), async (req: AuthRequest, res: Response) => {
+forumRouter.post('/posts/:id/replies', requireAuth, validateBody(createReplySchema), async (req: AuthRequest, res: Response) => {
   try {
     const post = await ForumPostModel.findById(req.params.id);
     if (!post) {

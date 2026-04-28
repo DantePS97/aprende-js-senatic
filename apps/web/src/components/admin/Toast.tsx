@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { CheckCircle, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import type { Toast as ToastItem } from '@/store/toastStore';
@@ -25,15 +24,14 @@ const STYLES = {
   },
 } as const;
 
-const AUTO_DISMISS_MS = 4000;
+type AdminToastType = keyof typeof STYLES;
 
-function ToastItem({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
-  const style = STYLES[toast.type];
+function isAdminToastType(type: string): type is AdminToastType {
+  return type in STYLES;
+}
 
-  useEffect(() => {
-    const timer = setTimeout(onClose, AUTO_DISMISS_MS);
-    return () => clearTimeout(timer);
-  }, [onClose]);
+function AdminToast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
+  const style = isAdminToastType(toast.type) ? STYLES[toast.type] : STYLES.success;
 
   return (
     <div
@@ -69,7 +67,7 @@ export function ToastContainer() {
       className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 items-end"
     >
       {toasts.map((toast) => (
-        <ToastItem
+        <AdminToast
           key={toast.id}
           toast={toast}
           onClose={() => removeToast(toast.id)}

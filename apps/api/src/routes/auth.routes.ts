@@ -9,7 +9,7 @@ import {
 } from '@senatic/shared';
 import { UserModel } from '../models/User.model';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
-import { validate } from '../middleware/validate.middleware';
+import { validateBody } from '../middleware/validate.middleware';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { updateStreak } from '../services/gamification.service';
 import {
@@ -36,7 +36,7 @@ const forgotPasswordLimiter = rateLimit({
 
 // ─── POST /api/auth/register ──────────────────────────────────────────────────
 
-authRouter.post('/register', authLimiter, validate(registerSchema), async (req: Request, res: Response) => {
+authRouter.post('/register', authLimiter, validateBody(registerSchema), async (req: Request, res: Response) => {
   try {
     const { email, password, displayName } = req.body;
 
@@ -86,7 +86,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), async (req: 
 
 // ─── POST /api/auth/login ─────────────────────────────────────────────────────
 
-authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Request, res: Response) => {
+authRouter.post('/login', authLimiter, validateBody(loginSchema), async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -138,7 +138,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), async (req: Reques
 
 // ─── POST /api/auth/refresh ───────────────────────────────────────────────────
 
-authRouter.post('/refresh', validate(refreshTokenSchema), async (req: Request, res: Response) => {
+authRouter.post('/refresh', validateBody(refreshTokenSchema), async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
     const payload = verifyRefreshToken(refreshToken);
@@ -166,7 +166,7 @@ authRouter.post('/refresh', validate(refreshTokenSchema), async (req: Request, r
 authRouter.post(
   '/forgot-password',
   forgotPasswordLimiter,
-  validate(forgotPasswordSchema),
+  validateBody(forgotPasswordSchema),
   async (req: Request, res: Response) => {
     try {
       await requestPasswordReset(req.body.email);
@@ -210,7 +210,7 @@ authRouter.get(
 authRouter.post(
   '/reset-password',
   authLimiter,
-  validate(resetPasswordSchema),
+  validateBody(resetPasswordSchema),
   async (req: Request, res: Response) => {
     try {
       await resetPassword(req.body.token, req.body.newPassword);

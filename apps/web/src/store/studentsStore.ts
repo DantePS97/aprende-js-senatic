@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import { api, getApiError } from '@/lib/api';
 import type { StudentsListResponse, StudentProfile } from '@senatic/shared';
-
-interface PanelState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-}
-
-function initialPanel<T>(): PanelState<T> {
-  return { data: null, loading: false, error: null };
-}
+import { type PanelState, initialPanel } from './storeUtils';
 
 interface StudentsStore {
   list: PanelState<StudentsListResponse>;

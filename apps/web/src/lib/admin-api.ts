@@ -148,9 +148,23 @@ const users = {
 
 // ─── Audit ────────────────────────────────────────────────────────────────────
 
+export interface AuditListResult {
+  data: unknown[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 const audit = {
-  list: (params?: { limit?: number; offset?: number }) =>
-    api.get('/admin/audit', { params }).then((r) => r.data),
+  list: async (params?: { limit?: number; offset?: number }): Promise<AuditListResult> => {
+    try {
+      const res = await api.get<{ success: boolean } & AuditListResult>('/admin/audit', { params });
+      const { success: _s, ...rest } = res.data;
+      return rest;
+    } catch (err) {
+      normalizeError(err);
+    }
+  },
 };
 
 // ─── Unified export ───────────────────────────────────────────────────────────

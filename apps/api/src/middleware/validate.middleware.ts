@@ -11,25 +11,6 @@ function isZodError(err: unknown): err is ZodError {
   );
 }
 
-export function validate(schema: ZodSchema) {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      req.body = schema.parse(req.body);
-      next();
-    } catch (err) {
-      if (isZodError(err)) {
-        const errors = (err as ZodError).errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        }));
-        res.status(400).json({ success: false, error: 'Datos inválidos.', details: errors });
-        return;
-      }
-      next(err);
-    }
-  };
-}
-
 export function validateBody<T>(schema: ZodSchema<T>) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);

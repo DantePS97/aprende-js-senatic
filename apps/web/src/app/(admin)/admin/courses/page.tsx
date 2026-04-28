@@ -70,7 +70,7 @@ export default function CoursesPage() {
       await adminApi.courses.reorder(id, direction);
       await fetchCourses();
     } catch {
-      addToast('error', 'Error inesperado. Intenta de nuevo.');
+      addToast({ type: 'error', message: 'Error inesperado. Intenta de nuevo.' });
       setError('No se pudo reordenar. Intenta de nuevo.');
     } finally {
       setPendingReorder(null);
@@ -91,7 +91,7 @@ export default function CoursesPage() {
         isPublished: !current,
         updatedAt: course.updatedAt,
       });
-      addToast('success', 'Guardado correctamente.');
+      addToast({ type: 'success', message: 'Guardado correctamente.' });
       await fetchCourses();
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;
@@ -100,9 +100,9 @@ export default function CoursesPage() {
         prev.map((c) => (c._id === id ? { ...c, isPublished: current } : c))
       );
       if (code === 'STALE_ENTITY') {
-        addToast('warning', 'Otro admin modificó este elemento. Recarga para ver los cambios.');
+        addToast({ type: 'warning', message: 'Otro admin modificó este elemento. Recarga para ver los cambios.' });
       } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
+        addToast({ type: 'error', message: 'Error inesperado. Intenta de nuevo.' });
       }
       setError('No se pudo actualizar la publicación.');
     }
@@ -113,7 +113,7 @@ export default function CoursesPage() {
     setDeleting(true);
     try {
       await adminApi.courses.delete(deleteTarget._id);
-      addToast('success', 'Curso eliminado correctamente.');
+      addToast({ type: 'success', message: 'Curso eliminado correctamente.' });
       setDeleteTarget(null);
       await fetchCourses();
     } catch (err: unknown) {
@@ -122,7 +122,7 @@ export default function CoursesPage() {
         // Soft-block: show inline message with count info (not toast — it has count details)
         setError(details.error ?? 'No se puede eliminar: el curso tiene módulos asociados.');
       } else {
-        addToast('error', 'Error inesperado. Intenta de nuevo.');
+        addToast({ type: 'error', message: 'Error inesperado. Intenta de nuevo.' });
         setError('No se pudo eliminar el curso.');
       }
     } finally {
