@@ -115,7 +115,7 @@ describe('POST /api/progress', () => {
     vi.mocked(calculateXpReward).mockReturnValue(100);
     vi.mocked(ProgressModel.findOneAndUpdate).mockResolvedValue(mockProgressDoc);
     vi.mocked(updateStreak).mockResolvedValue({ streak: 4, streakIncremented: true });
-    vi.mocked(awardXp).mockResolvedValue({ leveledUp: false, newLevel: 2 });
+    vi.mocked(awardXp).mockResolvedValue({ leveledUp: false, newLevel: 2, newXp: 100 });
 
     const res = await request(app)
       .post('/api/progress')
