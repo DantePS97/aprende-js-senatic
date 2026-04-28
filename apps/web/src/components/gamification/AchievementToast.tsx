@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star, Zap } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
+import type { Toast as ToastItem } from '@/store/toastStore';
 
 export function ToastContainer() {
   const { toasts, removeToast } = useToastStore();
@@ -25,13 +26,6 @@ export function ToastContainer() {
       </AnimatePresence>
     </div>
   );
-}
-
-interface ToastItem {
-  id: string;
-  type: 'success' | 'error' | 'xp' | 'achievement';
-  message: string;
-  achievement?: { iconEmoji: string; title: string; description: string };
 }
 
 function Toast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
