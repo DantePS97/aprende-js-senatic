@@ -1,0 +1,112 @@
+{
+  "id": "js-intermedio-m2-l4",
+  "title": "hasOwnProperty e instanceof",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## hasOwnProperty e instanceof\n\nEstas dos herramientas te permiten **inspeccionar la cadena de prototipos** en tiempo de ejecución. Son esenciales para escribir código robusto cuando trabajas con herencia.\n\n---\n\n## hasOwnProperty\n\nRetorna `true` si la propiedad pertenece **directamente** al objeto (no a su cadena de prototipos):\n\n```javascript\nconst proto = { heredada: true };\nconst obj = Object.create(proto);\nobj.propia = 42;\n\nconsole.log(obj.hasOwnProperty('propia'));   // true\nconsole.log(obj.hasOwnProperty('heredada')); // false — está en el prototipo\nconsole.log(obj.hasOwnProperty('toString')); // false — está en Object.prototype\n\n// 'in' busca en toda la cadena\nconsole.log('propia' in obj);   // true\nconsole.log('heredada' in obj); // true\nconsole.log('toString' in obj); // true\n```\n\n---\n\n## Cuándo importa la diferencia\n\n**Iterar solo propiedades propias:**\n\n```javascript\nconst base = { metodo() {} };\nconst obj = Object.create(base);\nobj.a = 1;\nobj.b = 2;\nobj.c = 3;\n\n// for...in recorre TODA la cadena\nfor (const key in obj) {\n  console.log(key); // a, b, c, metodo ← ¡incluye lo heredado!\n}\n\n// Con hasOwnProperty: solo las propias\nfor (const key in obj) {\n  if (obj.hasOwnProperty(key)) {\n    console.log(key); // a, b, c ✅\n  }\n}\n\n// Alternativa moderna — no recorre la cadena\nfor (const key of Object.keys(obj)) {\n  console.log(key); // a, b, c ✅\n}\n```\n\n---\n\n## Object.hasOwn() — la forma moderna\n\nEn ES2022 llegó `Object.hasOwn()`, que es más seguro porque no depende del prototipo:\n\n```javascript\nconst obj = Object.create(null); // Sin prototipo\nobj.x = 1;\n\n// obj.hasOwnProperty('x') → TypeError: obj.hasOwnProperty is not a function\n// (porque no tiene prototipo)\n\n// La forma segura:\nconsole.log(Object.hasOwn(obj, 'x')); // true ✅\n```\n\n---\n\n## instanceof\n\nVerifica si un objeto aparece en la cadena de prototipos de un constructor:\n\n```javascript\nfunction Animal(nombre) { this.nombre = nombre; }\nfunction Perro(nombre) {\n  Animal.call(this, nombre);\n}\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro;\n\nconst rex = new Perro('Rex');\n\nconsole.log(rex instanceof Perro);    // true\nconsole.log(rex instanceof Animal);   // true — está en la cadena\nconsole.log(rex instanceof Object);   // true — todo es Object\nconsole.log(rex instanceof Function); // false\n\n// Con clases:\nclass Vehiculo {}\nclass Coche extends Vehiculo {}\n\nconst c = new Coche();\nconsole.log(c instanceof Coche);    // true\nconsole.log(c instanceof Vehiculo); // true\n```\n\n---\n\n## Cómo funciona instanceof internamente\n\n`obj instanceof Constructor` comprueba si `Constructor.prototype` aparece en la cadena de `obj`:\n\n```javascript\n// Equivalente manual de instanceof\nfunction esInstancia(obj, Constructor) {\n  let proto = Object.getPrototypeOf(obj);\n  while (proto !== null) {\n    if (proto === Constructor.prototype) return true;\n    proto = Object.getPrototypeOf(proto);\n  }\n  return false;\n}\n\nconst arr = [1, 2, 3];\nconsole.log(esInstancia(arr, Array));  // true\nconsole.log(esInstancia(arr, Object)); // true\nconsole.log(esInstancia(arr, Map));    // false\n```\n\n---\n\n## Resumen de herramientas de inspección\n\n| Herramienta | ¿Qué verifica? |\n|-------------|----------------|\n| `obj.hasOwnProperty(key)` | Propiedad propia del objeto |\n| `Object.hasOwn(obj, key)` | Igual pero seguro con `Object.create(null)` |\n| `key in obj` | Propiedad en objeto O cadena |\n| `obj instanceof Constructor` | Prototipo en la cadena |\n| `Object.keys(obj)` | Solo claves propias enumerables |\n| `Object.getPrototypeOf(obj)` | El prototipo directo del objeto |",
+    "examples": [
+      {
+        "code": "// Clonar solo propiedades propias\nfunction clonarPropio(obj) {\n  const clon = {};\n  for (const key in obj) {\n    if (Object.hasOwn(obj, key)) {\n      clon[key] = obj[key];\n    }\n  }\n  return clon;\n}\n\nconst proto = { metodo() {}, tipo: 'base' };\nconst original = Object.create(proto);\noriginal.nombre = 'Ana';\noriginal.edad = 30;\n\nconst clon = clonarPropio(original);\nconsole.log(clon); // { nombre: 'Ana', edad: 30 }\nconsole.log('tipo' in clon);   // false — no se copió lo heredado\nconsole.log('nombre' in clon); // true",
+        "explanation": "Object.hasOwn filtra las propiedades heredadas. El clon solo tiene lo que pertenecía directamente al original."
+      },
+      {
+        "code": "// Función polimórfica con instanceof\nfunction procesarEntrada(entrada) {\n  if (entrada instanceof Array) {\n    return `Array de ${entrada.length} elementos`;\n  }\n  if (entrada instanceof Date) {\n    return `Fecha: ${entrada.toLocaleDateString()}`;\n  }\n  if (typeof entrada === 'string') {\n    return `String: \"${entrada}\"`;\n  }\n  return `Otro: ${typeof entrada}`;\n}\n\nconsole.log(procesarEntrada([1, 2, 3]));      // 'Array de 3 elementos'\nconsole.log(procesarEntrada(new Date()));     // 'Fecha: ...'\nconsole.log(procesarEntrada('hola'));         // 'String: \"hola\"'\nconsole.log(procesarEntrada(42));             // 'Otro: number'",
+        "explanation": "instanceof permite comportamiento diferente según el tipo real del objeto. Más preciso que typeof para objetos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Propias vs heredadas",
+      "prompt": "Dado el siguiente código:\n```javascript\nconst proto = { tipo: 'proto', metodo() {} };\nconst obj = Object.create(proto);\nobj.nombre = 'test';\nobj.valor = 42;\n```\n\nGuarda en variables el resultado de cada verificación:\n- `tieneNombre`: `obj.hasOwnProperty('nombre')`\n- `tieneTipo`: `obj.hasOwnProperty('tipo')`\n- `tipoEnCadena`: `'tipo' in obj`\n- `metodoEnCadena`: `'metodo' in obj`\n- `llaves`: `Object.keys(obj)` (array con solo las claves propias)",
+      "starterCode": "const proto = { tipo: 'proto', metodo() {} };\nconst obj = Object.create(proto);\nobj.nombre = 'test';\nobj.valor = 42;\n\nconst tieneNombre = obj.hasOwnProperty('nombre');\nconst tieneTipo = obj.hasOwnProperty('tipo');\nconst tipoEnCadena = 'tipo' in obj;\nconst metodoEnCadena = 'metodo' in obj;\nconst llaves = Object.keys(obj);\n\nconsole.log(tieneNombre, tieneTipo, tipoEnCadena, metodoEnCadena, llaves);\n",
+      "tests": [
+        {
+          "description": "tieneNombre es true (propiedad propia)",
+          "expression": "tieneNombre === true"
+        },
+        {
+          "description": "tieneTipo es false (está en el prototipo)",
+          "expression": "tieneTipo === false"
+        },
+        {
+          "description": "tipoEnCadena es true (in busca en toda la cadena)",
+          "expression": "tipoEnCadena === true"
+        },
+        {
+          "description": "metodoEnCadena es true",
+          "expression": "metodoEnCadena === true"
+        },
+        {
+          "description": "llaves contiene solo ['nombre', 'valor']",
+          "expression": "llaves.length === 2 && llaves.includes('nombre') && llaves.includes('valor')"
+        }
+      ],
+      "hints": [
+        "`hasOwnProperty` solo mira el objeto directo, no la cadena",
+        "`in` sube por toda la cadena",
+        "`Object.keys()` retorna solo las propias enumerables — no las heredadas"
+      ]
+    },
+    {
+      "title": "Práctica: instanceof con herencia",
+      "prompt": "Dada esta jerarquía:\n```javascript\nfunction Ser() {}\nfunction Animal(nombre) { Ser.call(this); this.nombre = nombre; }\nAnimal.prototype = Object.create(Ser.prototype);\nAnimal.prototype.constructor = Animal;\nfunction Perro(nombre) { Animal.call(this, nombre); }\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro;\n```\n\nCrea `rex = new Perro('Rex')` y guarda en variables los resultados de instanceof:\n- `esPerro`: `rex instanceof Perro`\n- `esAnimal`: `rex instanceof Animal`\n- `esSer`: `rex instanceof Ser`\n- `esObject`: `rex instanceof Object`\n- `esFunction`: `rex instanceof Function`",
+      "starterCode": "function Ser() {}\nfunction Animal(nombre) { Ser.call(this); this.nombre = nombre; }\nAnimal.prototype = Object.create(Ser.prototype);\nAnimal.prototype.constructor = Animal;\nfunction Perro(nombre) { Animal.call(this, nombre); }\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro;\n\nconst rex = new Perro('Rex');\n\nconst esPerro = rex instanceof Perro;\nconst esAnimal = rex instanceof Animal;\nconst esSer = rex instanceof Ser;\nconst esObject = rex instanceof Object;\nconst esFunction = rex instanceof Function;\n\nconsole.log(esPerro, esAnimal, esSer, esObject, esFunction);\n",
+      "tests": [
+        {
+          "description": "esPerro es true",
+          "expression": "esPerro === true"
+        },
+        {
+          "description": "esAnimal es true (hereda de Animal)",
+          "expression": "esAnimal === true"
+        },
+        {
+          "description": "esSer es true (hereda de Ser)",
+          "expression": "esSer === true"
+        },
+        {
+          "description": "esObject es true (todo hereda de Object)",
+          "expression": "esObject === true"
+        },
+        {
+          "description": "esFunction es false (no es una función)",
+          "expression": "esFunction === false"
+        }
+      ],
+      "hints": [
+        "`instanceof` recorre la cadena: Perro.prototype → Animal.prototype → Ser.prototype → Object.prototype",
+        "Toda la cadena incluye Object.prototype, por eso siempre es true",
+        "rex es un objeto, no una función, por eso `instanceof Function` es false"
+      ]
+    },
+    {
+      "title": "Aplicación: Serializar solo propiedades propias",
+      "prompt": "Crea una función `serializar(obj)` que:\n1. Recorra todas las claves con `for...in`\n2. Filtre solo las propiedades propias usando `Object.hasOwn(obj, key)`\n3. Retorne un objeto nuevo con solo esas propiedades\n\nAdemás, crea `contarPropias(obj)` que retorne el número de propiedades propias del objeto.\n\nPrueba con:\n```javascript\nconst base = { tipo: 'base', metodo() {} };\nconst obj = Object.create(base);\nobj.nombre = 'Ana';\nobj.edad = 30;\nobj.activo = true;\n```\n\nGuarda en `serializado` el resultado de `serializar(obj)` y en `cantidad` el de `contarPropias(obj)`.",
+      "starterCode": "function serializar(obj) {\n  const resultado = {};\n  for (const key in obj) {\n    // Solo incluye propiedades propias\n\n  }\n  return resultado;\n}\n\nfunction contarPropias(obj) {\n  // Retorna el número de propiedades propias\n\n}\n\nconst base = { tipo: 'base', metodo() {} };\nconst obj = Object.create(base);\nobj.nombre = 'Ana';\nobj.edad = 30;\nobj.activo = true;\n\nconst serializado = serializar(obj);\nconst cantidad = contarPropias(obj);\n\nconsole.log(serializado);\nconsole.log(cantidad);\n",
+      "tests": [
+        {
+          "description": "serializado tiene nombre, edad y activo",
+          "expression": "serializado.nombre === 'Ana' && serializado.edad === 30 && serializado.activo === true"
+        },
+        {
+          "description": "serializado NO tiene tipo ni metodo",
+          "expression": "!('tipo' in serializado) && !('metodo' in serializado)"
+        },
+        {
+          "description": "cantidad es 3",
+          "expression": "cantidad === 3"
+        },
+        {
+          "description": "serializar no modifica el objeto original",
+          "expression": "Object.getPrototypeOf(obj) === base"
+        }
+      ],
+      "hints": [
+        "`if (Object.hasOwn(obj, key)) resultado[key] = obj[key];`",
+        "`contarPropias`: usa `Object.keys(obj).length`",
+        "O cuenta manualmente con un contador dentro del `for...in` con `Object.hasOwn`"
+      ]
+    }
+  ]
+}

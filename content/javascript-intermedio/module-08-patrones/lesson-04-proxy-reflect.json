@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m8-l4",
+  "title": "Proxy y Reflect",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Proxy: interceptar operaciones en objetos\n\n`Proxy` envuelve un objeto y permite interceptar operaciones fundamentales sobre él: leer propiedades, escribir, llamar como función, verificar con `in`, iterar, y más.\n\n```javascript\nconst handler = {\n  get(target, prop) { /* intercepta obj.prop */ },\n  set(target, prop, value) { /* intercepta obj.prop = valor */ },\n  has(target, prop) { /* intercepta 'prop' in obj */ },\n  deleteProperty(target, prop) { /* intercepta delete obj.prop */ },\n  apply(target, thisArg, args) { /* intercepta fn(...args) */ },\n};\n\nconst proxy = new Proxy(target, handler);\n```\n\n---\n\n## Ejemplo básico: logging de accesos\n\n```javascript\nconst persona = { nombre: 'Ana', edad: 30 };\n\nconst monitoreado = new Proxy(persona, {\n  get(target, prop) {\n    console.log(`Leyendo: ${prop}`);\n    return target[prop];\n  },\n  set(target, prop, value) {\n    console.log(`Escribiendo: ${prop} = ${value}`);\n    target[prop] = value;\n    return true; // set DEBE retornar true (indica éxito)\n  },\n});\n\nmonitoreado.nombre;      // Logs: 'Leyendo: nombre', retorna 'Ana'\nmonitoreado.edad = 31;   // Logs: 'Escribiendo: edad = 31'\n```\n\n---\n\n## Proxy para validación\n\n```javascript\nfunction crearObjetoValidado(schema) {\n  const datos = {};\n\n  return new Proxy(datos, {\n    set(target, prop, value) {\n      const regla = schema[prop];\n      if (regla && !regla.validar(value)) {\n        throw new TypeError(`${prop}: ${regla.mensaje}`);\n      }\n      target[prop] = value;\n      return true;\n    }\n  });\n}\n\nconst usuario = crearObjetoValidado({\n  edad: {\n    validar: v => typeof v === 'number' && v >= 0 && v <= 150,\n    mensaje: 'debe ser número entre 0 y 150',\n  },\n  email: {\n    validar: v => /^[^@]+@[^@]+\\.[^@]+$/.test(v),\n    mensaje: 'formato inválido',\n  },\n});\n\nusuario.nombre = 'Ana';       // Sin validación — ok\nusuario.email = 'ana@test.com'; // OK\nusuario.edad = 200;          // TypeError: edad: debe ser número entre 0 y 150\n```\n\n---\n\n## Proxy para valores por defecto\n\n```javascript\nfunction conDefecto(defecto) {\n  return new Proxy({}, {\n    get(target, prop) {\n      return prop in target ? target[prop] : defecto;\n    }\n  });\n}\n\nconst config = conDefecto('sin configurar');\nconfig.host = 'localhost';\n\nconsole.log(config.host);    // 'localhost'\nconsole.log(config.timeout); // 'sin configurar' (no está definido)\n```\n\n---\n\n## Reflect: el complemento de Proxy\n\n`Reflect` provee métodos para las mismas operaciones que intercepta Proxy, con la semántica correcta. Se usa dentro de los handlers de Proxy:\n\n```javascript\n// Sin Reflect — equivalente pero frágil:\nget(target, prop) {\n  return target[prop]; // Puede perder el contexto de 'this'\n}\n\n// Con Reflect — correcto:\nget(target, prop, receiver) {\n  return Reflect.get(target, prop, receiver); // Preserva el contexto\n}\n```\n\n```javascript\n// Proxy de solo lectura usando Reflect:\nfunction soloLectura(obj) {\n  return new Proxy(obj, {\n    set(target, prop) {\n      console.warn(`Intento de modificar propiedad: ${prop}`);\n      return false; // Falla silenciosamente\n      // En strict mode: lanzaría TypeError\n    },\n    deleteProperty(target, prop) {\n      console.warn(`Intento de eliminar propiedad: ${prop}`);\n      return false;\n    },\n    get(target, prop, receiver) {\n      return Reflect.get(target, prop, receiver);\n    },\n  });\n}\n\nconst constante = soloLectura({ x: 10, y: 20 });\nconsole.log(constante.x); // 10\nconstante.x = 999;        // warn: 'Intento de modificar...'\nconsole.log(constante.x); // Todavía 10\n```\n\n---\n\n## Casos de uso principales\n\n```javascript\n// 1. Reactive data (como Vue 3 internamente)\n// 2. Validación automática de propiedades\n// 3. Valores por defecto\n// 4. Objetos de solo lectura\n// 5. Lazy loading (cargar la propiedad solo cuando se accede)\n// 6. Logging/observabilidad de accesos\n// 7. Mocking en tests\n```",
+    "examples": [
+      {
+        "code": "// Proxy reactivo — similar a como funciona Vue 3\nfunction reactivo(obj, onChange) {\n  return new Proxy(obj, {\n    set(target, prop, value) {\n      const anterior = target[prop];\n      target[prop] = value;\n      if (anterior !== value) {\n        onChange(prop, value, anterior);\n      }\n      return true;\n    },\n    get(target, prop, receiver) {\n      const valor = Reflect.get(target, prop, receiver);\n      // Si el valor es un objeto, lo envolvemos también en proxy\n      if (typeof valor === 'object' && valor !== null) {\n        return reactivo(valor, onChange);\n      }\n      return valor;\n    },\n  });\n}\n\nconst estado = reactivo(\n  { nombre: 'Ana', config: { tema: 'claro' } },\n  (prop, nuevo, anterior) => {\n    console.log(`Cambio: ${prop} ${anterior} → ${nuevo}`);\n  }\n);\n\nestado.nombre = 'Bob';           // Cambio: nombre Ana → Bob\nestado.config.tema = 'oscuro';   // Cambio: tema claro → oscuro",
+        "explanation": "Este es el núcleo de la reactividad de Vue 3: un Proxy que detecta cambios en el estado y notifica a los suscriptores. El handler recursivo para objetos anidados hace que toda la estructura sea reactiva."
+      },
+      {
+        "code": "// Proxy para API REST tipada (type-safe builder)\nfunction crearCliente(baseUrl) {\n  function construirRuta(partes) {\n    return new Proxy({}, {\n      get(_, prop) {\n        // Métodos HTTP:\n        if (['get', 'post', 'put', 'delete'].includes(prop)) {\n          return async (data) => {\n            const url = baseUrl + '/' + partes.join('/');\n            console.log(`${prop.toUpperCase()} ${url}`, data ? JSON.stringify(data) : '');\n            return { ok: true, url, method: prop, data };\n          };\n        }\n        // Continúa construyendo la ruta:\n        return construirRuta([...partes, prop]);\n      }\n    });\n  }\n  return construirRuta([]);\n}\n\nconst api = crearCliente('https://api.ejemplo.com');\n\nconst r = await api.usuarios['123'].pedidos.get();\nconsole.log(r.url); // 'https://api.ejemplo.com/usuarios/123/pedidos'\n\nawait api.productos.post({ nombre: 'Nuevo producto' });",
+        "explanation": "El Proxy intercepta accesos a propiedades para construir dinámicamente la URL. Cada propiedad accedida agrega un segmento a la ruta, hasta que se llama un método HTTP."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Proxy con valores por defecto",
+      "prompt": "Crea una función `conDefecto(obj, valorDefecto)` que retorne un Proxy del objeto donde acceder a una propiedad inexistente retorne `valorDefecto` en lugar de `undefined`.\n\nGuarda:\n- `config = conDefecto({ host: 'localhost', port: 3000 }, 'no configurado')`\n- `hostVal = config.host` → `'localhost'`\n- `timeoutVal = config.timeout` → `'no configurado'`\n- `portVal = config.port` → `3000`\n- `unknownVal = config.unknownProp` → `'no configurado'`",
+      "starterCode": "function conDefecto(obj, valorDefecto) {\n  return new Proxy(obj, {\n    get(target, prop) {\n      return prop in target ? target[prop] : valorDefecto;\n    }\n  });\n}\n\nconst config = conDefecto({ host: 'localhost', port: 3000 }, 'no configurado');\n\nconst hostVal = config.host;\nconst timeoutVal = config.timeout;\nconst portVal = config.port;\nconst unknownVal = config.unknownProp;\n\nconsole.log(hostVal, timeoutVal, portVal, unknownVal);\n",
+      "tests": [
+        {
+          "description": "hostVal es 'localhost'",
+          "expression": "hostVal === 'localhost'"
+        },
+        {
+          "description": "timeoutVal es 'no configurado'",
+          "expression": "timeoutVal === 'no configurado'"
+        },
+        {
+          "description": "portVal es 3000",
+          "expression": "portVal === 3000"
+        },
+        {
+          "description": "unknownVal es 'no configurado'",
+          "expression": "unknownVal === 'no configurado'"
+        }
+      ],
+      "hints": [
+        "`prop in target` verifica si la propiedad existe (incluyendo heredadas)",
+        "Si `prop in target` es true, retornamos `target[prop]`; si no, `valorDefecto`",
+        "El handler `get` intercepta todos los accesos a propiedades"
+      ]
+    },
+    {
+      "title": "Práctica: Proxy de solo lectura",
+      "prompt": "Implementa `soloLectura(obj)` que retorne un Proxy del objeto donde:\n- Las lecturas funcionan normalmente\n- Intentar escribir o eliminar propiedades lanza `TypeError('El objeto es de solo lectura')`\n\nGuarda:\n- `original = { x: 10, y: 20 }`\n- `inmutable = soloLectura(original)`\n- `xVal = inmutable.x` → 10\n- `escrituraFalla = false` → true si lanza error al intentar `inmutable.x = 99`",
+      "starterCode": "function soloLectura(obj) {\n  return new Proxy(obj, {\n    set(target, prop) {\n      throw new TypeError('El objeto es de solo lectura');\n    },\n    deleteProperty(target, prop) {\n      throw new TypeError('El objeto es de solo lectura');\n    },\n    get(target, prop, receiver) {\n      return Reflect.get(target, prop, receiver);\n    },\n  });\n}\n\nconst original = { x: 10, y: 20 };\nconst inmutable = soloLectura(original);\n\nconst xVal = inmutable.x;\n\nlet escrituraFalla = false;\ntry {\n  inmutable.x = 99;\n} catch (e) {\n  escrituraFalla = e instanceof TypeError;\n}\n\nlet borradoFalla = false;\ntry {\n  delete inmutable.y;\n} catch (e) {\n  borradoFalla = e instanceof TypeError;\n}\n\nconsole.log(xVal, escrituraFalla, borradoFalla);\nconsole.log('original.x todavía:', original.x); // 10 — sin cambios\n",
+      "tests": [
+        {
+          "description": "xVal es 10",
+          "expression": "xVal === 10"
+        },
+        {
+          "description": "escrituraFalla es true",
+          "expression": "escrituraFalla === true"
+        },
+        {
+          "description": "borradoFalla es true",
+          "expression": "borradoFalla === true"
+        },
+        {
+          "description": "original no fue modificado",
+          "expression": "original.x === 10"
+        }
+      ],
+      "hints": [
+        "El handler `set` debe lanzar el error — no retornar false",
+        "`Reflect.get(target, prop, receiver)` es la forma correcta de delegar al objeto original",
+        "`e instanceof TypeError` verifica el tipo de error lanzado"
+      ]
+    },
+    {
+      "title": "Aplicación: Proxy de validación automática",
+      "prompt": "Implementa `crearModelo(schema)` que retorne un Proxy. Cuando se asigna una propiedad que está en el schema, valida el valor. Si falla, lanza `TypeError`.\n\nEl schema es un objeto donde cada clave tiene `{ tipo, requerido?, min?, max? }`:\n- `tipo: 'string'|'number'|'boolean'` — verifica `typeof`\n- `min` (para numbers): valor mínimo\n- `max` (para numbers): valor máximo\n\nSi la propiedad NO está en el schema, la asignación pasa sin validar.",
+      "starterCode": "function crearModelo(schema) {\n  const datos = {};\n\n  return new Proxy(datos, {\n    set(target, prop, value) {\n      const regla = schema[prop];\n\n      if (regla) {\n        if (typeof value !== regla.tipo) {\n          throw new TypeError(`${prop}: se esperaba ${regla.tipo}, recibido ${typeof value}`);\n        }\n        if (regla.tipo === 'number') {\n          if (regla.min !== undefined && value < regla.min) {\n            throw new TypeError(`${prop}: mínimo es ${regla.min}`);\n          }\n          if (regla.max !== undefined && value > regla.max) {\n            throw new TypeError(`${prop}: máximo es ${regla.max}`);\n          }\n        }\n      }\n\n      target[prop] = value;\n      return true;\n    },\n    get(target, prop, receiver) {\n      return Reflect.get(target, prop, receiver);\n    },\n  });\n}\n\nconst usuario = crearModelo({\n  nombre: { tipo: 'string' },\n  edad:   { tipo: 'number', min: 0, max: 150 },\n  activo: { tipo: 'boolean' },\n});\n\nusuario.nombre = 'Ana'; // OK\nusuario.edad = 30;       // OK\nusuario.activo = true;   // OK\nusuario.extra = 'libre'; // OK — no está en schema\n\nconst nombreVal = usuario.nombre;\nconst edadVal = usuario.edad;\n\nlet errorTipo = false;\ntry {\n  usuario.edad = 'treinta'; // TypeError: número esperado\n} catch (e) {\n  errorTipo = e instanceof TypeError;\n}\n\nlet errorRango = false;\ntry {\n  usuario.edad = 200; // TypeError: máximo 150\n} catch (e) {\n  errorRango = e instanceof TypeError;\n}\n\nconsole.log(nombreVal, edadVal, errorTipo, errorRango);\n",
+      "tests": [
+        {
+          "description": "nombreVal es 'Ana'",
+          "expression": "nombreVal === 'Ana'"
+        },
+        {
+          "description": "edadVal es 30",
+          "expression": "edadVal === 30"
+        },
+        {
+          "description": "asignar string a número lanza TypeError",
+          "expression": "errorTipo === true"
+        },
+        {
+          "description": "asignar valor fuera de rango lanza TypeError",
+          "expression": "errorRango === true"
+        }
+      ],
+      "hints": [
+        "`typeof value !== regla.tipo` verifica el tipo del valor recibido",
+        "El handler `set` DEBE retornar `true` para indicar éxito en la escritura",
+        "Las propiedades fuera del schema se pasan directo: `if (!regla)` skip validation"
+      ]
+    }
+  ]
+}

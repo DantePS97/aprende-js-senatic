@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m3-l4",
+  "title": "Métodos y propiedades estáticos",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## static: pertenece a la clase, no a la instancia\n\nLas propiedades y métodos `static` pertenecen a la **clase misma**, no a sus instancias. Se acceden directamente desde el nombre de la clase.\n\n```javascript\nclass MathUtils {\n  static PI = 3.14159265;\n\n  static circunferencia(radio) {\n    return 2 * MathUtils.PI * radio;\n  }\n\n  static area(radio) {\n    return MathUtils.PI * radio ** 2;\n  }\n}\n\nconsole.log(MathUtils.PI);               // 3.14159265\nconsole.log(MathUtils.circunferencia(5)); // 31.41...\nconsole.log(MathUtils.area(5));           // 78.53...\n\n// No necesitas instanciar:\nconst m = new MathUtils();\nconsole.log(m.PI);               // undefined — no está en la instancia\nconsole.log(m.circunferencia);   // undefined\n```\n\n---\n\n## Casos de uso principales\n\n### 1. Métodos de utilidad (no necesitan estado de instancia)\n\n```javascript\nclass Validador {\n  static esEmail(valor) {\n    return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(valor);\n  }\n\n  static esURL(valor) {\n    try { new URL(valor); return true; }\n    catch { return false; }\n  }\n\n  static esNumeroPositivo(valor) {\n    return typeof valor === 'number' && valor > 0;\n  }\n}\n\nconsole.log(Validador.esEmail('ana@ejemplo.com')); // true\nconsole.log(Validador.esEmail('no-es-email'));      // false\n```\n\n### 2. Factory methods (alternativas al constructor)\n\n```javascript\nclass Fecha {\n  constructor(dia, mes, anio) {\n    this.dia = dia;\n    this.mes = mes;\n    this.anio = anio;\n  }\n\n  // Factory methods — formas alternativas de crear instancias\n  static hoy() {\n    const d = new Date();\n    return new Fecha(d.getDate(), d.getMonth() + 1, d.getFullYear());\n  }\n\n  static desdeString(str) {\n    const [dia, mes, anio] = str.split('/').map(Number);\n    return new Fecha(dia, mes, anio);\n  }\n\n  toString() {\n    return `${this.dia}/${this.mes}/${this.anio}`;\n  }\n}\n\nconst hoy = Fecha.hoy();\nconst navidad = Fecha.desdeString('25/12/2026');\nconsole.log(String(navidad)); // '25/12/2026'\n```\n\n### 3. Contador de instancias\n\n```javascript\nclass Conexion {\n  static _total = 0;\n  static get total() { return Conexion._total; }\n\n  constructor(url) {\n    this.url = url;\n    Conexion._total++;\n  }\n\n  cerrar() {\n    Conexion._total--;\n  }\n}\n\nconst c1 = new Conexion('db://localhost');\nconst c2 = new Conexion('db://server');\nconsole.log(Conexion.total); // 2\nc1.cerrar();\nconsole.log(Conexion.total); // 1\n```\n\n---\n\n## static en herencia\n\nLos métodos estáticos se heredan:\n\n```javascript\nclass Animal {\n  static crear(nombre) {\n    return new this(nombre); // 'this' aquí es la clase\n  }\n\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n}\n\nclass Perro extends Animal {\n  ladrar() { return 'guau'; }\n}\n\nconst r = Perro.crear('Rex'); // Hereda crear() de Animal\nconsole.log(r.nombre);        // 'Rex'\nconsole.log(r instanceof Perro); // true — new this usa Perro\n```\n\n---\n\n## static vs instance: regla simple\n\n| Pregunta | Respuesta |\n|----------|-----------|\n| ¿Necesita datos de una instancia concreta? | Método de instancia |\n| ¿Opera solo con sus parámetros o constantes? | Método estático |\n| ¿Es una forma alternativa de construir? | Factory estático |\n| ¿Es estado compartido entre todas las instancias? | Propiedad estática |",
+    "examples": [
+      {
+        "code": "class Moneda {\n  static #tasas = { USD: 1, EUR: 0.92, COP: 4000 };\n\n  static convertir(cantidad, de, a) {\n    const enUSD = cantidad / Moneda.#tasas[de];\n    return Number((enUSD * Moneda.#tasas[a]).toFixed(2));\n  }\n\n  static agregarMoneda(codigo, tasaEnUSD) {\n    Moneda.#tasas[codigo] = tasaEnUSD;\n  }\n\n  static monedas() {\n    return Object.keys(Moneda.#tasas);\n  }\n}\n\nconsole.log(Moneda.convertir(100, 'USD', 'EUR')); // 92\nconsole.log(Moneda.convertir(1, 'USD', 'COP'));   // 4000\nconsole.log(Moneda.monedas()); // ['USD', 'EUR', 'COP']",
+        "explanation": "Las tasas son estado estático privado compartido por toda la clase. Los métodos de conversión no necesitan instancias — son puros utilitarios."
+      },
+      {
+        "code": "class ID {\n  static #siguiente = 1;\n\n  static generar() {\n    return ID.#siguiente++;\n  }\n\n  static resetear() {\n    ID.#siguiente = 1;\n  }\n}\n\nclass Tarea {\n  constructor(titulo) {\n    this.id = ID.generar();\n    this.titulo = titulo;\n    this.completada = false;\n  }\n\n  completar() {\n    this.completada = true;\n    return this;\n  }\n}\n\nconst t1 = new Tarea('Estudiar prototipos');\nconst t2 = new Tarea('Practicar clases');\nconst t3 = new Tarea('Hacer ejercicios');\n\nconsole.log(t1.id, t2.id, t3.id); // 1, 2, 3",
+        "explanation": "ID.generar() es un generador de IDs únicos usando estado estático privado. Cada llamada incrementa el contador compartido."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Método utilitario estático",
+      "prompt": "Crea una clase `Numero` con métodos estáticos (sin constructor ni instancias):\n- `static esPar(n)`: retorna `true` si `n` es par\n- `static esPrimo(n)`: retorna `true` si `n` es primo (≥ 2 y no divisible por ningún número entre 2 y su raíz cuadrada)\n- `static factorial(n)`: retorna el factorial de `n` (n * (n-1) * ... * 1). Para n=0 retorna 1.\n\nGuarda:\n- `parResult = Numero.esPar(8)` → true\n- `primoResult = Numero.esPrimo(7)` → true\n- `factResult = Numero.factorial(5)` → 120",
+      "starterCode": "class Numero {\n  static esPar(n) {\n    // Retorna true si n es par\n\n  }\n\n  static esPrimo(n) {\n    // Retorna true si n es primo\n\n  }\n\n  static factorial(n) {\n    // Retorna el factorial de n\n\n  }\n}\n\nconst parResult = Numero.esPar(8);\nconst primoResult = Numero.esPrimo(7);\nconst factResult = Numero.factorial(5);\n\nconsole.log(parResult, primoResult, factResult);\n",
+      "tests": [
+        {
+          "description": "parResult es true",
+          "expression": "parResult === true"
+        },
+        {
+          "description": "Numero.esPar(7) es false",
+          "expression": "Numero.esPar(7) === false"
+        },
+        {
+          "description": "primoResult es true (7 es primo)",
+          "expression": "primoResult === true"
+        },
+        {
+          "description": "Numero.esPrimo(9) es false (9 = 3*3)",
+          "expression": "Numero.esPrimo(9) === false"
+        },
+        {
+          "description": "factResult es 120",
+          "expression": "factResult === 120"
+        }
+      ],
+      "hints": [
+        "`esPar`: `return n % 2 === 0;`",
+        "`esPrimo`: `if (n < 2) return false; for (let i=2; i <= Math.sqrt(n); i++) { if (n%i===0) return false; } return true;`",
+        "`factorial`: `if (n <= 1) return 1; return n * Numero.factorial(n-1);`"
+      ]
+    },
+    {
+      "title": "Práctica: Factory method",
+      "prompt": "Crea una clase `Color` con:\n- Constructor: recibe `r`, `g`, `b` (números 0-255)\n- `static desdeHex(hex)`: recibe un string como `'#ff5733'` y retorna una instancia de `Color` parseando los componentes RGB\n- `static desdeRGB(str)`: recibe `'rgb(255, 87, 51)'` y retorna una instancia de `Color`\n- Getter `hex`: retorna el color en formato `'#rrggbb'` (usa `toString(16).padStart(2,'0')` para cada canal)\n\nCrea:\n- `c1 = Color.desdeHex('#ff5733')`: r=255, g=87, b=51\n- `c2 = Color.desdeRGB('rgb(0, 128, 255)')`: r=0, g=128, b=255\n\nGuarda `hexC1 = c1.hex` y `hexC2 = c2.hex`.",
+      "starterCode": "class Color {\n  constructor(r, g, b) {\n    this.r = r;\n    this.g = g;\n    this.b = b;\n  }\n\n  static desdeHex(hex) {\n    // Parsea '#rrggbb' y retorna new Color(r, g, b)\n    const r = parseInt(hex.slice(1, 3), 16);\n    const g = parseInt(hex.slice(3, 5), 16);\n    const b = parseInt(hex.slice(5, 7), 16);\n    return new Color(r, g, b);\n  }\n\n  static desdeRGB(str) {\n    // Parsea 'rgb(r, g, b)' y retorna new Color(r, g, b)\n\n  }\n\n  get hex() {\n    // Retorna '#rrggbb'\n    const toHex = n => n.toString(16).padStart(2, '0');\n    return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b);\n  }\n}\n\nconst c1 = Color.desdeHex('#ff5733');\nconst c2 = Color.desdeRGB('rgb(0, 128, 255)');\n\nconst hexC1 = c1.hex;\nconst hexC2 = c2.hex;\n\nconsole.log(hexC1, hexC2);\n",
+      "tests": [
+        {
+          "description": "hexC1 es '#ff5733'",
+          "expression": "hexC1 === '#ff5733'"
+        },
+        {
+          "description": "hexC2 es '#0080ff'",
+          "expression": "hexC2 === '#0080ff'"
+        },
+        {
+          "description": "c1 e instanceof Color",
+          "expression": "c1 instanceof Color && c2 instanceof Color"
+        },
+        {
+          "description": "c2.r es 0, c2.g es 128, c2.b es 255",
+          "expression": "c2.r === 0 && c2.g === 128 && c2.b === 255"
+        }
+      ],
+      "hints": [
+        "`desdeRGB`: `const [r, g, b] = str.match(/\\\\d+/g).map(Number); return new Color(r, g, b);`",
+        "`str.match(/\\\\d+/g)` extrae todos los números del string como array de strings",
+        "`.map(Number)` los convierte a números"
+      ]
+    },
+    {
+      "title": "Aplicación: Registro de instancias",
+      "prompt": "Crea una clase `Sensor` con:\n- `static #instancias = []` — registro privado\n- `static get cantidad()` — retorna cuántos sensores hay\n- `static listar()` — retorna los nombres de todos los sensores\n- `static buscar(nombre)` — retorna la instancia con ese nombre (o `undefined`)\n- Constructor: recibe `nombre` y `tipo`, los asigna a `this`, y registra `this` en `Sensor.#instancias`\n\nCrea tres sensores:\n```\nnew Sensor('Temp-01', 'temperatura')\nnew Sensor('Hum-01', 'humedad')\nnew Sensor('Pres-01', 'presion')\n```\n\nGuarda:\n- `cantidadS = Sensor.cantidad` → 3\n- `listadoS = Sensor.listar()` → ['Temp-01', 'Hum-01', 'Pres-01']\n- `encontrado = Sensor.buscar('Hum-01').tipo` → 'humedad'",
+      "starterCode": "class Sensor {\n  static #instancias = [];\n\n  static get cantidad() {\n    return Sensor.#instancias.length;\n  }\n\n  static listar() {\n    return Sensor.#instancias.map(s => s.nombre);\n  }\n\n  static buscar(nombre) {\n    return Sensor.#instancias.find(s => s.nombre === nombre);\n  }\n\n  constructor(nombre, tipo) {\n    this.nombre = nombre;\n    this.tipo = tipo;\n    // Registra this en Sensor.#instancias\n\n  }\n}\n\nnew Sensor('Temp-01', 'temperatura');\nnew Sensor('Hum-01', 'humedad');\nnew Sensor('Pres-01', 'presion');\n\nconst cantidadS = Sensor.cantidad;\nconst listadoS = Sensor.listar();\nconst encontrado = Sensor.buscar('Hum-01').tipo;\n\nconsole.log(cantidadS, listadoS, encontrado);\n",
+      "tests": [
+        {
+          "description": "cantidadS es 3",
+          "expression": "cantidadS === 3"
+        },
+        {
+          "description": "listadoS contiene los tres nombres",
+          "expression": "JSON.stringify(listadoS) === '[\"Temp-01\",\"Hum-01\",\"Pres-01\"]'"
+        },
+        {
+          "description": "encontrado es 'humedad'",
+          "expression": "encontrado === 'humedad'"
+        },
+        {
+          "description": "buscar con nombre inexistente retorna undefined",
+          "expression": "Sensor.buscar('NoExiste') === undefined"
+        }
+      ],
+      "hints": [
+        "`Sensor.#instancias.push(this);`",
+        "Los campos estáticos privados (`#`) se acceden como `Sensor.#instancias` desde dentro de la clase",
+        "`listar()` ya está implementado — solo falta el push en el constructor"
+      ]
+    }
+  ]
+}

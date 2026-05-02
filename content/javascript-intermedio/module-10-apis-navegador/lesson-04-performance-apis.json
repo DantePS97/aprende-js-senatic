@@ -1,0 +1,100 @@
+{
+  "id": "js-intermedio-m10-l4",
+  "title": "Performance API y optimización",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Medir rendimiento correctamente\n\nAntes de optimizar, necesitas medir. `console.time` es un inicio, pero la **Performance API** da mayor precisión y más datos:\n\n```javascript\n// console.time — simple pero limitado:\nconsole.time('operacion');\n// ... código a medir ...\nconsole.timeEnd('operacion'); // Imprime: 'operacion: 12.345ms'\n\n// Performance API — más preciso:\nconst t0 = performance.now(); // Microsegundos\n// ... código a medir ...\nconst t1 = performance.now();\nconsole.log(`Tiempo: ${(t1 - t0).toFixed(3)}ms`);\n\n// performance.now() es más preciso que Date.now():\n// Date.now() → resolución de 1ms (enteros)\n// performance.now() → resolución de hasta 0.005ms (fracciones)\n```\n\n---\n\n## Performance marks y measures\n\n```javascript\n// Crear marks (puntos de tiempo):\nperformance.mark('inicio-render');\n// ... operación ...\nperformance.mark('fin-render');\n\n// Medir entre dos marks:\nperformance.measure('render-total', 'inicio-render', 'fin-render');\n\n// Obtener todas las medidas:\nconst medidas = performance.getEntriesByType('measure');\nconst render = performance.getEntriesByName('render-total')[0];\nconsole.log('Render tardó:', render.duration, 'ms');\n\n// Limpiar:\nperformance.clearMarks();\nperformance.clearMeasures();\n```\n\n---\n\n## PerformanceObserver: monitoreo continuo\n\n```javascript\n// Observar métricas en tiempo real:\nconst observer = new PerformanceObserver((list) => {\n  list.getEntries().forEach(entry => {\n    if (entry.entryType === 'measure') {\n      console.log(`${entry.name}: ${entry.duration.toFixed(2)}ms`);\n    }\n    if (entry.entryType === 'longtask') {\n      console.warn(`Tarea lenta detectada: ${entry.duration}ms`);\n    }\n  });\n});\n\nobserver.observe({ entryTypes: ['measure', 'longtask'] });\n\n// Métricas de carga de la página:\nobserver.observe({ type: 'paint', buffered: true });\n// Detecta: 'first-paint', 'first-contentful-paint'\n```\n\n---\n\n## Técnicas de optimización\n\n### 1. Memoización\n\n```javascript\nfunction memoize(fn) {\n  const cache = new Map();\n  return function(...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) return cache.get(key);\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}\n\nconst fibMemo = memoize(function fib(n) {\n  if (n <= 1) return n;\n  return fibMemo(n - 1) + fibMemo(n - 2);\n});\n```\n\n### 2. Debounce\n\n```javascript\nfunction debounce(fn, ms) {\n  let timer;\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), ms);\n  };\n}\n\n// Solo ejecuta 300ms después del último keystroke:\nconst buscar = debounce(query => fetchResultados(query), 300);\ninputBusqueda.addEventListener('input', e => buscar(e.target.value));\n```\n\n### 3. Throttle\n\n```javascript\nfunction throttle(fn, ms) {\n  let ultima = 0;\n  return function(...args) {\n    const ahora = Date.now();\n    if (ahora - ultima >= ms) {\n      ultima = ahora;\n      return fn.apply(this, args);\n    }\n  };\n}\n\n// Máximo una vez cada 100ms durante scroll:\nwindow.addEventListener('scroll', throttle(() => actualizarUI(), 100));\n```\n\n---\n\n## Web Vitals: las métricas que importan\n\n```javascript\n// LCP (Largest Contentful Paint) — carga del contenido principal < 2.5s\n// FID (First Input Delay) — respuesta a interacción < 100ms\n// CLS (Cumulative Layout Shift) — estabilidad visual < 0.1\n\nnew PerformanceObserver(list => {\n  list.getEntries().forEach(entry => {\n    if (entry.entryType === 'largest-contentful-paint') {\n      console.log('LCP:', entry.startTime);\n    }\n  });\n}).observe({ type: 'largest-contentful-paint', buffered: true });\n```",
+    "examples": [
+      {
+        "code": "// Profiler simple para comparar implementaciones\nfunction profiler(nombre, fn, iteraciones = 1000) {\n  // Warm-up (evita JIT artifacts):\n  fn();\n  fn();\n\n  const inicio = performance.now();\n  for (let i = 0; i < iteraciones; i++) {\n    fn();\n  }\n  const fin = performance.now();\n\n  const total = fin - inicio;\n  const porIteracion = total / iteraciones;\n\n  return {\n    nombre,\n    total: total.toFixed(3),\n    promedio: porIteracion.toFixed(6),\n    ops: Math.round(1000 / porIteracion),\n  };\n}\n\n// Comparar dos implementaciones:\nconst datos = Array.from({ length: 1000 }, (_, i) => i);\n\nconst r1 = profiler('for loop', () => {\n  let sum = 0;\n  for (let i = 0; i < datos.length; i++) sum += datos[i];\n  return sum;\n});\n\nconst r2 = profiler('reduce', () => {\n  return datos.reduce((a, b) => a + b, 0);\n});\n\nconsole.log(r1);\nconsole.log(r2);\nconsole.log(`${r1.nombre} es ~${(r2.ops / r1.ops).toFixed(1)}x más lento que ${r2.nombre}`);",
+        "explanation": "Calentar la función antes de medir evita que la primera compilación JIT distorsione los resultados. Medir muchas iteraciones y calcular el promedio da resultados estables."
+      },
+      {
+        "code": "// Debounce y throttle combinados — comparar comportamiento\nfunction crearContadorLlamadas(fn) {\n  let llamadas = 0;\n  return {\n    fn: (...args) => { llamadas++; return fn(...args); },\n    reset: () => { llamadas = 0; },\n    getLlamadas: () => llamadas,\n  };\n}\n\nfunction debounce(fn, ms) {\n  let timer;\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), ms);\n  };\n}\n\nfunction throttle(fn, ms) {\n  let ultima = 0;\n  return (...args) => {\n    const ahora = Date.now();\n    if (ahora - ultima >= ms) { ultima = ahora; return fn(...args); }\n  };\n}\n\nconst contador = crearContadorLlamadas(x => x * 2);\nconst debouncedFn = debounce(contador.fn, 50);\n\n// Simular 10 llamadas rápidas:\nfor (let i = 0; i < 10; i++) debouncedFn(i);\n\nawait new Promise(r => setTimeout(r, 100));\n\nconsole.log('Debounce: llamadas reales ejecutadas:', contador.getLlamadas()); // 1",
+        "explanation": "Debounce con 10 llamadas rápidas → solo 1 ejecución real (la última). Throttle permitiría 1 por período de tiempo. Debounce es para 'ejecutar cuando paren', throttle para 'ejecutar máximo X veces por segundo'."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: performance.now() para medir tiempo",
+      "prompt": "Implementa `medirTiempo(fn, iteraciones = 1)` que ejecute `fn` el número de iteraciones dado y retorne `{ total, promedio, operacionesPorSegundo }`.\n\n- `total`: tiempo total en ms (toFixed(3))\n- `promedio`: tiempo por iteración en ms (toFixed(6))\n- `operacionesPorSegundo`: `Math.round(1000 / promedio)`\n\nMide dos funciones y compara.",
+      "starterCode": "function medirTiempo(fn, iteraciones = 1) {\n  const inicio = performance.now();\n  for (let i = 0; i < iteraciones; i++) fn();\n  const fin = performance.now();\n\n  const total = (fin - inicio);\n  const promedio = total / iteraciones;\n\n  return {\n    total: total.toFixed(3),\n    promedio: promedio.toFixed(6),\n    operacionesPorSegundo: Math.round(1000 / promedio),\n  };\n}\n\nconst datos = Array.from({ length: 100 }, (_, i) => i + 1);\n\nconst r1 = medirTiempo(() => {\n  let s = 0; for (const n of datos) s += n; return s;\n}, 1000);\n\nconst r2 = medirTiempo(() => {\n  return datos.reduce((a, b) => a + b, 0);\n}, 1000);\n\nconst tieneTiempoTotal = typeof parseFloat(r1.total) === 'number' && parseFloat(r1.total) >= 0;\nconst tieneOps = r1.operacionesPorSegundo > 0;\nconst tienePromedio = parseFloat(r1.promedio) >= 0;\n\nconsole.log('For loop:', r1);\nconsole.log('Reduce:', r2);\n",
+      "tests": [
+        {
+          "description": "r1 tiene total como string de número",
+          "expression": "tieneTiempoTotal === true"
+        },
+        {
+          "description": "r1 tiene ops por segundo > 0",
+          "expression": "tieneOps === true"
+        },
+        {
+          "description": "r1 tiene promedio >= 0",
+          "expression": "tienePromedio === true"
+        },
+        {
+          "description": "r2 tiene las mismas propiedades",
+          "expression": "'total' in r2 && 'promedio' in r2 && 'operacionesPorSegundo' in r2"
+        }
+      ],
+      "hints": [
+        "`performance.now()` retorna tiempo en ms con alta precisión",
+        "`(fin - inicio) / iteraciones` da el tiempo promedio por iteración",
+        "`Math.round(1000 / promedio)` convierte ms/op a ops/segundo"
+      ]
+    },
+    {
+      "title": "Práctica: Debounce y throttle",
+      "prompt": "Implementa `debounce(fn, ms)` y `throttle(fn, ms)`:\n\n**debounce**: ejecuta `fn` solo después de que pasen `ms` ms sin llamadas. Si se vuelve a llamar antes, reinicia el timer.\n\n**throttle**: ejecuta `fn` máximo una vez cada `ms` ms. Las llamadas intermedias se ignoran.\n\nVerifica el comportamiento usando contadores.",
+      "starterCode": "function debounce(fn, ms) {\n  let timer;\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), ms);\n  };\n}\n\nfunction throttle(fn, ms) {\n  let ultima = 0;\n  return function(...args) {\n    const ahora = Date.now();\n    if (ahora - ultima >= ms) {\n      ultima = ahora;\n      return fn.apply(this, args);\n    }\n  };\n}\n\n// Test debounce: 5 llamadas rápidas → 1 ejecución\nlet llamadasDebounce = 0;\nconst debounceFn = debounce(() => llamadasDebounce++, 30);\n\ndebounceFn(); debounceFn(); debounceFn(); debounceFn(); debounceFn();\nawait new Promise(r => setTimeout(r, 80));\nconst debounceResult = llamadasDebounce; // 1\n\n// Test throttle: llamadas cada 10ms con throttle de 50ms\nlet llamadasThrottle = 0;\nconst throttleFn = throttle(() => llamadasThrottle++, 50);\n\nfor (let i = 0; i < 10; i++) {\n  throttleFn();\n  await new Promise(r => setTimeout(r, 10)); // Cada 10ms\n}\nconst throttleResult = llamadasThrottle; // ~2 (cada 50ms)\n\nconsole.log('Debounce ejecutó:', debounceResult, 'veces');\nconsole.log('Throttle ejecutó:', throttleResult, 'veces');\n",
+      "tests": [
+        {
+          "description": "debounce ejecuta exactamente 1 vez",
+          "expression": "debounceResult === 1"
+        },
+        {
+          "description": "throttle ejecuta menos de 10 veces",
+          "expression": "throttleResult < 10"
+        },
+        {
+          "description": "throttle ejecuta al menos 1 vez",
+          "expression": "throttleResult >= 1"
+        }
+      ],
+      "hints": [
+        "`clearTimeout(timer)` cancela el timer anterior — solo el último se ejecuta",
+        "`Date.now() - ultima >= ms` verifica que pasaron suficientes ms",
+        "Debounce: espera que 'paren' las llamadas. Throttle: limita la frecuencia"
+      ]
+    },
+    {
+      "title": "Aplicación: Sistema de benchmarking",
+      "prompt": "Implementa `crearBenchmark()` que permita registrar y ejecutar benchmarks de forma organizada:\n\n- `agregar(nombre, fn)`: registra una función para benchmarking\n- `ejecutar(iteraciones)`: ejecuta todas las funciones registradas `iteraciones` veces y retorna un array de resultados ordenados por velocidad (más rápido primero)\n- Cada resultado: `{ nombre, ops, ms, relativo }` donde `relativo` es qué tan más lento es comparado con el más rápido (1.0 = el más rápido)\n\nPrueba comparando diferentes formas de crear arrays.",
+      "starterCode": "function crearBenchmark() {\n  const funciones = new Map();\n\n  return {\n    agregar(nombre, fn) {\n      funciones.set(nombre, fn);\n    },\n    ejecutar(iteraciones = 1000) {\n      const resultados = [];\n\n      for (const [nombre, fn] of funciones) {\n        // Warm-up\n        fn(); fn();\n\n        const inicio = performance.now();\n        for (let i = 0; i < iteraciones; i++) fn();\n        const fin = performance.now();\n\n        const ms = (fin - inicio) / iteraciones;\n        const ops = Math.round(1000 / ms);\n        resultados.push({ nombre, ops, ms: parseFloat(ms.toFixed(6)) });\n      }\n\n      // Ordenar por ops descendente (más rápido primero)\n      resultados.sort((a, b) => b.ops - a.ops);\n\n      // Agregar ratio relativo\n      const maxOps = resultados[0].ops;\n      resultados.forEach(r => {\n        r.relativo = parseFloat((maxOps / r.ops).toFixed(2));\n      });\n\n      return resultados;\n    },\n  };\n}\n\nconst bench = crearBenchmark();\n\nbench.agregar('Array.from range', () => Array.from({ length: 100 }, (_, i) => i));\nbench.agregar('Array fill + map', () => new Array(100).fill(0).map((_, i) => i));\nbench.agregar('for loop push', () => { const a = []; for (let i = 0; i < 100; i++) a.push(i); return a; });\n\nconst resultados = bench.ejecutar(500);\n\nconst tieneRelativo = resultados[0].relativo === 1;\nconst estaOrdenado = resultados[0].ops >= resultados[1].ops;\nconst tiene3Resultados = resultados.length === 3;\n\nconsole.log('\\nResultados:');\nresultados.forEach(r => {\n  console.log(`${r.nombre}: ${r.ops} ops/s (${r.relativo}x)`);\n});\n",
+      "tests": [
+        {
+          "description": "tiene3Resultados es true",
+          "expression": "tiene3Resultados === true"
+        },
+        {
+          "description": "el más rápido tiene relativo 1.0",
+          "expression": "tieneRelativo === true"
+        },
+        {
+          "description": "los resultados están ordenados de más rápido a más lento",
+          "expression": "estaOrdenado === true"
+        },
+        {
+          "description": "todos tienen ops > 0",
+          "expression": "resultados.every(r => r.ops > 0)"
+        }
+      ],
+      "hints": [
+        "`.sort((a, b) => b.ops - a.ops)` ordena descendente por ops",
+        "`maxOps / r.ops` da el factor: 1x para el más rápido, 2x si es el doble de lento",
+        "Warm-up: ejecutar 2 veces antes de medir evita distorsión por JIT compilation"
+      ]
+    }
+  ]
+}

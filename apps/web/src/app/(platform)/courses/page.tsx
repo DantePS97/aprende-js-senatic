@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle } from 'lucide-react';
+import { BookOpen, CheckCircle, Lock } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useProgressStore } from '@/store/progressStore';
 import { XPBar } from '@/components/gamification/XPBar';
@@ -86,28 +86,52 @@ export default function CoursesPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {courses.map((course) => (
-              <Link
-                key={course._id}
-                href={`/courses/${course._id}`}
-                className="card flex items-center gap-4 hover:border-primary-500/50 transition-colors group"
-              >
-                <div className="text-3xl">{course.iconEmoji}</div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white group-hover:text-primary-400 transition-colors">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-slate-400 truncate">{course.description}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400">
-                      {course.level === 'basic' ? 'Básico' : 'Intermedio'}
-                    </span>
-                    <span className="text-xs text-slate-500">{course.totalLessons} lecciones</span>
+            {courses.map((course) => {
+              const locked = course.isLocked ?? false;
+              const inner = (
+                <>
+                  <div className={`text-3xl ${locked ? 'opacity-40' : ''}`}>{course.iconEmoji}</div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-semibold transition-colors ${locked ? 'text-slate-500' : 'text-white group-hover:text-primary-400'}`}>
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-slate-500 truncate">{course.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${locked ? 'bg-slate-700 text-slate-500' : 'bg-primary-500/20 text-primary-400'}`}>
+                        {course.level === 'basic' ? 'Básico' : 'Intermedio'}
+                      </span>
+                      <span className="text-xs text-slate-500">{course.totalLessons} lecciones</span>
+                      {locked && (
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Completa el curso anterior
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {locked
+                    ? <Lock className="w-5 h-5 text-slate-600 shrink-0" />
+                    : <span className="text-slate-600 group-hover:text-primary-400 transition-colors">→</span>
+                  }
+                </>
+              );
+
+              return locked ? (
+                <div
+                  key={course._id}
+                  className="card flex items-center gap-4 opacity-60 cursor-not-allowed"
+                >
+                  {inner}
                 </div>
-                <span className="text-slate-600 group-hover:text-primary-400 transition-colors">→</span>
-              </Link>
-            ))}
+              ) : (
+                <Link
+                  key={course._id}
+                  href={`/courses/${course._id}`}
+                  className="card flex items-center gap-4 hover:border-primary-500/50 transition-colors group"
+                >
+                  {inner}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m9-l2",
+  "title": "Grupos de captura y reemplazos avanzados",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Grupos de captura: `(...)` y `(?<nombre>...)`\n\nLos grupos de captura permiten extraer partes específicas de una coincidencia:\n\n```javascript\n// Grupos sin nombre — accede por índice:\nconst fecha = '2026-05-01';\nconst match = fecha.match(/(\\d{4})-(\\d{2})-(\\d{2})/);\n// match[0] = '2026-05-01' (match completo)\n// match[1] = '2026' (grupo 1)\n// match[2] = '05'   (grupo 2)\n// match[3] = '01'   (grupo 3)\n\n// Destructuring para extraer:\nconst [, anio, mes, dia] = match; // Ignora el primer elemento (match[0])\nconsole.log(anio, mes, dia); // '2026', '05', '01'\n\n// Grupos con nombre — más legible:\nconst { groups } = fecha.match(\n  /(?<anio>\\d{4})-(?<mes>\\d{2})-(?<dia>\\d{2})/\n);\nconsole.log(groups.anio, groups.mes, groups.dia); // '2026', '05', '01'\n```\n\n---\n\n## Grupos no capturantes: `(?:...)`\n\n```javascript\n// Agrupa sin capturar — útil para cuantificadores:\n/(?:ha)+/.test('hahaha'); // true — (ha) se repite\n\n// Diferencia:\n'hahaha'.match(/(ha)+/);   // ['hahaha', 'ha'] — captura el ÚLTIMO grupo\n'hahaha'.match(/(?:ha)+/); // ['hahaha'] — sin captura\n\n// Uso real: alternativas sin capturar\n/(?:https?|ftp):\\/\\//  → coincide con 'http://', 'https://', 'ftp://'\n                           sin crear un grupo de captura\n```\n\n---\n\n## replace() avanzado\n\n```javascript\n// Referencia a grupos en la cadena de reemplazo:\nconst fecha = '2026-05-01';\nfecha.replace(/(\\d{4})-(\\d{2})-(\\d{2})/, '$3/$2/$1');\n// '01/05/2026' — $1, $2, $3 referencian los grupos\n\n// Con grupos nombrados:\nfecha.replace(\n  /(?<anio>\\d{4})-(?<mes>\\d{2})-(?<dia>\\d{2})/,\n  '$<dia>/$<mes>/$<anio>'\n); // '01/05/2026'\n\n// Con función de reemplazo:\n'precio: 1234'.replace(/\\d+/, n => n * 1.19);\n// 'precio: 1468.46'\n\n// Función con grupos:\n'ana garcia, bob smith'.replace(\n  /([a-z]+) ([a-z]+)/g,\n  (_, nombre, apellido) => `${apellido}, ${nombre}`\n);\n// 'garcia, ana, smith, bob'\n```\n\n---\n\n## Lookahead y lookbehind\n\nAserciones de posición — verifican sin consumir caracteres:\n\n```javascript\n// Lookahead positivo (?=...) — seguido por:\n'100px 200em 300px'.match(/\\d+(?=px)/g); // ['100', '300'] — solo antes de 'px'\n\n// Lookahead negativo (?!...) — NO seguido por:\n'100px 200em 300px'.match(/\\d+(?!px|em)/g); // puede incluir otros casos\n\n// Lookbehind positivo (?<=...) — precedido por:\n'$100 €200 $300'.match(/(?<=\\$)\\d+/g); // ['100', '300'] — solo después de '$'\n\n// Lookbehind negativo (?<!...) — NO precedido por:\n'$100 €200 $300'.match(/(?<!\\$)\\d+/g); // ['200'] — solo el que no es '$'\n```\n\n---\n\n## replaceAll() y el flag `g`\n\n```javascript\n// replace() sin flag g: solo la primera coincidencia\n'abc abc abc'.replace('abc', 'X'); // 'X abc abc'\n\n// replace() con flag g o regex g: todas\n'abc abc abc'.replace(/abc/g, 'X'); // 'X X X'\n\n// replaceAll() (ES2021): equivalente a replace con /g\n'abc abc abc'.replaceAll('abc', 'X'); // 'X X X'\n\n// replaceAll() con regex REQUIERE el flag g:\n'abc'.replaceAll(/a/g, 'X'); // 'Xbc'\n// 'abc'.replaceAll(/a/, 'X'); // TypeError: sin flag g\n```\n\n---\n\n## Casos comunes de transformación\n\n```javascript\n// camelCase a snake_case:\n'miVariableCamelCase'.replace(/([A-Z])/g, '_$1').toLowerCase();\n// 'mi_variable_camel_case'\n\n// snake_case a camelCase:\n'mi_variable_snake'.replace(/_([a-z])/g, (_, letra) => letra.toUpperCase());\n// 'miVariableSnake'\n\n// Capitalizar primera letra de cada palabra:\n'hola mundo cruel'.replace(/\\b\\w/g, c => c.toUpperCase());\n// 'Hola Mundo Cruel'\n\n// Eliminar espacios múltiples:\n'texto   con  espacios  extra'.replace(/\\s+/g, ' ');\n// 'texto con espacios extra'\n```",
+    "examples": [
+      {
+        "code": "// Parsear query string con grupos nombrados\nfunction parseQueryString(qs) {\n  const params = {};\n  const patron = /(?<clave>[^=&]+)=(?<valor>[^&]*)/g;\n\n  for (const match of qs.matchAll(patron)) {\n    const { clave, valor } = match.groups;\n    params[decodeURIComponent(clave)] = decodeURIComponent(valor);\n  }\n\n  return params;\n}\n\nconst qs = 'nombre=Ana&edad=30&ciudad=Bogot%C3%A1&activo=true';\nconst params = parseQueryString(qs);\n\nconsole.log(params);\n// { nombre: 'Ana', edad: '30', ciudad: 'Bogotá', activo: 'true' }",
+        "explanation": "matchAll() con grupos nombrados hace el parsing legible. Cada iteración del for...of da el match con sus grupos — mucho más limpio que un while con exec()."
+      },
+      {
+        "code": "// Resaltador de sintaxis básico con replace\nfunction resaltarNumeros(codigo) {\n  return codigo.replace(/\\b\\d+\\.?\\d*\\b/g, n => `[NUM:${n}]`);\n}\n\nfunction resaltarStrings(codigo) {\n  return codigo.replace(/\"([^\"]*)\"|'([^']*)'/g, (match) => `[STR:${match}]`);\n}\n\nfunction resaltarKeywords(codigo) {\n  const kw = ['const', 'let', 'var', 'function', 'return', 'if', 'for'];\n  const patron = new RegExp(`\\\\b(${kw.join('|')})\\\\b`, 'g');\n  return codigo.replace(patron, kw => `[KW:${kw}]`);\n}\n\nconst codigo = `const x = 42;\nfunction suma(a, b) { return a + b; }\nconst nombre = 'Ana';`;\n\nconsole.log(resaltarNumeros(codigo));\nconsole.log(resaltarKeywords(codigo));",
+        "explanation": "new RegExp() permite construir la regex dinámicamente: el patrón de keywords se construye en tiempo de ejecución. Los \\b aseguran que solo coincidamos palabras completas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Extracción con grupos",
+      "prompt": "Extrae información de strings usando grupos de captura:\n\n1. De `'Ana García, 30 años'`, extrae nombre (`Ana García`) y edad (`30`)\n2. De `'2026-05-01'`, extrae año, mes y día en variables separadas\n3. De `'(+57) 300-123-4567'`, extrae el código de país (`57`) y el número (`3001234567`)\n\nUsa grupos nombrados para el punto 2.",
+      "starterCode": "// 1. Nombre y edad\nconst persona = 'Ana García, 30 años';\nconst matchPersona = persona.match(/^([\\w\\s]+), (\\d+) años$/);\nconst nombrePersona = matchPersona[1];\nconst edadPersona = Number(matchPersona[2]);\n\n// 2. Fecha con grupos nombrados\nconst fecha = '2026-05-01';\nconst { groups: fechaGrupos } = fecha.match(/(?<anio>\\d{4})-(?<mes>\\d{2})-(?<dia>\\d{2})/);\nconst { anio, mes, dia } = fechaGrupos;\n\n// 3. Teléfono\nconst tel = '(+57) 300-123-4567';\nconst matchTel = tel.match(/\\(\\+(\\d+)\\) ([\\d-]+)/);\nconst codigoPais = matchTel[1];\nconst numeroTel = matchTel[2].replace(/-/g, '');\n\nconsole.log(nombrePersona, edadPersona);\nconsole.log(anio, mes, dia);\nconsole.log(codigoPais, numeroTel);\n",
+      "tests": [
+        {
+          "description": "nombrePersona es 'Ana García'",
+          "expression": "nombrePersona === 'Ana García'"
+        },
+        {
+          "description": "edadPersona es 30",
+          "expression": "edadPersona === 30"
+        },
+        {
+          "description": "anio es '2026'",
+          "expression": "anio === '2026'"
+        },
+        {
+          "description": "codigoPais es '57'",
+          "expression": "codigoPais === '57'"
+        }
+      ],
+      "hints": [
+        "`([\\w\\s]+)` captura letras, dígitos y espacios — para el nombre con apellido",
+        "`(?<anio>\\d{4})` — grupo nombrado para el año",
+        "`matchTel[2].replace(/-/g, '')` elimina los guiones del número"
+      ]
+    },
+    {
+      "title": "Práctica: Transformaciones con replace",
+      "prompt": "Implementa estas funciones de transformación usando `replace()`:\n\n1. `camelASnake(str)`: convierte `miVariableCamel` → `mi_variable_camel`\n2. `snakeACamel(str)`: convierte `mi_variable_snake` → `miVariableSnake`\n3. `capitalizarPalabras(str)`: convierte `'hola mundo'` → `'Hola Mundo'`\n4. `eliminarEspaciosExtra(str)`: convierte `'  texto   extra  '` → `'texto extra'`",
+      "starterCode": "function camelASnake(str) {\n  return str.replace(/([A-Z])/g, '_$1').toLowerCase();\n}\n\nfunction snakeACamel(str) {\n  return str.replace(/_([a-z])/g, (_, letra) => letra.toUpperCase());\n}\n\nfunction capitalizarPalabras(str) {\n  return str.replace(/\\b\\w/g, c => c.toUpperCase());\n}\n\nfunction eliminarEspaciosExtra(str) {\n  return str.trim().replace(/\\s+/g, ' ');\n}\n\nconst r1 = camelASnake('miVariableCamelCase');\nconst r2 = snakeACamel('mi_variable_snake');\nconst r3 = capitalizarPalabras('hola mundo cruel');\nconst r4 = eliminarEspaciosExtra('  texto   con  espacios  ');\n\nconsole.log(r1, r2, r3, r4);\n",
+      "tests": [
+        {
+          "description": "camelASnake funciona",
+          "expression": "r1 === 'mi_variable_camel_case'"
+        },
+        {
+          "description": "snakeACamel funciona",
+          "expression": "r2 === 'miVariableSnake'"
+        },
+        {
+          "description": "capitalizarPalabras funciona",
+          "expression": "r3 === 'Hola Mundo Cruel'"
+        },
+        {
+          "description": "eliminarEspaciosExtra funciona",
+          "expression": "r4 === 'texto con espacios'"
+        }
+      ],
+      "hints": [
+        "`/([A-Z])/g` captura cada mayúscula — `'_$1'` la precede con guión bajo",
+        "`/_([a-z])/g` con función: `(_, letra) => letra.toUpperCase()` convierte a mayúscula",
+        "`.trim().replace(/\\s+/g, ' ')` — trim elimina extremos, replace comprime espacios internos"
+      ]
+    },
+    {
+      "title": "Aplicación: Sanitizador y formateador de texto",
+      "prompt": "Implementa `formatearTexto(texto, opciones)` que aplique varias transformaciones según las opciones:\n\n- `opciones.sinHtml`: elimina etiquetas HTML (`<...>`)\n- `opciones.sinUrl`: reemplaza URLs (`http://...` o `https://...`) por `[URL]`\n- `opciones.resaltarNumeros`: envuelve números en `**n**` (como markdown bold)\n- `opciones.normalizarEspacios`: elimina espacios extra y trimea\n\nCada opción es boolean. Aplica solo las activas.",
+      "starterCode": "function formatearTexto(texto, opciones = {}) {\n  let resultado = texto;\n\n  if (opciones.sinHtml) {\n    resultado = resultado.replace(/<[^>]+>/g, '');\n  }\n\n  if (opciones.sinUrl) {\n    resultado = resultado.replace(/https?:\\/\\/[^\\s]+/g, '[URL]');\n  }\n\n  if (opciones.resaltarNumeros) {\n    resultado = resultado.replace(/\\b\\d+\\.?\\d*\\b/g, n => `**${n}**`);\n  }\n\n  if (opciones.normalizarEspacios) {\n    resultado = resultado.trim().replace(/\\s+/g, ' ');\n  }\n\n  return resultado;\n}\n\nconst entrada = '  <b>Hola</b>  visita https://google.com para   ver 42 ejemplos  ';\n\nconst r1 = formatearTexto(entrada, { sinHtml: true });\nconst r2 = formatearTexto(entrada, { sinUrl: true });\nconst r3 = formatearTexto(entrada, { sinHtml: true, sinUrl: true, normalizarEspacios: true });\nconst r4 = formatearTexto('hay 10 y 3.14 valores', { resaltarNumeros: true });\n\nconsole.log('sinHtml:', r1);\nconsole.log('sinUrl:', r2);\nconsole.log('combinado:', r3);\nconsole.log('numeros:', r4);\n",
+      "tests": [
+        {
+          "description": "sinHtml elimina etiquetas",
+          "expression": "!r1.includes('<b>') && !r1.includes('</b>')"
+        },
+        {
+          "description": "sinUrl reemplaza la URL",
+          "expression": "r2.includes('[URL]') && !r2.includes('https://')"
+        },
+        {
+          "description": "combinado está limpio",
+          "expression": "r3 === 'Hola visita [URL] para ver 42 ejemplos'"
+        },
+        {
+          "description": "resaltarNumeros envuelve los números",
+          "expression": "r4 === 'hay **10** y **3.14** valores'"
+        }
+      ],
+      "hints": [
+        "`/<[^>]+>/g` — `[^>]+` coincide con cualquier contenido dentro de < >",
+        "`/https?:\\/\\/[^\\s]+/g` — URL hasta el primer espacio",
+        "`/\\b\\d+\\.?\\d*\\b/g` — números enteros y decimales con límite de palabra"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ export interface ICourse extends Document {
   iconEmoji: string;
   order: number;
   isPublished: boolean;
+  prerequisiteSlug?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,7 @@ const CourseSchema = new Schema<ICourse>(
     iconEmoji: { type: String, default: '📘' },
     order: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: true },
+    prerequisiteSlug: { type: String, default: null },
   },
   { timestamps: true, versionKey: false }
 );

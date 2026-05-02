@@ -1,0 +1,100 @@
+{
+  "id": "js-intermedio-m8-l3",
+  "title": "Strategy y Decorator",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Strategy: comportamiento intercambiable\n\nEl patrón Strategy define una familia de algoritmos, los encapsula y los hace intercambiables. El cliente puede cambiar el algoritmo sin modificar el código que lo usa.\n\n```javascript\n// Sin Strategy — condicionales hardcodeados:\nfunction ordenar(array, tipo) {\n  if (tipo === 'burbuja') { /* ... */ }\n  else if (tipo === 'quick') { /* ... */ }\n  else if (tipo === 'merge') { /* ... */ }\n  // Agregar un nuevo algoritmo requiere modificar esta función\n}\n\n// Con Strategy — el algoritmo es un parámetro:\nconst estrategias = {\n  asc:  (a, b) => a - b,\n  desc: (a, b) => b - a,\n  longitud: (a, b) => a.length - b.length,\n  alfabetico: (a, b) => a.localeCompare(b),\n};\n\nfunction ordenar(array, estrategia) {\n  return [...array].sort(estrategia);\n}\n\nordenar([3,1,4,1,5], estrategias.asc);   // [1,1,3,4,5]\nordenar([3,1,4,1,5], estrategias.desc);  // [5,4,3,1,1]\nordenar(['banana','kiwi','manzana'], estrategias.longitud); // ['kiwi','banana','manzana']\n```\n\n---\n\n## Strategy con contexto\n\n```javascript\nclass Compresor {\n  #estrategia;\n\n  constructor(estrategia) {\n    this.#estrategia = estrategia;\n  }\n\n  setEstrategia(estrategia) {\n    this.#estrategia = estrategia;\n  }\n\n  comprimir(datos) {\n    return this.#estrategia(datos);\n  }\n}\n\nconst estrategias = {\n  zip:  datos => ({ formato: 'zip',  tamanio: datos.length * 0.7 }),\n  gzip: datos => ({ formato: 'gzip', tamanio: datos.length * 0.5 }),\n  raw:  datos => ({ formato: 'raw',  tamanio: datos.length }),\n};\n\nconst compresor = new Compresor(estrategias.gzip);\nconsole.log(compresor.comprimir('archivo'.repeat(100)));\n// { formato: 'gzip', tamanio: 350 }\n\ncompresor.setEstrategia(estrategias.zip);\nconsole.log(compresor.comprimir('archivo'.repeat(100)));\n// { formato: 'zip', tamanio: 490 }\n```\n\n---\n\n## Decorator: añadir comportamiento sin modificar\n\nEl patrón Decorator envuelve un objeto para añadirle responsabilidades dinámicamente, sin modificar la clase original ni usar herencia:\n\n```javascript\n// Objeto base:\nfunction crearLogger() {\n  return {\n    log(msg) { console.log(msg); }\n  };\n}\n\n// Decorator que añade timestamp:\nfunction conTimestamp(logger) {\n  return {\n    log(msg) {\n      logger.log(`[${new Date().toISOString()}] ${msg}`);\n    }\n  };\n}\n\n// Decorator que añade nivel:\nfunction conNivel(logger, nivel = 'INFO') {\n  return {\n    log(msg) {\n      logger.log(`[${nivel}] ${msg}`);\n    }\n  };\n}\n\n// Composición de decorators:\nconst logger = conNivel(conTimestamp(crearLogger()), 'WARN');\nlogger.log('Algo ocurrió');\n// [WARN] [2026-05-01T...] Algo ocurrió\n```\n\n---\n\n## Decorator como función de orden superior\n\nEn JS, decorar funciones es natural con HOFs:\n\n```javascript\n// Decorator de caché (memoize):\nfunction conCache(fn) {\n  const cache = new Map();\n  return function(...args) {\n    const clave = JSON.stringify(args);\n    if (cache.has(clave)) return cache.get(clave);\n    const resultado = fn.apply(this, args);\n    cache.set(clave, resultado);\n    return resultado;\n  };\n}\n\n// Decorator de logging:\nfunction conLog(fn, nombre = fn.name) {\n  return function(...args) {\n    console.log(`Llamando ${nombre}(${args.join(', ')})`);\n    const resultado = fn.apply(this, args);\n    console.log(`${nombre} retornó:`, resultado);\n    return resultado;\n  };\n}\n\n// Decorator de retry:\nfunction conReintentos(fn, maxIntentos = 3) {\n  return async function(...args) {\n    for (let i = 0; i < maxIntentos; i++) {\n      try {\n        return await fn.apply(this, args);\n      } catch (err) {\n        if (i === maxIntentos - 1) throw err;\n        console.log(`Intento ${i + 1} falló, reintentando...`);\n      }\n    }\n  };\n}\n\n// Aplicar múltiples decorators:\nconst fetchConReintentos = conReintentos(conCache(fetch), 3);\n```\n\n---\n\n## Strategy vs Decorator\n\n```\nStrategy: elige UN algoritmo de varios posibles (uno a la vez)\n  → ¿Cómo ordenar? ¿Cómo comprimir? ¿Cómo pagar?\n\nDecorator: apila comportamientos sobre uno base\n  → Función base + log + cache + retry + timeout\n```",
+    "examples": [
+      {
+        "code": "// Strategy: pipeline de formateo de precios\nconst formatos = {\n  cop: precio => `$${precio.toLocaleString('es-CO')} COP`,\n  usd: precio => `$${precio.toFixed(2)}`,\n  eur: precio => `€${precio.toFixed(2)}`,\n  compact: precio => precio >= 1000\n    ? `$${(precio / 1000).toFixed(1)}k`\n    : `$${precio}`,\n};\n\nfunction formatearPrecio(precio, estrategia) {\n  if (!formatos[estrategia]) throw new Error(`Formato desconocido: ${estrategia}`);\n  return formatos[estrategia](precio);\n}\n\nconsole.log(formatearPrecio(1234567, 'cop'));     // '$1.234.567 COP'\nconsole.log(formatearPrecio(1234.56, 'usd'));     // '$1234.56'\nconsole.log(formatearPrecio(1500, 'compact'));    // '$1.5k'",
+        "explanation": "Las estrategias de formateo son intercambiables. Agregar un nuevo formato (ej: 'jpy') no requiere modificar formatearPrecio — solo añadir la propiedad al objeto formatos."
+      },
+      {
+        "code": "// Decorator: función con throttle + logging\nfunction conThrottle(fn, ms) {\n  let ultima = 0;\n  return function(...args) {\n    const ahora = Date.now();\n    if (ahora - ultima < ms) return; // Ignora si muy frecuente\n    ultima = ahora;\n    return fn.apply(this, args);\n  };\n}\n\nfunction conConteo(fn) {\n  let llamadas = 0;\n  const decorada = function(...args) {\n    llamadas++;\n    return fn.apply(this, args);\n  };\n  decorada.getLlamadas = () => llamadas;\n  return decorada;\n}\n\nconst manejarScroll = conConteo(\n  conThrottle(\n    (e) => console.log('Scroll procesado:', e),\n    100\n  )\n);\n\n// Simular múltiples llamadas rápidas:\nconst inicio = Date.now();\nmanejarScroll('evento1');\nmanejarScroll('evento2'); // Bloqueado por throttle\nconst llamadasTotales = manejarScroll.getLlamadas();\nconsole.log('Llamadas totales (incluyendo bloqueadas):', llamadasTotales); // 2",
+        "explanation": "Los decorators se apilan: conConteo cuenta TODAS las llamadas (incluyendo las bloqueadas por throttle), pero conThrottle solo deja pasar algunas al fn base."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Strategy de ordenamiento",
+      "prompt": "Crea un objeto `estrategiasOrden` con estas estrategias:\n- `'asc'`: números ascendentes\n- `'desc'`: números descendentes\n- `'longitud'`: strings por longitud (menor a mayor)\n\nCrea `ordenar(array, nombreEstrategia)` que use la estrategia por nombre.\n\nGuarda:\n- `r1 = ordenar([3,1,4,1,5,9,2], 'asc')` → `[1,1,2,3,4,5,9]`\n- `r2 = ordenar([3,1,4,1,5,9,2], 'desc')` → `[9,5,4,3,2,1,1]`\n- `r3 = ordenar(['banana','kiwi','manzana','higo'], 'longitud')` → `['kiwi','higo','banana','manzana']`",
+      "starterCode": "const estrategiasOrden = {\n  asc:      (a, b) => a - b,\n  desc:     (a, b) => b - a,\n  longitud: (a, b) => a.length - b.length,\n};\n\nfunction ordenar(array, nombreEstrategia) {\n  const estrategia = estrategiasOrden[nombreEstrategia];\n  if (!estrategia) throw new Error(`Estrategia desconocida: ${nombreEstrategia}`);\n  return [...array].sort(estrategia);\n}\n\nconst r1 = ordenar([3, 1, 4, 1, 5, 9, 2], 'asc');\nconst r2 = ordenar([3, 1, 4, 1, 5, 9, 2], 'desc');\nconst r3 = ordenar(['banana', 'kiwi', 'manzana', 'higo'], 'longitud');\n\nconsole.log(r1);\nconsole.log(r2);\nconsole.log(r3);\n",
+      "tests": [
+        {
+          "description": "r1 es [1,1,2,3,4,5,9]",
+          "expression": "JSON.stringify(r1) === '[1,1,2,3,4,5,9]'"
+        },
+        {
+          "description": "r2 es [9,5,4,3,2,1,1]",
+          "expression": "JSON.stringify(r2) === '[9,5,4,3,2,1,1]'"
+        },
+        {
+          "description": "r3 empieza con las palabras más cortas",
+          "expression": "r3[0].length <= r3[1].length && r3[1].length <= r3[2].length"
+        },
+        {
+          "description": "estrategia desconocida lanza error",
+          "expression": "(() => { try { ordenar([1], 'xyz'); return false; } catch(e) { return true; } })()"
+        }
+      ],
+      "hints": [
+        "`[...array].sort(estrategia)` — el spread evita mutar el array original",
+        "El comparador `(a, b) => a - b` para ascendente, `b - a` para descendente",
+        "`a.length - b.length` ordena strings de más corto a más largo"
+      ]
+    },
+    {
+      "title": "Práctica: Decorator de función con caché",
+      "prompt": "Implementa `conCache(fn)` — un decorator que:\n1. La primera vez que se llama con ciertos argumentos, ejecuta `fn` y guarda el resultado\n2. La siguiente vez con los mismos argumentos, retorna el resultado cacheado sin ejecutar `fn`\n3. La función decorada debe tener un método `limpiarCache()` que vacíe el caché\n\nUsa `JSON.stringify(args)` como clave del caché.\n\nVerifica el comportamiento con un contador de llamadas reales.",
+      "starterCode": "function conCache(fn) {\n  const cache = new Map();\n\n  function decorada(...args) {\n    const clave = JSON.stringify(args);\n    if (cache.has(clave)) return cache.get(clave);\n    const resultado = fn(...args);\n    cache.set(clave, resultado);\n    return resultado;\n  }\n\n  decorada.limpiarCache = () => cache.clear();\n  decorada.getCacheSize = () => cache.size;\n\n  return decorada;\n}\n\nlet llamadasReales = 0;\nconst calcularCostoso = conCache((n) => {\n  llamadasReales++;\n  return n * n; // Simula cálculo costoso\n});\n\nconst r1 = calcularCostoso(5);  // Calcula\nconst r2 = calcularCostoso(5);  // Desde caché\nconst r3 = calcularCostoso(3);  // Calcula\nconst r4 = calcularCostoso(3);  // Desde caché\n\nconst llamadasRealesTotales = llamadasReales; // Solo 2 (5 y 3)\nconst cacheSize = calcularCostoso.getCacheSize(); // 2\n\nconsole.log(r1, r2, r3, r4);\nconsole.log('Llamadas reales:', llamadasRealesTotales, '| Caché:', cacheSize);\n",
+      "tests": [
+        {
+          "description": "r1 es 25",
+          "expression": "r1 === 25"
+        },
+        {
+          "description": "r2 es 25 (desde caché)",
+          "expression": "r2 === 25"
+        },
+        {
+          "description": "llamadasRealesTotales es 2 (no 4)",
+          "expression": "llamadasRealesTotales === 2"
+        },
+        {
+          "description": "cacheSize es 2",
+          "expression": "cacheSize === 2"
+        }
+      ],
+      "hints": [
+        "`JSON.stringify(args)` convierte el array de argumentos a string para usar como clave",
+        "El `if (cache.has(clave))` evita la ejecución de `fn` si ya tenemos el resultado",
+        "`decorada.limpiarCache = () => cache.clear()` agrega el método al closure"
+      ]
+    },
+    {
+      "title": "Aplicación: Pipeline de decorators",
+      "prompt": "Implementa tres decorators para funciones:\n\n1. `conLog(fn, nombre)`: loguea entrada y salida a un array `logs` (no a console). La función decorada expone `.logs`.\n2. `conTimeout(fn, ms)`: si `fn` no resuelve en `ms` ms, rechaza con `Error('Timeout')`.\n3. `conReintentos(fn, n)`: si `fn` rechaza, reintenta hasta `n` veces.\n\nCrea una función async `llamarAPI(url)` que simule un fetch fallido y aplícale los tres decorators.",
+      "starterCode": "function conLog(fn, nombre = fn.name) {\n  const logs = [];\n  function decorada(...args) {\n    logs.push(`→ ${nombre}(${JSON.stringify(args)})`);\n    const resultado = fn(...args);\n    // Si es Promise, espera para loguear la salida\n    if (resultado instanceof Promise) {\n      return resultado.then(r => {\n        logs.push(`← ${nombre} = ${JSON.stringify(r)}`);\n        return r;\n      }).catch(e => {\n        logs.push(`✗ ${nombre} error: ${e.message}`);\n        throw e;\n      });\n    }\n    logs.push(`← ${nombre} = ${JSON.stringify(resultado)}`);\n    return resultado;\n  }\n  decorada.logs = logs;\n  return decorada;\n}\n\nfunction conTimeout(fn, ms) {\n  return function(...args) {\n    return Promise.race([\n      Promise.resolve(fn(...args)),\n      new Promise((_, reject) =>\n        setTimeout(() => reject(new Error('Timeout')), ms)\n      ),\n    ]);\n  };\n}\n\nfunction conReintentos(fn, n) {\n  return async function(...args) {\n    for (let i = 0; i < n; i++) {\n      try {\n        return await fn(...args);\n      } catch (e) {\n        if (i === n - 1) throw e;\n      }\n    }\n  };\n}\n\n// Simula una API que falla las primeras 2 veces\nlet intentos = 0;\nasync function llamarAPI(url) {\n  intentos++;\n  if (intentos < 3) throw new Error(`Fallo intento ${intentos}`);\n  return { status: 200, data: url + '-ok' };\n}\n\nconst apiFinal = conReintentos(conTimeout(llamarAPI, 1000), 3);\n\nconst resultado = await apiFinal('https://api.test.com');\nconst exitoso = resultado.data.includes('ok');\nconst intentosTotales = intentos;\n\nconsole.log('Resultado:', resultado);\nconsole.log('Exitoso:', exitoso, '| Intentos:', intentosTotales);\n",
+      "tests": [
+        {
+          "description": "exitoso es true",
+          "expression": "exitoso === true"
+        },
+        {
+          "description": "intentosTotales es 3 (falló 2, exitoso en 3)",
+          "expression": "intentosTotales === 3"
+        },
+        {
+          "description": "resultado.status es 200",
+          "expression": "resultado.status === 200"
+        }
+      ],
+      "hints": [
+        "`Promise.race([fn(), timeoutPromise])` retorna la primera que resuelva/rechace",
+        "El `for` loop con `try/catch` reintenta hasta `n` veces",
+        "La función falla `intentos < 3` veces — en el tercer intento (intentos = 3) ya no falla"
+      ]
+    }
+  ]
+}

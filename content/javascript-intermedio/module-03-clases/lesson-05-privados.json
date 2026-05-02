@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m3-l5",
+  "title": "Campos privados con #",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Campos privados con #\n\nDesde ES2022, JavaScript tiene **campos verdaderamente privados** con el prefijo `#`. A diferencia de la convención `_`, los campos `#` son inaccesibles desde fuera de la clase — el motor los rechaza:\n\n```javascript\nclass CuentaBancaria {\n  #saldo;\n  #titular;\n\n  constructor(titular, saldoInicial) {\n    this.#titular = titular;\n    this.#saldo = saldoInicial;\n  }\n\n  depositar(monto) {\n    if (monto <= 0) throw new Error('Monto inválido');\n    this.#saldo += monto;\n    return this;\n  }\n\n  retirar(monto) {\n    if (monto > this.#saldo) throw new Error('Saldo insuficiente');\n    this.#saldo -= monto;\n    return this;\n  }\n\n  get saldo() { return this.#saldo; }\n  get titular() { return this.#titular; }\n}\n\nconst cuenta = new CuentaBancaria('Ana', 1000000);\ncuenta.depositar(500000);\nconsole.log(cuenta.saldo); // 1500000\n\n// ❌ IMPOSIBLE acceder desde fuera:\n// console.log(cuenta.#saldo); // SyntaxError\n// cuenta.#saldo = 9999999;     // SyntaxError\n```\n\n---\n\n## Convención _ vs privados reales\n\n```javascript\n// ❌ Convención: fácil de romper\nclass ConConvencion {\n  constructor() {\n    this._secreto = 'supersecret';\n  }\n}\nconst c1 = new ConConvencion();\nconsole.log(c1._secreto); // 'supersecret' — accesible!\nc1._secreto = 'hackeado'; // Modificable!\n\n// ✅ Privado real: imposible de tocar\nclass ConPrivado {\n  #secreto = 'supersecret';\n}\nconst c2 = new ConPrivado();\nconsole.log(c2.#secreto); // SyntaxError — ni siquiera en runtime\n```\n\n---\n\n## Métodos privados\n\nTambién puedes hacer métodos privados:\n\n```javascript\nclass Autenticador {\n  #intentos = 0;\n  #maxIntentos = 3;\n\n  #registrarIntento() {\n    this.#intentos++;\n    if (this.#intentos >= this.#maxIntentos) {\n      this.#bloquear();\n    }\n  }\n\n  #bloquear() {\n    console.log('Cuenta bloqueada por demasiados intentos');\n    this.#intentos = 0;\n  }\n\n  login(password) {\n    if (password === '1234') {\n      this.#intentos = 0;\n      return 'Acceso concedido';\n    }\n    this.#registrarIntento(); // Solo accesible internamente\n    return 'Contraseña incorrecta';\n  }\n}\n\nconst auth = new Autenticador();\nauth.login('wrong'); // 'Contraseña incorrecta'\nauth.login('wrong'); // 'Contraseña incorrecta'\nauth.login('wrong'); // 'Contraseña incorrecta' + 'Cuenta bloqueada'\n// auth.#registrarIntento(); // SyntaxError\n```\n\n---\n\n## Campos privados con valores iniciales\n\nPuedes inicializar sin necesidad del constructor:\n\n```javascript\nclass Configuracion {\n  #tema = 'oscuro'; // Valor por defecto\n  #idioma = 'es';\n  #notificaciones = true;\n\n  get tema() { return this.#tema; }\n  set tema(v) {\n    if (!['oscuro', 'claro'].includes(v)) throw new Error('Tema inválido');\n    this.#tema = v;\n  }\n\n  toJSON() {\n    return {\n      tema: this.#tema,\n      idioma: this.#idioma,\n      notificaciones: this.#notificaciones,\n    };\n  }\n}\n\nconst cfg = new Configuracion();\nconsole.log(cfg.tema);    // 'oscuro'\ncfg.tema = 'claro';\nconsole.log(cfg.toJSON()); // { tema: 'claro', idioma: 'es', notificaciones: true }\n```\n\n---\n\n## in para verificar campos privados\n\n```javascript\nclass Token {\n  #valor;\n  constructor(v) { this.#valor = v; }\n\n  static esToken(obj) {\n    return #valor in obj; // Verifica si obj tiene el campo privado #valor\n  }\n}\n\nconst t = new Token('abc');\nconsole.log(Token.esToken(t));     // true\nconsole.log(Token.esToken({}));    // false\nconsole.log(Token.esToken('str')); // false\n```\n\n---\n\n## Reglas importantes\n\n- Los campos `#` deben **declararse** en el cuerpo de la clase antes de usarse\n- Son inaccesibles en subclases — cada clase solo accede a sus propios `#`\n- No aparecen en `Object.keys()`, `JSON.stringify()`, ni en el inspector básico\n\n```javascript\nclass Padre {\n  #x = 1;\n  getX() { return this.#x; }\n}\n\nclass Hijo extends Padre {\n  // ❌ No puede acceder a #x del Padre\n  // metodo() { return this.#x; } // SyntaxError\n\n  // ✅ Debe usar la API pública del padre\n  metodo() { return this.getX(); }\n}\n```",
+    "examples": [
+      {
+        "code": "class Pila {\n  #items = [];\n  #maxSize;\n\n  constructor(maxSize = Infinity) {\n    this.#maxSize = maxSize;\n  }\n\n  push(item) {\n    if (this.#items.length >= this.#maxSize) {\n      throw new Error(`Pila llena (máx: ${this.#maxSize})`);\n    }\n    this.#items.push(item);\n    return this;\n  }\n\n  pop() {\n    if (this.#estaVacia()) throw new Error('Pila vacía');\n    return this.#items.pop();\n  }\n\n  peek() {\n    if (this.#estaVacia()) return undefined;\n    return this.#items[this.#items.length - 1];\n  }\n\n  #estaVacia() { return this.#items.length === 0; }\n\n  get size() { return this.#items.length; }\n  get isEmpty() { return this.#estaVacia(); }\n}\n\nconst p = new Pila(3);\np.push(1).push(2).push(3);\nconsole.log(p.peek()); // 3\nconsole.log(p.pop());  // 3\nconsole.log(p.size);   // 2",
+        "explanation": "#items y #maxSize son privados — nadie puede corromper el estado interno. #estaVacia es método privado usado internamente."
+      },
+      {
+        "code": "class EventEmitter {\n  #listeners = new Map();\n\n  on(evento, callback) {\n    if (!this.#listeners.has(evento)) {\n      this.#listeners.set(evento, []);\n    }\n    this.#listeners.get(evento).push(callback);\n    return this;\n  }\n\n  emit(evento, ...args) {\n    const callbacks = this.#listeners.get(evento) ?? [];\n    callbacks.forEach(cb => cb(...args));\n    return this;\n  }\n\n  off(evento, callback) {\n    const cbs = this.#listeners.get(evento) ?? [];\n    this.#listeners.set(evento, cbs.filter(cb => cb !== callback));\n    return this;\n  }\n}\n\nconst emitter = new EventEmitter();\nconst handler = (msg) => console.log(`Recibido: ${msg}`);\n\nemitter.on('mensaje', handler);\nemitter.emit('mensaje', 'Hola'); // 'Recibido: Hola'\nemitter.off('mensaje', handler);\nemitter.emit('mensaje', 'Adios'); // (silencio)",
+        "explanation": "El Map de listeners es privado — nadie puede manipularlo directamente. La API pública (on, emit, off) es la única forma de interactuar."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Campo privado simple",
+      "prompt": "Crea una clase `Caja` con:\n- Campo privado `#contenido` inicializado en `null`\n- `guardar(item)`: asigna `item` a `#contenido`\n- `abrir()`: retorna `#contenido` y luego lo pone en `null`\n- Getter `estaLlena`: retorna `true` si `#contenido !== null`\n\nPrueba:\n```\nconst c = new Caja();\nc.estaLlena    // false\nc.guardar('Tesoro');\nc.estaLlena    // true\nc.abrir()      // 'Tesoro'\nc.estaLlena    // false\n```\n\nGuarda en `tesoro` el resultado de `abrir()` y en `llena` el getter tras `guardar`.",
+      "starterCode": "class Caja {\n  #contenido = null;\n\n  guardar(item) {\n    // Asigna item a #contenido\n\n  }\n\n  abrir() {\n    // Guarda el contenido, ponlo en null, retorna el contenido\n\n  }\n\n  get estaLlena() {\n    // Retorna true si #contenido no es null\n\n  }\n}\n\nconst c = new Caja();\nc.guardar('Tesoro');\nconst llena = c.estaLlena;\nconst tesoro = c.abrir();\n\nconsole.log(llena, tesoro, c.estaLlena); // true, 'Tesoro', false\n",
+      "tests": [
+        {
+          "description": "llena es true tras guardar",
+          "expression": "llena === true"
+        },
+        {
+          "description": "tesoro es 'Tesoro'",
+          "expression": "tesoro === 'Tesoro'"
+        },
+        {
+          "description": "estaLlena es false tras abrir",
+          "expression": "c.estaLlena === false"
+        },
+        {
+          "description": "#contenido no es accesible directamente",
+          "expression": "c['#contenido'] === undefined"
+        }
+      ],
+      "hints": [
+        "`this.#contenido = item;`",
+        "`const item = this.#contenido; this.#contenido = null; return item;`",
+        "`return this.#contenido !== null;`"
+      ]
+    },
+    {
+      "title": "Práctica: Cuenta bancaria encapsulada",
+      "prompt": "Crea una clase `Cuenta` con:\n- `#saldo` privado (inicializado en el constructor)\n- `#historial = []` privado\n- Constructor recibe `titular` y `saldoInicial`\n- `depositar(monto)`: suma al saldo si monto > 0, agrega `'+monto'` al historial, retorna `this`\n- `retirar(monto)`: resta del saldo si monto > 0 y hay saldo suficiente, agrega `'-monto'` al historial, retorna `this`. Si no hay saldo, lanza `Error('Saldo insuficiente')`\n- Getter `saldo`: retorna `#saldo`\n- `verHistorial()`: retorna copia del historial (`[...this.#historial]`)\n\nPrueba el encadenamiento y verifica el historial.",
+      "starterCode": "class Cuenta {\n  #saldo;\n  #historial = [];\n\n  constructor(titular, saldoInicial) {\n    this.titular = titular;\n    this.#saldo = saldoInicial;\n  }\n\n  depositar(monto) {\n    if (monto <= 0) throw new Error('Monto inválido');\n    this.#saldo += monto;\n    this.#historial.push('+' + monto);\n    return this;\n  }\n\n  retirar(monto) {\n    // Valida, resta, agrega al historial, retorna this\n\n  }\n\n  get saldo() {\n    return this.#saldo;\n  }\n\n  verHistorial() {\n    return [...this.#historial];\n  }\n}\n\nconst cuenta = new Cuenta('Ana', 1000000);\ncuenta.depositar(500000).retirar(200000).depositar(100000);\n\nconst saldoFinal = cuenta.saldo;\nconst historial = cuenta.verHistorial();\n\nconsole.log(saldoFinal); // 1400000\nconsole.log(historial);  // ['+500000', '-200000', '+100000']\n",
+      "tests": [
+        {
+          "description": "saldoFinal es 1400000",
+          "expression": "saldoFinal === 1400000"
+        },
+        {
+          "description": "historial tiene 3 entradas",
+          "expression": "historial.length === 3"
+        },
+        {
+          "description": "historial contiene +500000, -200000, +100000",
+          "expression": "historial[0] === '+500000' && historial[1] === '-200000' && historial[2] === '+100000'"
+        },
+        {
+          "description": "retirar más del saldo lanza error",
+          "expression": "(() => { try { new Cuenta('X',100).retirar(200); return false; } catch(e) { return e.message === 'Saldo insuficiente'; } })()"
+        }
+      ],
+      "hints": [
+        "`if (monto > this.#saldo) throw new Error('Saldo insuficiente');`",
+        "`this.#saldo -= monto; this.#historial.push('-' + monto); return this;`",
+        "La concatenación `'-' + monto` produce `'-200000'` cuando monto es 200000"
+      ]
+    },
+    {
+      "title": "Aplicación: Sistema de permisos",
+      "prompt": "Crea una clase `Usuario` con encapsulación completa:\n- `#nombre` y `#rol` privados (`'usuario'` por defecto)\n- `#permisos` privado: Set con permisos. Por defecto `new Set(['leer'])`\n- Constructor: recibe `nombre`\n- `get nombre` / `get rol`\n- `static #ROLES_VALIDOS = ['usuario', 'editor', 'admin']`\n- `promover(nuevoRol)`: cambia el rol si es válido (está en ROLES_VALIDOS), actualiza permisos:\n  - `'editor'`: agrega `'escribir'`\n  - `'admin'`: agrega `'escribir'`, `'eliminar'`, `'configurar'`\n  - Lanza `Error('Rol inválido')` si no existe\n- `tienePermiso(permiso)`: retorna `true` si el permiso está en `#permisos`\n\nPrueba creando un usuario, promoviéndolo a admin y verificando permisos.",
+      "starterCode": "class Usuario {\n  #nombre;\n  #rol = 'usuario';\n  #permisos = new Set(['leer']);\n  static #ROLES_VALIDOS = ['usuario', 'editor', 'admin'];\n\n  constructor(nombre) {\n    this.#nombre = nombre;\n  }\n\n  get nombre() { return this.#nombre; }\n  get rol() { return this.#rol; }\n\n  promover(nuevoRol) {\n    if (!Usuario.#ROLES_VALIDOS.includes(nuevoRol)) {\n      throw new Error('Rol inválido');\n    }\n    this.#rol = nuevoRol;\n    if (nuevoRol === 'editor') {\n      this.#permisos.add('escribir');\n    } else if (nuevoRol === 'admin') {\n      // Agrega escribir, eliminar y configurar\n\n    }\n    return this;\n  }\n\n  tienePermiso(permiso) {\n    // Retorna true si #permisos tiene el permiso\n\n  }\n}\n\nconst u = new Usuario('Carlos');\nu.promover('admin');\n\nconst esAdmin = u.rol === 'admin';\nconst puedeLeer = u.tienePermiso('leer');\nconst puedeEliminar = u.tienePermiso('eliminar');\nconst puedeVolar = u.tienePermiso('volar');\n\nconsole.log(esAdmin, puedeLeer, puedeEliminar, puedeVolar);\n",
+      "tests": [
+        {
+          "description": "esAdmin es true",
+          "expression": "esAdmin === true"
+        },
+        {
+          "description": "puedeLeer es true (permiso base)",
+          "expression": "puedeLeer === true"
+        },
+        {
+          "description": "puedeEliminar es true (permiso de admin)",
+          "expression": "puedeEliminar === true"
+        },
+        {
+          "description": "puedeVolar es false",
+          "expression": "puedeVolar === false"
+        },
+        {
+          "description": "Rol inválido lanza error",
+          "expression": "(() => { try { new Usuario('X').promover('superadmin'); return false; } catch(e) { return e.message === 'Rol inválido'; } })()"
+        }
+      ],
+      "hints": [
+        "`this.#permisos.add('escribir'); this.#permisos.add('eliminar'); this.#permisos.add('configurar');`",
+        "`return this.#permisos.has(permiso);`",
+        "`Set.has()` es O(1) — más eficiente que `Array.includes()`"
+      ]
+    }
+  ]
+}

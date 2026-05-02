@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m10-l2",
+  "title": "localStorage, sessionStorage y Cache API",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Persistencia en el navegador\n\nEl navegador ofrece varias opciones para guardar datos del lado del cliente, cada una con su caso de uso:\n\n```\nlocalStorage      → Persiste entre sesiones, mismo origen\nsessionStorage    → Solo la sesión actual (pestaña), mismo origen\nCookies           → Enviadas al servidor, fecha de expiración\nIndexedDB         → Base de datos, datos complejos y grandes\nCache API         → Assets y responses HTTP (Service Workers)\n```\n\n---\n\n## localStorage: persistencia permanente\n\n```javascript\n// Guardar:\nlocalStorage.setItem('usuario', JSON.stringify({ nombre: 'Ana', rol: 'admin' }));\nlocalStorage.setItem('tema', 'oscuro');\nlocalStorage.setItem('version', '1.0');\n\n// Leer:\nconst usuario = JSON.parse(localStorage.getItem('usuario'));\nconst tema = localStorage.getItem('tema'); // 'oscuro'\nconst noExiste = localStorage.getItem('clave-que-no-existe'); // null\n\n// Eliminar:\nlocalStorage.removeItem('version');\n\n// Limpiar todo:\nlocalStorage.clear(); // ⚠️ elimina TODOS los datos del origen\n\n// Información:\nlocalStorage.length; // Número de items\nlocalStorage.key(0); // Primera clave\n\n// Iterar:\nfor (let i = 0; i < localStorage.length; i++) {\n  const clave = localStorage.key(i);\n  const valor = localStorage.getItem(clave);\n}\n```\n\n---\n\n## sessionStorage: datos de sesión\n\n```javascript\n// Misma API que localStorage:\nsessionStorage.setItem('carrito-borrador', JSON.stringify([]));\nsessionStorage.getItem('carrito-borrador');\nsessionStorage.removeItem('carrito-borrador');\n\n// Diferencias clave con localStorage:\n// - Se elimina cuando se cierra la pestaña\n// - No se comparte entre pestañas del mismo origen\n// - Útil para: wizard de pasos, formularios temporales, tokens de sesión cortos\n```\n\n---\n\n## Patrones de uso\n\n### Serialización automática\n\n```javascript\nfunction crearStorage(storage) {\n  return {\n    get(clave, defecto = null) {\n      const valor = storage.getItem(clave);\n      if (valor === null) return defecto;\n      try { return JSON.parse(valor); } catch { return valor; }\n    },\n    set(clave, valor) {\n      storage.setItem(clave, JSON.stringify(valor));\n    },\n    remove(clave) {\n      storage.removeItem(clave);\n    },\n    has(clave) {\n      return storage.getItem(clave) !== null;\n    },\n  };\n}\n\nconst local = crearStorage(localStorage);\nconst session = crearStorage(sessionStorage);\n\nlocal.set('config', { tema: 'oscuro', idioma: 'es' });\nconst config = local.get('config'); // Objeto, no string\n```\n\n---\n\n## Cache API: caché de recursos HTTP\n\nLa Cache API permite guardar y servir respuestas HTTP — es la base de los Service Workers para apps offline:\n\n```javascript\n// Abrir (o crear) una caché:\nconst cache = await caches.open('mi-app-v1');\n\n// Agregar recursos:\nawait cache.add('/index.html');\nawait cache.addAll(['/styles.css', '/app.js', '/logo.png']);\n\n// Guardar response manualmente:\nawait cache.put('/api/datos', new Response(JSON.stringify({ data: [] })));\n\n// Buscar en caché:\nconst response = await cache.match('/index.html');\nif (response) {\n  const html = await response.text();\n}\n\n// Eliminar:\nawait cache.delete('/styles.css');\n\n// En Service Worker — responder desde caché o red:\nself.addEventListener('fetch', event => {\n  event.respondWith(\n    caches.match(event.request).then(cached =>\n      cached || fetch(event.request)\n    )\n  );\n});\n```\n\n---\n\n## Limitaciones y consideraciones\n\n```javascript\n// localStorage:\n// - Límite: ~5-10MB por origen\n// - Solo strings (serializa con JSON)\n// - Síncrono — bloquea el hilo principal si es lento\n// - No disponible en Service Workers\n// - Vulnerable a XSS — nunca guardes tokens sensibles\n\n// sessionStorage:\n// - Mismas limitaciones que localStorage\n// - No persiste entre pestañas\n\n// Cache API:\n// - Asíncrona (Promises) — no bloquea\n// - Disponible en Service Workers\n// - Diseñada para assets, no datos de usuario\n// - Límite mayor (~50MB o más, según el navegador)\n```",
+    "examples": [
+      {
+        "code": "// Wrapper de localStorage con expiración\nfunction crearStorageConExpiracion(storage = localStorage) {\n  return {\n    set(clave, valor, ttlMs) {\n      const item = {\n        valor,\n        expira: ttlMs ? Date.now() + ttlMs : null,\n      };\n      storage.setItem(clave, JSON.stringify(item));\n    },\n    get(clave, defecto = null) {\n      const raw = storage.getItem(clave);\n      if (!raw) return defecto;\n\n      const item = JSON.parse(raw);\n      if (item.expira && Date.now() > item.expira) {\n        storage.removeItem(clave);\n        return defecto; // Expirado\n      }\n      return item.valor;\n    },\n    remove: clave => storage.removeItem(clave),\n  };\n}\n\n// Simulamos con un objeto en lugar de localStorage real\nconst mockStorage = {};\nconst store = crearStorageConExpiracion({\n  getItem: k => mockStorage[k] ?? null,\n  setItem: (k, v) => { mockStorage[k] = v; },\n  removeItem: k => { delete mockStorage[k]; },\n});\n\nstore.set('token', 'abc123', 1000); // Expira en 1 segundo\nconsole.log(store.get('token')); // 'abc123'\n// (1 segundo después)\n// console.log(store.get('token')); // null — expirado",
+        "explanation": "localStorage no tiene TTL nativo. El wrapper agrega expiración almacenando el timestamp junto al valor. Al leer, verifica si expiró y limpia automáticamente."
+      },
+      {
+        "code": "// Sincronizar estado entre pestañas con storage event\n// (Esto normalmente solo funciona en browser)\nconst estadoCompartido = {\n  _datos: {},\n  _listeners: [],\n\n  // Simula localStorage.setItem\n  set(clave, valor) {\n    this._datos[clave] = JSON.stringify(valor);\n    // En browser real: localStorage.setItem lanza StorageEvent en OTRAS pestañas\n    this._listeners.forEach(fn => fn({ key: clave, newValue: JSON.stringify(valor) }));\n  },\n\n  get(clave) {\n    const raw = this._datos[clave];\n    return raw ? JSON.parse(raw) : null;\n  },\n\n  // Simula window.addEventListener('storage', ...)\n  onChange(fn) {\n    this._listeners.push(fn);\n  },\n};\n\n// Pestaña B escucha cambios:\nestadoCompartido.onChange(({ key, newValue }) => {\n  console.log(`[Pestaña B] ${key} cambió a:`, JSON.parse(newValue));\n});\n\n// Pestaña A hace cambios:\nestadoCompartido.set('carrito', { items: 3 });\nestadoCompartido.set('usuario', { nombre: 'Ana' });",
+        "explanation": "En el browser real, window.addEventListener('storage', ...) recibe StorageEvent cuando otra pestaña del mismo origen cambia localStorage. Es la forma nativa de sincronizar estado entre pestañas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Wrapper de localStorage",
+      "prompt": "Implementa `crearStore(prefijo)` que envuelva `localStorage` con:\n- `get(clave, defecto)`: retorna el valor parseado o `defecto`\n- `set(clave, valor)`: serializa y guarda con el prefijo: `'${prefijo}:${clave}'`\n- `remove(clave)`: elimina la clave\n- `has(clave)`: retorna true si existe\n\nSimula localStorage con un Map para el sandbox.",
+      "starterCode": "function crearStore(prefijo, storageSimulado = new Map()) {\n  const storage = {\n    getItem: k => storageSimulado.get(k) ?? null,\n    setItem: (k, v) => storageSimulado.set(k, v),\n    removeItem: k => storageSimulado.delete(k),\n    has: k => storageSimulado.has(k),\n  };\n\n  const claveCon = clave => `${prefijo}:${clave}`;\n\n  return {\n    get(clave, defecto = null) {\n      const raw = storage.getItem(claveCon(clave));\n      if (raw === null) return defecto;\n      try { return JSON.parse(raw); } catch { return raw; }\n    },\n    set(clave, valor) {\n      storage.setItem(claveCon(clave), JSON.stringify(valor));\n    },\n    remove(clave) {\n      storage.removeItem(claveCon(clave));\n    },\n    has(clave) {\n      return storage.has(claveCon(clave));\n    },\n  };\n}\n\nconst store = crearStore('app');\n\nstore.set('config', { tema: 'oscuro', idioma: 'es' });\nstore.set('contador', 42);\n\nconst config = store.get('config');\nconst contador = store.get('contador');\nconst noExiste = store.get('nada', 'defecto');\nconst tieneConfig = store.has('config');\n\nstore.remove('contador');\nconst despuesRemove = store.has('contador');\n\nconsole.log(config, contador, noExiste, tieneConfig, despuesRemove);\n",
+      "tests": [
+        {
+          "description": "config.tema es 'oscuro'",
+          "expression": "config.tema === 'oscuro'"
+        },
+        {
+          "description": "contador es 42",
+          "expression": "contador === 42"
+        },
+        {
+          "description": "noExiste es 'defecto'",
+          "expression": "noExiste === 'defecto'"
+        },
+        {
+          "description": "tieneConfig es true",
+          "expression": "tieneConfig === true"
+        },
+        {
+          "description": "despuesRemove es false",
+          "expression": "despuesRemove === false"
+        }
+      ],
+      "hints": [
+        "`JSON.parse(raw)` convierte el string a objeto — usar try/catch por si el valor no es JSON",
+        "El prefijo `'app:config'` evita colisiones con otras apps en el mismo origen",
+        "`defecto = null` — si no existe, retorna el valor por defecto"
+      ]
+    },
+    {
+      "title": "Práctica: Caché con versión",
+      "prompt": "Implementa `crearCacheVersionada(version)` que simule una Cache API con manejo de versiones:\n\n- `guardar(url, respuesta)`: guarda la respuesta asociada a la URL\n- `obtener(url)`: retorna la respuesta o `null`\n- `invalidar()`: limpia toda la caché (simula cambio de versión)\n- `version`: getter que retorna la versión actual\n- `size`: getter que retorna cuántos recursos hay cacheados\n\nSimula con un Map internamente.",
+      "starterCode": "function crearCacheVersionada(version) {\n  let _version = version;\n  const cache = new Map();\n\n  return {\n    guardar(url, respuesta) {\n      cache.set(url, { respuesta, version: _version, timestamp: Date.now() });\n    },\n    obtener(url) {\n      const entrada = cache.get(url);\n      if (!entrada) return null;\n      if (entrada.version !== _version) {\n        cache.delete(url);\n        return null; // Versión obsoleta\n      }\n      return entrada.respuesta;\n    },\n    invalidar(nuevaVersion) {\n      cache.clear();\n      if (nuevaVersion) _version = nuevaVersion;\n    },\n    get version() { return _version; },\n    get size() { return cache.size; },\n  };\n}\n\nconst cache = crearCacheVersionada('v1');\n\ncache.guardar('/api/usuarios', [{ id: 1 }, { id: 2 }]);\ncache.guardar('/api/productos', [{ id: 1 }]);\n\nconst usuarios = cache.obtener('/api/usuarios');\nconst size1 = cache.size; // 2\n\ncache.invalidar('v2');\nconst size2 = cache.size; // 0\nconst usuariosPost = cache.obtener('/api/usuarios'); // null\n\nconsole.log('Usuarios:', usuarios?.length);\nconsole.log('Size antes/después:', size1, size2);\nconsole.log('Versión actual:', cache.version);\n",
+      "tests": [
+        {
+          "description": "usuarios tiene 2 elementos",
+          "expression": "usuarios.length === 2"
+        },
+        {
+          "description": "size1 es 2",
+          "expression": "size1 === 2"
+        },
+        {
+          "description": "size2 es 0 después de invalidar",
+          "expression": "size2 === 0"
+        },
+        {
+          "description": "version es 'v2' después de invalidar",
+          "expression": "cache.version === 'v2'"
+        }
+      ],
+      "hints": [
+        "`cache.clear()` vacía el Map completamente",
+        "Guardar `{ respuesta, version }` permite detectar entradas de versiones antiguas",
+        "`_version` es la variable del closure — el getter `get version()` la expone"
+      ]
+    },
+    {
+      "title": "Aplicación: Persitencia de preferencias de usuario",
+      "prompt": "Implementa `crearPreferencias(userId)` — un manager de preferencias que simule localStorage:\n\n- Guarda preferencias por usuario (clave: `prefs:${userId}`)\n- `get(clave, defecto)`: retorna preferencia o defecto\n- `set(clave, valor)`: actualiza una preferencia y persiste\n- `resetear()`: vuelve a los valores por defecto\n- `getAll()`: retorna todas las preferencias del usuario\n\nPreferencias por defecto: `{ tema: 'claro', idioma: 'es', notificaciones: true, densidad: 'normal' }`",
+      "starterCode": "const DEFAULTS = { tema: 'claro', idioma: 'es', notificaciones: true, densidad: 'normal' };\n\nfunction crearPreferencias(userId, storageSimulado = new Map()) {\n  const CLAVE = `prefs:${userId}`;\n\n  function cargar() {\n    const raw = storageSimulado.get(CLAVE);\n    return raw ? JSON.parse(raw) : { ...DEFAULTS };\n  }\n\n  function guardar(prefs) {\n    storageSimulado.set(CLAVE, JSON.stringify(prefs));\n  }\n\n  return {\n    get(clave, defecto = null) {\n      const prefs = cargar();\n      return clave in prefs ? prefs[clave] : defecto;\n    },\n    set(clave, valor) {\n      const prefs = cargar();\n      prefs[clave] = valor;\n      guardar(prefs);\n    },\n    resetear() {\n      guardar({ ...DEFAULTS });\n    },\n    getAll() {\n      return { ...cargar() };\n    },\n  };\n}\n\nconst prefs = crearPreferencias('user-123');\n\nconst temaInicial = prefs.get('tema');      // 'claro'\nprefs.set('tema', 'oscuro');\nprefs.set('idioma', 'en');\n\nconst temaDespues = prefs.get('tema');      // 'oscuro'\nconst idiomaDespues = prefs.get('idioma'); // 'en'\nconst todas = prefs.getAll();\n\nprefs.resetear();\nconst temaReset = prefs.get('tema'); // 'claro'\n\nconsole.log(temaInicial, temaDespues, idiomaDespues);\nconsole.log('Todas:', todas);\nconsole.log('Después de reset:', temaReset);\n",
+      "tests": [
+        {
+          "description": "temaInicial es 'claro'",
+          "expression": "temaInicial === 'claro'"
+        },
+        {
+          "description": "temaDespues es 'oscuro'",
+          "expression": "temaDespues === 'oscuro'"
+        },
+        {
+          "description": "idiomaDespues es 'en'",
+          "expression": "idiomaDespues === 'en'"
+        },
+        {
+          "description": "temaReset es 'claro' después de resetear",
+          "expression": "temaReset === 'claro'"
+        }
+      ],
+      "hints": [
+        "`cargar()` siempre lee el estado actual — cambios se persisten de inmediato",
+        "`{ ...DEFAULTS }` es copia, no referencia — resetear no modifica DEFAULTS",
+        "El patrón de `cargar → modificar → guardar` es atómico en este contexto"
+      ]
+    }
+  ]
+}

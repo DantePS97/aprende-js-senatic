@@ -1,0 +1,105 @@
+{
+  "id": "js-intermedio-m3-l3",
+  "title": "Getters y setters",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Getters y setters\n\nLos **getters** y **setters** son métodos especiales que se comportan como propiedades. Se acceden sin paréntesis pero ejecutan lógica internamente.\n\n---\n\n## get — propiedad calculada\n\nUn getter define una **propiedad virtual** que se calcula a partir de otras:\n\n```javascript\nclass Rectangulo {\n  constructor(base, altura) {\n    this.base = base;\n    this.altura = altura;\n  }\n\n  get area() {\n    return this.base * this.altura;\n  }\n\n  get perimetro() {\n    return 2 * (this.base + this.altura);\n  }\n}\n\nconst r = new Rectangulo(6, 4);\nconsole.log(r.area);      // 24 — sin paréntesis!\nconsole.log(r.perimetro); // 20\n\n// No es una propiedad almacenada — se calcula cada vez\nr.base = 10;\nconsole.log(r.area); // 40 — actualizado automáticamente\n```\n\n---\n\n## set — validar al asignar\n\nUn setter intercepta la asignación y permite **validar o transformar** el valor:\n\n```javascript\nclass Temperatura {\n  constructor(celsius) {\n    this._celsius = celsius; // convención: _ para el valor interno\n  }\n\n  get celsius() {\n    return this._celsius;\n  }\n\n  set celsius(valor) {\n    if (valor < -273.15) {\n      throw new Error('Temperatura inferior al cero absoluto');\n    }\n    this._celsius = valor;\n  }\n\n  get fahrenheit() {\n    return this._celsius * 9 / 5 + 32;\n  }\n\n  set fahrenheit(valor) {\n    this.celsius = (valor - 32) * 5 / 9; // Usa el setter de celsius\n  }\n}\n\nconst t = new Temperatura(25);\nconsole.log(t.celsius);    // 25\nconsole.log(t.fahrenheit); // 77\n\nt.fahrenheit = 212;\nconsole.log(t.celsius);    // 100\n\nt.celsius = -300; // ❌ Error: Temperatura inferior al cero absoluto\n```\n\n---\n\n## Getters sin setter = solo lectura\n\n```javascript\nclass Usuario {\n  constructor(nombre, apellido) {\n    this.nombre = nombre;\n    this.apellido = apellido;\n  }\n\n  get nombreCompleto() {\n    return `${this.nombre} ${this.apellido}`;\n  }\n  // Sin setter: nombreCompleto es solo lectura\n}\n\nconst u = new Usuario('Ana', 'García');\nconsole.log(u.nombreCompleto); // 'Ana García'\nu.nombreCompleto = 'Otro';     // Se ignora silenciosamente (o error en strict mode)\n```\n\n---\n\n## Getter con setter: sincronización bidireccional\n\n```javascript\nclass Circulo {\n  constructor(radio) {\n    this._radio = radio;\n  }\n\n  get radio() { return this._radio; }\n  set radio(r) {\n    if (r <= 0) throw new Error('El radio debe ser positivo');\n    this._radio = r;\n  }\n\n  get diametro() { return this._radio * 2; }\n  set diametro(d) { this.radio = d / 2; } // Reutiliza la validación del setter radio\n\n  get area() { return Math.PI * this._radio ** 2; }\n  get circunferencia() { return 2 * Math.PI * this._radio; }\n}\n\nconst c = new Circulo(5);\nconsole.log(c.diametro);       // 10\nc.diametro = 20;\nconsole.log(c.radio);          // 10\nconsole.log(c.area.toFixed(2)); // '314.16'\n```\n\n---\n\n## Getters en objetos literales\n\nTambién funcionan fuera de clases:\n\n```javascript\nconst config = {\n  _modo: 'desarrollo',\n  get modo() { return this._modo; },\n  get esProduccion() { return this._modo === 'produccion'; },\n  set modo(m) {\n    if (!['desarrollo', 'produccion', 'pruebas'].includes(m)) {\n      throw new Error(`Modo inválido: ${m}`);\n    }\n    this._modo = m;\n  },\n};\n\nconsole.log(config.modo);          // 'desarrollo'\nconsole.log(config.esProduccion);  // false\nconfig.modo = 'produccion';\nconsole.log(config.esProduccion);  // true\n```",
+    "examples": [
+      {
+        "code": "class Contrasena {\n  constructor(valor) {\n    this.valor = valor; // Usa el setter automáticamente\n  }\n\n  get valor() {\n    return this._valor;\n  }\n\n  set valor(v) {\n    if (typeof v !== 'string') throw new Error('Debe ser string');\n    if (v.length < 8) throw new Error('Mínimo 8 caracteres');\n    if (!/[A-Z]/.test(v)) throw new Error('Debe tener una mayúscula');\n    if (!/[0-9]/.test(v)) throw new Error('Debe tener un número');\n    this._valor = v;\n  }\n\n  get esSegura() {\n    return this._valor.length >= 12;\n  }\n}\n\nconst pwd = new Contrasena('MiPass123');\nconsole.log(pwd.esSegura); // false (menos de 12)\n\ntry {\n  new Contrasena('debil'); // Error: Mínimo 8 caracteres\n} catch (e) {\n  console.log(e.message);\n}",
+        "explanation": "El setter valida automáticamente al asignar, incluso en el constructor. Si this.valor = valor usa el setter, la validación ocurre al instanciar."
+      },
+      {
+        "code": "class Fraccion {\n  constructor(numerador, denominador) {\n    this.numerador = numerador;\n    this.denominador = denominador;\n  }\n\n  get valor() {\n    return this.numerador / this.denominador;\n  }\n\n  get simplificada() {\n    const mcd = (a, b) => b === 0 ? a : mcd(b, a % b);\n    const divisor = mcd(Math.abs(this.numerador), Math.abs(this.denominador));\n    return `${this.numerador / divisor}/${this.denominador / divisor}`;\n  }\n\n  toString() {\n    return `${this.numerador}/${this.denominador}`;\n  }\n}\n\nconst f = new Fraccion(6, 8);\nconsole.log(f.valor);        // 0.75\nconsole.log(f.simplificada); // '3/4'\nconsole.log(String(f));      // '6/8'",
+        "explanation": "Los getters 'valor' y 'simplificada' son propiedades derivadas que se calculan cuando se acceden. No ocupan espacio en el objeto."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Getter calculado",
+      "prompt": "Crea una clase `Persona` con:\n- Constructor que recibe `nombre` (string) y `anioNacimiento` (número)\n- Getter `edad` que calcule la edad como `2026 - anioNacimiento`\n- Getter `presentacion` que retorne `'Me llamo nombre y tengo X años'`\n\nCrea `p = new Persona('Ana', 1995)` y guarda:\n- `edadP = p.edad`\n- `presentacionP = p.presentacion`",
+      "starterCode": "class Persona {\n  constructor(nombre, anioNacimiento) {\n    this.nombre = nombre;\n    this.anioNacimiento = anioNacimiento;\n  }\n\n  get edad() {\n    // Retorna 2026 - anioNacimiento\n\n  }\n\n  get presentacion() {\n    // Retorna 'Me llamo nombre y tengo X años'\n\n  }\n}\n\nconst p = new Persona('Ana', 1995);\nconst edadP = p.edad;\nconst presentacionP = p.presentacion;\n\nconsole.log(edadP, presentacionP);\n",
+      "tests": [
+        {
+          "description": "edadP es 31 (2026 - 1995)",
+          "expression": "edadP === 31"
+        },
+        {
+          "description": "presentacionP es 'Me llamo Ana y tengo 31 años'",
+          "expression": "presentacionP === 'Me llamo Ana y tengo 31 años'"
+        },
+        {
+          "description": "edad se accede sin paréntesis (es getter)",
+          "expression": "typeof Object.getOwnPropertyDescriptor(Persona.prototype, 'edad').get === 'function'"
+        }
+      ],
+      "hints": [
+        "`return 2026 - this.anioNacimiento;`",
+        "Usa `this.edad` dentro del getter `presentacion` para no repetir el cálculo",
+        "`return \\`Me llamo ${this.nombre} y tengo ${this.edad} años\\`;`"
+      ]
+    },
+    {
+      "title": "Práctica: Getter + Setter con validación",
+      "prompt": "Crea una clase `Volumen` que represente un nivel de volumen de 0 a 100:\n- Constructor recibe `valor` inicial (usa el setter)\n- Getter `nivel`: retorna `this._nivel`\n- Setter `nivel`: valida que sea un número entre 0 y 100 (inclusive). Si es menor que 0, asigna 0. Si es mayor que 100, asigna 100. Asigna a `this._nivel`.\n- Getter `descripcion`: retorna `'silencio'` si nivel es 0, `'bajo'` si ≤ 30, `'medio'` si ≤ 70, `'alto'` si > 70\n\nCrea:\n- `v = new Volumen(50)`: nivel 50, descripción 'medio'\n- `v.nivel = 150` → debe quedar en 100\n- `v.nivel = -5` → debe quedar en 0",
+      "starterCode": "class Volumen {\n  constructor(valor) {\n    this.nivel = valor; // Usa el setter\n  }\n\n  get nivel() {\n    return this._nivel;\n  }\n\n  set nivel(valor) {\n    // Clampea entre 0 y 100\n\n  }\n\n  get descripcion() {\n    // Retorna 'silencio', 'bajo', 'medio' o 'alto'\n\n  }\n}\n\nconst v = new Volumen(50);\nconsole.log(v.nivel, v.descripcion); // 50, 'medio'\n\nv.nivel = 150;\nconsole.log(v.nivel); // 100\n\nv.nivel = -5;\nconsole.log(v.nivel); // 0\nconsole.log(v.descripcion); // 'silencio'\n",
+      "tests": [
+        {
+          "description": "Volumen(50).nivel es 50",
+          "expression": "new Volumen(50).nivel === 50"
+        },
+        {
+          "description": "Asignar 150 queda en 100",
+          "expression": "v.nivel === 0"
+        },
+        {
+          "description": "descripcion de nivel 0 es 'silencio'",
+          "expression": "v.descripcion === 'silencio'"
+        },
+        {
+          "description": "descripcion de nivel 80 es 'alto'",
+          "expression": "(() => { const x = new Volumen(80); return x.descripcion === 'alto'; })()"
+        },
+        {
+          "description": "descripcion de nivel 20 es 'bajo'",
+          "expression": "(() => { const x = new Volumen(20); return x.descripcion === 'bajo'; })()"
+        }
+      ],
+      "hints": [
+        "`if (valor < 0) valor = 0; if (valor > 100) valor = 100; this._nivel = valor;`",
+        "O más corto: `this._nivel = Math.min(100, Math.max(0, valor));`",
+        "Para descripcion: `if (this._nivel === 0) return 'silencio'; if (this._nivel <= 30) return 'bajo';...`"
+      ]
+    },
+    {
+      "title": "Aplicación: Conversión bidireccional",
+      "prompt": "Crea una clase `Distancia` que almacene internamente metros (`_metros`) y exponga conversiones como getters/setters:\n\n- Constructor recibe metros\n- `get metros` / `set metros`: getter retorna `_metros`, setter valida que sea ≥ 0\n- `get kilometros` / `set kilometros`: getter retorna `_metros / 1000`, setter asigna `_metros = km * 1000`\n- `get millas` / `set millas`: getter retorna `_metros / 1609.34` (redondeado a 2 decimales con `toFixed` convertido a número), setter asigna `_metros = millas * 1609.34`\n\nPrueba:\n```\nconst d = new Distancia(1000);\nd.kilometros // 1\nd.kilometros = 5; // Ahora son 5000 metros\nd.metros     // 5000\nd.millas     // 3.11\n```\n\nGuarda `km = d.kilometros`, `metrosD = d.metros`, `millasD = d.millas` tras poner `d.kilometros = 5`.",
+      "starterCode": "class Distancia {\n  constructor(metros) {\n    this.metros = metros; // Usa el setter\n  }\n\n  get metros() { return this._metros; }\n  set metros(v) {\n    if (v < 0) throw new Error('La distancia no puede ser negativa');\n    this._metros = v;\n  }\n\n  get kilometros() {\n    // Retorna _metros / 1000\n\n  }\n  set kilometros(km) {\n    // Asigna this.metros = km * 1000\n\n  }\n\n  get millas() {\n    // Retorna Number((_metros / 1609.34).toFixed(2))\n\n  }\n  set millas(mi) {\n    // Asigna this.metros = mi * 1609.34\n\n  }\n}\n\nconst d = new Distancia(1000);\nd.kilometros = 5;\n\nconst km = d.kilometros;\nconst metrosD = d.metros;\nconst millasD = d.millas;\n\nconsole.log(km, metrosD, millasD); // 5, 5000, 3.11\n",
+      "tests": [
+        {
+          "description": "km es 5",
+          "expression": "km === 5"
+        },
+        {
+          "description": "metrosD es 5000",
+          "expression": "metrosD === 5000"
+        },
+        {
+          "description": "millasD es 3.11",
+          "expression": "millasD === 3.11"
+        },
+        {
+          "description": "set millas actualiza metros correctamente",
+          "expression": "(() => { const x = new Distancia(0); x.millas = 1; return Math.round(x.metros) === 1609; })()"
+        }
+      ],
+      "hints": [
+        "`get kilometros`: `return this._metros / 1000;`",
+        "`set kilometros`: `this.metros = km * 1000;` — usa el setter de metros para aprovechar la validación",
+        "`get millas`: `return Number((this._metros / 1609.34).toFixed(2));`",
+        "`set millas`: `this.metros = mi * 1609.34;`"
+      ]
+    }
+  ]
+}

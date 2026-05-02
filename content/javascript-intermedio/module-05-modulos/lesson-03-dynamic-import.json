@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m5-l3",
+  "title": "Importación dinámica con import()",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## import() estático vs dinámico\n\nEl `import` que conoces es **estático**: se resuelve en tiempo de compilación, siempre al inicio del archivo, y no puede estar dentro de condicionales:\n\n```javascript\n// ✅ Import estático — siempre se carga, siempre al inicio\nimport { sumar } from './matematicas.js';\n\n// ❌ No puedes hacer esto:\nif (condicion) {\n  import { algo } from './modulo.js'; // SyntaxError\n}\n```\n\nEl **import dinámico** `import()` es una función que retorna una **Promise** y puede llamarse en cualquier momento:\n\n```javascript\n// ✅ Import dinámico — carga bajo demanda\nasync function cargarModulo() {\n  const modulo = await import('./matematicas.js');\n  return modulo.sumar(2, 3);\n}\n```\n\n---\n\n## Sintaxis básica\n\n```javascript\n// import() retorna una Promise con el módulo completo\nimport('./modulo.js').then(modulo => {\n  console.log(modulo.exportNamed);\n  console.log(modulo.default);\n});\n\n// Con async/await (más limpio):\nconst modulo = await import('./modulo.js');\nconst { exportNamed, default: valorDefault } = modulo;\n\n// Destructuring directo:\nconst { sumar, restar } = await import('./matematicas.js');\n```\n\n---\n\n## Casos de uso\n\n### 1. Code splitting — cargar solo lo necesario\n\n```javascript\n// La librería pesada solo se carga si el usuario la necesita\nboton.addEventListener('click', async () => {\n  const { Chart } = await import('./Chart.js'); // ~500KB\n  new Chart(canvas, config);\n});\n\n// Sin dynamic import: Chart.js se cargaría SIEMPRE al inicio\n// Con dynamic import: solo cuando el usuario hace click\n```\n\n### 2. Imports condicionales\n\n```javascript\nconst idioma = navigator.language.startsWith('es') ? 'es' : 'en';\nconst { traducciones } = await import(`./i18n/${idioma}.js`);\nconsole.log(traducciones.bienvenida);\n```\n\n### 3. Rutas de aplicación (lazy loading)\n\n```javascript\n// Router simplificado con lazy loading\nconst rutas = {\n  '/inicio': () => import('./pages/Inicio.js'),\n  '/productos': () => import('./pages/Productos.js'),\n  '/contacto': () => import('./pages/Contacto.js'),\n};\n\nasync function navegar(ruta) {\n  const cargarPagina = rutas[ruta];\n  if (!cargarPagina) return;\n  const { default: Pagina } = await cargarPagina();\n  renderizar(new Pagina());\n}\n```\n\n---\n\n## Acceder al default con import()\n\nComo `import()` retorna el módulo completo, el export default está en `.default`:\n\n```javascript\n// modulo.js\nexport default class MiClase {}\nexport const VERSION = '1.0';\n\n// Usar con dynamic import:\nconst modulo = await import('./modulo.js');\nconst MiClase = modulo.default;    // El default\nconst { VERSION } = modulo;        // Named export\n\n// Destructuring con alias para default:\nconst { default: MiClase2, VERSION: v } = await import('./modulo.js');\n```\n\n---\n\n## Cacheo de módulos\n\nJavaScript cachea los módulos — `import()` con la misma ruta devuelve **la misma instancia**:\n\n```javascript\nconst mod1 = await import('./contador.js');\nconst mod2 = await import('./contador.js');\n\nconsole.log(mod1 === mod2); // true — es el mismo objeto\n\n// Esto significa que el estado del módulo es compartido:\nmod1.incrementar();\nconsole.log(mod2.obtenerContador()); // El mismo contador\n```\n\n---\n\n## Manejo de errores\n\n```javascript\ntry {\n  const modulo = await import('./modulo-que-no-existe.js');\n} catch (error) {\n  console.error('Error al cargar módulo:', error.message);\n}\n\n// O con Promise:\nimport('./modulo.js')\n  .then(m => m.inicializar())\n  .catch(err => console.error('Fallo la carga:', err));\n```",
+    "examples": [
+      {
+        "code": "// Patrón: lazy loading con caché manual\nconst cache = new Map();\n\nasync function importarUnaVez(ruta) {\n  if (cache.has(ruta)) {\n    return cache.get(ruta);\n  }\n  const modulo = await import(ruta);\n  cache.set(ruta, modulo);\n  return modulo;\n}\n\n// El navegador ya cachea automáticamente,\n// pero este patrón es útil para simular módulos dinámicos\n// o para entornos donde el caché no está garantizado\nconsole.log('El caché de módulos nativo es automático en ESM');",
+        "explanation": "En ESM real, el motor JS cachea automáticamente. Este patrón manual es útil para entender el comportamiento o en contextos de testing."
+      },
+      {
+        "code": "// Simular lazy loading de componente pesado\nasync function cargarComponentePesado(nombre) {\n  const componentes = {\n    Editor: { render: () => '<Editor />', peso: '500KB' },\n    Mapa: { render: () => '<Mapa />', peso: '800KB' },\n    Grafico: { render: () => '<Grafico />', peso: '300KB' },\n  };\n\n  // Simula la carga asíncrona\n  await new Promise(r => setTimeout(r, 100)); // delay simulado\n  return componentes[nombre] ?? null;\n}\n\nasync function mostrarComponente(nombre) {\n  console.log(`Cargando ${nombre}...`);\n  const componente = await cargarComponentePesado(nombre);\n  if (componente) {\n    console.log(`${nombre} cargado (${componente.peso}): ${componente.render()}`);\n  } else {\n    console.log(`Componente ${nombre} no encontrado`);\n  }\n}\n\nawait mostrarComponente('Editor');\nawait mostrarComponente('Mapa');",
+        "explanation": "Simula el patrón de lazy loading: solo cargas el componente cuando realmente se necesita. Con import() real, cada módulo viaja por la red solo cuando se solicita."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: import() como Promise",
+      "prompt": "Simula un import dinámico creando una función `importarSimulado(nombreModulo)` que retorne una Promise que se resuelve con el módulo correspondiente después de 50ms.\n\nMódulos disponibles:\n- `'matematicas'` → `{ sumar: (a,b)=>a+b, PI: 3.14 }`\n- `'strings'` → `{ mayusculas: s=>s.toUpperCase() }`\n\nSi el módulo no existe, rechaza con `Error('Módulo no encontrado: ' + nombre)`.\n\nCarga `matematicas` y guarda en `r = modulo.sumar(10, 5)` y `pi = modulo.PI`.",
+      "starterCode": "const _modulos = {\n  matematicas: { sumar: (a, b) => a + b, PI: 3.14 },\n  strings: { mayusculas: s => s.toUpperCase() },\n};\n\nfunction importarSimulado(nombre) {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      if (_modulos[nombre]) {\n        resolve(_modulos[nombre]);\n      } else {\n        reject(new Error('Módulo no encontrado: ' + nombre));\n      }\n    }, 50);\n  });\n}\n\n// Usa async/await para cargar 'matematicas'\nconst modulo = await importarSimulado('matematicas');\nconst r = modulo.sumar(10, 5);\nconst pi = modulo.PI;\n\nconsole.log(r, pi); // 15, 3.14\n",
+      "tests": [
+        {
+          "description": "r es 15",
+          "expression": "r === 15"
+        },
+        {
+          "description": "pi es 3.14",
+          "expression": "pi === 3.14"
+        },
+        {
+          "description": "importarSimulado retorna una Promise",
+          "expression": "importarSimulado('matematicas') instanceof Promise"
+        },
+        {
+          "description": "Módulo inexistente rechaza la Promise",
+          "expression": "await importarSimulado('inexistente').then(() => false).catch(e => e.message.includes('no encontrado'))"
+        }
+      ],
+      "hints": [
+        "`resolve(_modulos[nombre])` resuelve con el módulo",
+        "`reject(new Error(...))` rechaza si no existe",
+        "`await importarSimulado('matematicas')` espera los 50ms y retorna el módulo"
+      ]
+    },
+    {
+      "title": "Práctica: Router con lazy loading",
+      "prompt": "Implementa un router simple con lazy loading. Las 'páginas' son factories que se cargan bajo demanda:\n\n```javascript\nconst paginas = {\n  inicio: () => Promise.resolve({ default: { titulo: 'Inicio', render: () => '<h1>Inicio</h1>' } }),\n  productos: () => Promise.resolve({ default: { titulo: 'Productos', render: () => '<h1>Productos</h1>' } }),\n  contacto: () => Promise.resolve({ default: { titulo: 'Contacto', render: () => '<h1>Contacto</h1>' } }),\n};\n```\n\nCrea una función `navegar(ruta)` que:\n1. Si la ruta no existe, retorne `null`\n2. Cargue la página con `await paginas[ruta]()`\n3. Retorne `modulo.default`\n\nGuarda:\n- `paginaInicio = await navegar('inicio')` → `{ titulo: 'Inicio', render: ... }`\n- `paginaNull = await navegar('admin')` → `null`\n- `html = paginaInicio.render()` → `'<h1>Inicio</h1>'`",
+      "starterCode": "const paginas = {\n  inicio: () => Promise.resolve({ default: { titulo: 'Inicio', render: () => '<h1>Inicio</h1>' } }),\n  productos: () => Promise.resolve({ default: { titulo: 'Productos', render: () => '<h1>Productos</h1>' } }),\n  contacto: () => Promise.resolve({ default: { titulo: 'Contacto', render: () => '<h1>Contacto</h1>' } }),\n};\n\nasync function navegar(ruta) {\n  if (!paginas[ruta]) return null;\n  const modulo = await paginas[ruta]();\n  return modulo.default;\n}\n\nconst paginaInicio = await navegar('inicio');\nconst paginaNull = await navegar('admin');\nconst html = paginaInicio.render();\n\nconsole.log(paginaInicio.titulo, html, paginaNull);\n",
+      "tests": [
+        {
+          "description": "paginaInicio.titulo es 'Inicio'",
+          "expression": "paginaInicio.titulo === 'Inicio'"
+        },
+        {
+          "description": "html es '<h1>Inicio</h1>'",
+          "expression": "html === '<h1>Inicio</h1>'"
+        },
+        {
+          "description": "paginaNull es null para ruta inexistente",
+          "expression": "paginaNull === null"
+        },
+        {
+          "description": "navegar('productos') carga la página correcta",
+          "expression": "(await navegar('productos')).titulo === 'Productos'"
+        }
+      ],
+      "hints": [
+        "`paginas[ruta]` es una función que retorna una Promise (simula `import()`)",
+        "`modulo.default` es donde vive el export default",
+        "`if (!paginas[ruta]) return null` maneja rutas inexistentes"
+      ]
+    },
+    {
+      "title": "Aplicación: Carga condicional por contexto",
+      "prompt": "Implementa `cargarValidador(contexto)` que cargue diferentes módulos de validación según el contexto. Simula los módulos como objetos:\n\n```\ncontexto 'login'    → { validar: (d) => d.usuario?.length > 0 && d.password?.length >= 6 }\ncontexto 'registro' → { validar: (d) => d.email?.includes('@') && d.password?.length >= 8 }\ncontexto 'pago'     → { validar: (d) => /^\\d{16}$/.test(d.tarjeta) }\n```\n\n`cargarValidador` retorna una Promise que se resuelve con el módulo (simula `import()`).\n\nCrea también `validarConContexto(contexto, datos)` que carga el validador y retorna el resultado.\n\nGuarda:\n- `loginOK = await validarConContexto('login', { usuario: 'ana', password: '123456' })` → true\n- `loginFail = await validarConContexto('login', { usuario: '', password: '123' })` → false\n- `pagoOK = await validarConContexto('pago', { tarjeta: '1234567890123456' })` → true",
+      "starterCode": "const _validadores = {\n  login: {\n    validar: (d) => d.usuario?.length > 0 && d.password?.length >= 6,\n  },\n  registro: {\n    validar: (d) => d.email?.includes('@') && d.password?.length >= 8,\n  },\n  pago: {\n    validar: (d) => /^\\d{16}$/.test(d.tarjeta),\n  },\n};\n\nfunction cargarValidador(contexto) {\n  return new Promise((resolve, reject) => {\n    if (_validadores[contexto]) {\n      resolve({ default: _validadores[contexto] });\n    } else {\n      reject(new Error('Validador no encontrado: ' + contexto));\n    }\n  });\n}\n\nasync function validarConContexto(contexto, datos) {\n  const { default: validador } = await cargarValidador(contexto);\n  return validador.validar(datos);\n}\n\nconst loginOK = await validarConContexto('login', { usuario: 'ana', password: '123456' });\nconst loginFail = await validarConContexto('login', { usuario: '', password: '123' });\nconst pagoOK = await validarConContexto('pago', { tarjeta: '1234567890123456' });\n\nconsole.log(loginOK, loginFail, pagoOK);\n",
+      "tests": [
+        {
+          "description": "loginOK es true",
+          "expression": "loginOK === true"
+        },
+        {
+          "description": "loginFail es false",
+          "expression": "loginFail === false"
+        },
+        {
+          "description": "pagoOK es true",
+          "expression": "pagoOK === true"
+        },
+        {
+          "description": "Pago inválido (menos de 16 dígitos) retorna false",
+          "expression": "await validarConContexto('pago', { tarjeta: '1234' }).then(r => r === false)"
+        }
+      ],
+      "hints": [
+        "El patrón `{ default: _validadores[contexto] }` simula la estructura de un módulo ESM",
+        "`const { default: validador }` extrae el default del 'módulo'",
+        "`?` (optional chaining) maneja el caso donde `d.usuario` sea `undefined`"
+      ]
+    }
+  ]
+}

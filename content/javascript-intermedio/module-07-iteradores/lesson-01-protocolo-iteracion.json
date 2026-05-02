@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m7-l1",
+  "title": "El protocolo de iteración",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## ¿Qué significa que algo sea iterable?\n\nUn objeto es **iterable** si implementa el método `[Symbol.iterator]()`. Este método debe retornar un **iterador** — un objeto con un método `next()` que retorna `{ value, done }`.\n\n```javascript\n// La mecánica que hay detrás de for...of:\nconst arr = [10, 20, 30];\n\n// for...of hace esto internamente:\nconst iterador = arr[Symbol.iterator]();\n\nconsole.log(iterador.next()); // { value: 10, done: false }\nconsole.log(iterador.next()); // { value: 20, done: false }\nconsole.log(iterador.next()); // { value: 30, done: false }\nconsole.log(iterador.next()); // { value: undefined, done: true }\n```\n\n---\n\n## El contrato: iterable vs iterador\n\n```javascript\n// ITERABLE: tiene [Symbol.iterator]() que retorna un iterador\n// El array ES un iterable:\nconst arr = [1, 2, 3];\ntypeof arr[Symbol.iterator]; // 'function'\n\n// ITERADOR: tiene next() que retorna { value, done }\n// El resultado de llamar [Symbol.iterator]() ES un iterador:\nconst iter = arr[Symbol.iterator]();\ntypeof iter.next; // 'function'\n\n// Los iteradores también son iterables (retornan 'this'):\ntypeof iter[Symbol.iterator]; // 'function'\niter[Symbol.iterator]() === iter; // true — retorna sí mismo\n```\n\n---\n\n## Construir un iterador desde cero\n\n```javascript\n// Iterador de rango: genera números de inicio a fin\nfunction crearRangoIterador(inicio, fin) {\n  let actual = inicio;\n\n  return {\n    next() {\n      if (actual <= fin) {\n        return { value: actual++, done: false };\n      }\n      return { value: undefined, done: true };\n    },\n    [Symbol.iterator]() { return this; } // Se convierte en iterable\n  };\n}\n\nconst rango = crearRangoIterador(1, 5);\n\nfor (const n of rango) {\n  console.log(n); // 1, 2, 3, 4, 5\n}\n\n// También funciona con spread:\n// Nota: el iterador ya fue consumido — hay que crear uno nuevo\nconst rango2 = crearRangoIterador(1, 5);\nconsole.log([...rango2]); // [1, 2, 3, 4, 5]\n```\n\n---\n\n## Construir un objeto iterable\n\nPara que un objeto se pueda recorrer con `for...of`, implementa `[Symbol.iterator]`:\n\n```javascript\nconst rango = {\n  from: 1,\n  to: 5,\n\n  [Symbol.iterator]() {\n    let actual = this.from;\n    const fin = this.to;\n\n    return {\n      next() {\n        if (actual <= fin) return { value: actual++, done: false };\n        return { value: undefined, done: true };\n      }\n    };\n  }\n};\n\nfor (const n of rango) console.log(n); // 1, 2, 3, 4, 5\nconsole.log([...rango]); // [1, 2, 3, 4, 5] — reutilizable, crea nuevo iterador cada vez\n```\n\n---\n\n## Iteradores finitos vs infinitos\n\n```javascript\n// Iterador FINITO: termina cuando done = true\nconst finito = crearRangoIterador(1, 3);\nfinito.next(); // {value: 1, done: false}\nfinito.next(); // {value: 2, done: false}\nfinito.next(); // {value: 3, done: false}\nfinito.next(); // {value: undefined, done: true}\n\n// Iterador INFINITO: nunca retorna done: true\nfunction contadorInfinito(inicio = 0) {\n  let n = inicio;\n  return {\n    next: () => ({ value: n++, done: false }),\n    [Symbol.iterator]() { return this; }\n  };\n}\n\n// ⚠️ CUIDADO: nunca uses for...of directamente con infinitos\n// En cambio, usa next() manualmente o take():\nconst infinito = contadorInfinito(1);\nconsole.log(infinito.next().value); // 1\nconsole.log(infinito.next().value); // 2\nconsole.log(infinito.next().value); // 3\n```\n\n---\n\n## Consumidores del protocolo de iteración\n\nTodo lo que sigue usa `[Symbol.iterator]` internamente:\n\n```javascript\nconst iterable = crearRangoIterador(1, 3);\n\n// 1. for...of\nfor (const n of iterable) {}\n\n// 2. Spread operator\nconst arr = [...crearRangoIterador(1, 3)]; // [1, 2, 3]\n\n// 3. Destructuring\nconst [a, b, c] = crearRangoIterador(1, 3); // a=1, b=2, c=3\n\n// 4. Array.from()\nconst array = Array.from(crearRangoIterador(1, 3)); // [1, 2, 3]\n\n// 5. Promise.all, Set, Map (si el iterable produce los tipos correctos)\nconst set = new Set(crearRangoIterador(1, 3)); // Set {1, 2, 3}\n```",
+    "examples": [
+      {
+        "code": "// Iterable de Fibonacci (finito)\nfunction crearFibonacci(limite) {\n  return {\n    [Symbol.iterator]() {\n      let prev = 0, curr = 1;\n      let count = 0;\n\n      return {\n        next() {\n          if (count >= limite) return { value: undefined, done: true };\n          const value = prev;\n          [prev, curr] = [curr, prev + curr];\n          count++;\n          return { value, done: false };\n        }\n      };\n    }\n  };\n}\n\nconst fib10 = crearFibonacci(10);\nconsole.log([...fib10]); // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]\n\n// Reutilizable:\nconsole.log([...crearFibonacci(5)]); // [0, 1, 1, 2, 3]",
+        "explanation": "El objeto Fibonacci es reutilizable porque [Symbol.iterator]() crea un nuevo estado interno cada vez. Si el iterador guardara estado en el objeto, se agotaría en el primer recorrido."
+      },
+      {
+        "code": "// Implementar 'take' para iteradores — tomar los primeros N elementos\nfunction take(iterable, n) {\n  const resultado = [];\n  const iter = iterable[Symbol.iterator]();\n\n  for (let i = 0; i < n; i++) {\n    const { value, done } = iter.next();\n    if (done) break;\n    resultado.push(value);\n  }\n\n  return resultado;\n}\n\n// Iterador 'infinito' de potencias de 2\nconst potencias2 = {\n  [Symbol.iterator]() {\n    let n = 0;\n    return {\n      next: () => ({ value: 2 ** n++, done: false })\n    };\n  }\n};\n\nconsole.log(take(potencias2, 8)); // [1, 2, 4, 8, 16, 32, 64, 128]",
+        "explanation": "take() es el patrón para consumir N elementos de cualquier iterable, incluyendo los infinitos. Llama a next() manualmente en lugar de for...of para controlar cuándo parar."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Usar iteradores manualmente",
+      "prompt": "Usa el protocolo de iteración directamente (sin for...of) para recorrer un array:\n\n1. Obtén el iterador de `[10, 20, 30]` con `[Symbol.iterator]()`\n2. Llama `next()` tres veces y guarda los valores\n3. Llama `next()` una vez más y verifica que `done === true`\n\nGuarda:\n- `v1, v2, v3` → 10, 20, 30\n- `ultimoDone` → true",
+      "starterCode": "const arr = [10, 20, 30];\nconst iter = arr[Symbol.iterator]();\n\nconst paso1 = iter.next();\nconst paso2 = iter.next();\nconst paso3 = iter.next();\nconst paso4 = iter.next(); // Agotado\n\nconst v1 = paso1.value;\nconst v2 = paso2.value;\nconst v3 = paso3.value;\nconst ultimoDone = paso4.done;\n\nconsole.log(v1, v2, v3);\nconsole.log('done:', ultimoDone);\n",
+      "tests": [
+        {
+          "description": "v1 es 10",
+          "expression": "v1 === 10"
+        },
+        {
+          "description": "v2 es 20",
+          "expression": "v2 === 20"
+        },
+        {
+          "description": "v3 es 30",
+          "expression": "v3 === 30"
+        },
+        {
+          "description": "ultimoDone es true",
+          "expression": "ultimoDone === true"
+        }
+      ],
+      "hints": [
+        "`arr[Symbol.iterator]()` retorna el iterador del array",
+        "Cada `next()` retorna `{ value, done }`",
+        "Cuando el array se agota, `done` pasa a `true` y `value` es `undefined`"
+      ]
+    },
+    {
+      "title": "Práctica: Crear un iterador de rango",
+      "prompt": "Implementa `crearRango(inicio, fin, paso = 1)` que retorne un objeto iterable que genere números desde `inicio` hasta `fin` (inclusivo) con el paso dado.\n\nEl objeto debe ser **reutilizable** — implementa `[Symbol.iterator]()` que retorne un nuevo iterador cada vez.\n\nPrueba:\n- `[...crearRango(1, 5)]` → `[1, 2, 3, 4, 5]`\n- `[...crearRango(0, 10, 2)]` → `[0, 2, 4, 6, 8, 10]`\n- `[...crearRango(5, 1, -1)]` → `[5, 4, 3, 2, 1]`",
+      "starterCode": "function crearRango(inicio, fin, paso = 1) {\n  return {\n    [Symbol.iterator]() {\n      let actual = inicio;\n      return {\n        next() {\n          const terminado = paso > 0 ? actual > fin : actual < fin;\n          if (terminado) return { value: undefined, done: true };\n          const value = actual;\n          actual += paso;\n          return { value, done: false };\n        }\n      };\n    }\n  };\n}\n\nconst r1 = [...crearRango(1, 5)];\nconst r2 = [...crearRango(0, 10, 2)];\nconst r3 = [...crearRango(5, 1, -1)];\n\nconsole.log(r1);\nconsole.log(r2);\nconsole.log(r3);\n",
+      "tests": [
+        {
+          "description": "rango 1-5 es [1,2,3,4,5]",
+          "expression": "JSON.stringify(r1) === '[1,2,3,4,5]'"
+        },
+        {
+          "description": "rango 0-10 paso 2 es [0,2,4,6,8,10]",
+          "expression": "JSON.stringify(r2) === '[0,2,4,6,8,10]'"
+        },
+        {
+          "description": "rango 5-1 paso -1 es [5,4,3,2,1]",
+          "expression": "JSON.stringify(r3) === '[5,4,3,2,1]'"
+        },
+        {
+          "description": "es reutilizable (crear dos arrays del mismo rango)",
+          "expression": "JSON.stringify([...crearRango(1,3)]) === JSON.stringify([...crearRango(1,3)])"
+        }
+      ],
+      "hints": [
+        "`const terminado = paso > 0 ? actual > fin : actual < fin` maneja pasos positivos y negativos",
+        "Guardar `actual` ANTES de incrementar: `const value = actual; actual += paso;`",
+        "La reutilizabilidad viene de que `[Symbol.iterator]()` crea nuevo estado (`let actual = inicio`) cada vez"
+      ]
+    },
+    {
+      "title": "Aplicación: Iterable de paginación",
+      "prompt": "Implementa `crearPaginador(datos, tamanioPagina)` que retorne un objeto iterable. Cada elemento devuelto es una 'página' (sub-array) de los datos.\n\nPor ejemplo, `crearPaginador([1,2,3,4,5,6,7], 3)` debería iterar:\n- Página 1: `[1, 2, 3]`\n- Página 2: `[4, 5, 6]`\n- Página 3: `[7]`\n\nGuarda:\n- `paginas = [...crearPaginador([1,2,3,4,5,6,7], 3)]`\n- `totalPaginas = paginas.length` → 3\n- `primera = paginas[0]` → `[1,2,3]`\n- `ultima = paginas[2]` → `[7]`",
+      "starterCode": "function crearPaginador(datos, tamanioPagina) {\n  return {\n    [Symbol.iterator]() {\n      let indice = 0;\n      return {\n        next() {\n          if (indice >= datos.length) return { value: undefined, done: true };\n          const pagina = datos.slice(indice, indice + tamanioPagina);\n          indice += tamanioPagina;\n          return { value: pagina, done: false };\n        }\n      };\n    }\n  };\n}\n\nconst paginas = [...crearPaginador([1, 2, 3, 4, 5, 6, 7], 3)];\nconst totalPaginas = paginas.length;\nconst primera = paginas[0];\nconst ultima = paginas[2];\n\nconsole.log('Total páginas:', totalPaginas);\nconsole.log('Primera:', primera);\nconsole.log('Última:', ultima);\n",
+      "tests": [
+        {
+          "description": "totalPaginas es 3",
+          "expression": "totalPaginas === 3"
+        },
+        {
+          "description": "primera es [1,2,3]",
+          "expression": "JSON.stringify(primera) === '[1,2,3]'"
+        },
+        {
+          "description": "ultima es [7]",
+          "expression": "JSON.stringify(ultima) === '[7]'"
+        },
+        {
+          "description": "segunda página es [4,5,6]",
+          "expression": "JSON.stringify(paginas[1]) === '[4,5,6]'"
+        }
+      ],
+      "hints": [
+        "`datos.slice(indice, indice + tamanioPagina)` extrae la página actual",
+        "`indice += tamanioPagina` avanza al inicio de la siguiente página",
+        "La condición de terminación es `indice >= datos.length`"
+      ]
+    }
+  ]
+}

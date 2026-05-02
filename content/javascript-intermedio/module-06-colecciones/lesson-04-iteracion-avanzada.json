@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m6-l4",
+  "title": "Iteración avanzada: for...of, spread y destructuring",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## El protocolo de iteración\n\n`for...of` no es magia — funciona con cualquier objeto que implemente el **protocolo de iteración**. Un objeto es iterable si tiene un método `[Symbol.iterator]` que retorna un iterador.\n\nArrays, Strings, Maps, Sets, NodeLists y generadores ya son iterables por defecto.\n\n```javascript\n// Arrays, Strings, Map, Set — todos iterables:\nfor (const n of [1, 2, 3]) {}          // Array\nfor (const c of 'hola') {}             // String → 'h', 'o', 'l', 'a'\nfor (const [k, v] of new Map()) {}     // Map → destructuring de par\nfor (const v of new Set([1,2,3])) {}   // Set\n```\n\n---\n\n## for...of vs for...in\n\n```javascript\nconst arr = ['a', 'b', 'c'];\narr.extra = 'propiedad';\n\n// for...in: itera los NOMBRES de propiedades enumerables (incluye heredadas)\nfor (const i in arr) {\n  console.log(i); // '0', '1', '2', 'extra' ← ¡incluye la propiedad extra!\n}\n\n// for...of: itera los VALORES del iterador (solo los elementos del array)\nfor (const v of arr) {\n  console.log(v); // 'a', 'b', 'c' ← solo los valores\n}\n\n// Regla general:\n// for...in → objetos planos (iterar propiedades)\n// for...of → iterables (arrays, sets, maps, strings)\n```\n\n---\n\n## Desestructuración con iterables\n\n```javascript\n// Map → array de pares [clave, valor]:\nconst precios = new Map([['manzana', 1200], ['pera', 1500]]);\n\nfor (const [fruta, precio] of precios) {\n  console.log(`${fruta}: $${precio}`);\n}\n\n// Set:\nconst tags = new Set(['js', 'css', 'html']);\nfor (const tag of tags) {\n  console.log(tag);\n}\n\n// Entries de Object (con Object.entries):\nconst config = { host: 'localhost', port: 3000 };\nfor (const [clave, valor] of Object.entries(config)) {\n  console.log(`${clave}: ${valor}`);\n}\n\n// String (caracteres Unicode correctos):\nconst emoji = '🎉🚀';\nfor (const char of emoji) {\n  console.log(char); // '🎉', '🚀' — correcto con emojis\n}\n// [...emoji] también funciona: ['🎉', '🚀']\n```\n\n---\n\n## Spread con iterables\n\nEl operador spread `...` también usa el protocolo de iteración:\n\n```javascript\n// Convertir a array:\nconst set = new Set([1, 2, 3]);\nconst arr = [...set]; // [1, 2, 3]\n\nconst map = new Map([['a', 1], ['b', 2]]);\nconst pares = [...map]; // [['a', 1], ['b', 2]]\n\n// Merge de iterables:\nconst merged = [...set, ...new Set([3, 4, 5])]; // [1,2,3,3,4,5] — sin dedup\nconst sinDup = [...new Set([...set, ...new Set([3,4,5])])]; // [1,2,3,4,5]\n\n// String a array de caracteres:\nconst chars = [..\"hola\"]; // ['h','o','l','a']\n```\n\n---\n\n## Array.from() — conversión universal\n\n```javascript\n// Array.from() convierte cualquier iterable a array:\nconst fromSet = Array.from(new Set([1, 2, 2, 3]));    // [1, 2, 3]\nconst fromMap = Array.from(new Map([['a',1],['b',2]])); // [['a',1],['b',2]]\nconst fromStr = Array.from('hola');                     // ['h','o','l','a']\n\n// Con función de transformación (mapeo):\nconst cuadrados = Array.from({ length: 5 }, (_, i) => (i + 1) ** 2);\n// [1, 4, 9, 16, 25]\n\n// ← Este patrón es útil para crear arrays de tamaño n:\nconst ceros = Array.from({ length: 3 }, () => 0); // [0, 0, 0]\nconst indices = Array.from({ length: 5 }, (_, i) => i); // [0, 1, 2, 3, 4]\n```\n\n---\n\n## Patrones de iteración avanzados\n\n```javascript\n// Desestructurar al iterar con índice:\nconst frutas = ['manzana', 'pera', 'uva'];\nfor (const [i, fruta] of frutas.entries()) {\n  console.log(`${i}: ${fruta}`);\n}\n\n// Iterar múltiples arrays en paralelo (zip):\nfunction* zip(...arrays) {\n  const length = Math.min(...arrays.map(a => a.length));\n  for (let i = 0; i < length; i++) {\n    yield arrays.map(a => a[i]);\n  }\n}\n\nconst nombres = ['Ana', 'Bob', 'Carl'];\nconst edades  = [30, 25, 35];\n\nfor (const [nombre, edad] of zip(nombres, edades)) {\n  console.log(`${nombre}: ${edad}`);\n}\n// 'Ana: 30', 'Bob: 25', 'Carl: 35'\n```",
+    "examples": [
+      {
+        "code": "// Convertir Map a diferentes estructuras\nconst inventario = new Map([\n  ['manzana', { stock: 100, precio: 1200 }],\n  ['pera',    { stock: 50,  precio: 1500 }],\n  ['uva',     { stock: 75,  precio: 2000 }],\n]);\n\n// A array de claves:\nconst productos = [...inventario.keys()];\nconsole.log(productos); // ['manzana', 'pera', 'uva']\n\n// A array de objetos:\nconst lista = Array.from(inventario, ([nombre, datos]) => ({\n  nombre,\n  ...datos,\n}));\nconsole.log(lista[0]); // { nombre: 'manzana', stock: 100, precio: 1200 }\n\n// Total de stock con reduce:\nconst totalStock = [...inventario.values()]\n  .reduce((sum, { stock }) => sum + stock, 0);\nconsole.log('Stock total:', totalStock); // 225",
+        "explanation": "Array.from con función de transformación convierte el Map directamente a una estructura de datos diferente. Combinar iterables con reduce/map/filter es poderoso."
+      },
+      {
+        "code": "// Patrón: tabla de frecuencias con Map + sort por valor\nfunction topN(texto, n) {\n  const freq = new Map();\n  for (const palabra of texto.toLowerCase().split(' ')) {\n    freq.set(palabra, (freq.get(palabra) ?? 0) + 1);\n  }\n\n  // Ordenar por frecuencia descendente, tomar los primeros N\n  return [...freq.entries()]\n    .sort(([, a], [, b]) => b - a)\n    .slice(0, n)\n    .map(([palabra, count]) => ({ palabra, count }));\n}\n\nconst texto = 'el sol y la luna el sol brilla la luna ilumina el cielo';\nconst top3 = topN(texto, 3);\nconsole.log(top3);\n// [{palabra:'el',count:3},{palabra:'sol',count:2},{palabra:'la',count:2}]",
+        "explanation": "Convertir Map.entries() a array permite usar sort(), que no existe en Map. Este patrón es común: usar Map para acumular, luego spread para ordenar/filtrar."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: for...of sobre diferentes iterables",
+      "prompt": "Usa `for...of` para acumular valores de diferentes iterables:\n\n1. Suma todos los valores de `new Set([10, 20, 30, 20, 10])` (sin duplicados)\n2. Concatena todas las claves de `new Map([['a',1],['b',2],['c',3]])` como string `'abc'`\n3. Cuenta los caracteres únicos de `'javascript'` usando un Set\n\nGuarda:\n- `sumaSet` → 60 (10+20+30)\n- `clavesMap` → `'abc'`\n- `charsUnicos` → 9 (j,a,v,s,c,r,i,p,t)",
+      "starterCode": "// 1. Suma de Set (sin duplicados)\nconst numSet = new Set([10, 20, 30, 20, 10]);\nlet sumaSet = 0;\nfor (const n of numSet) {\n  sumaSet += n;\n}\n\n// 2. Concatenar claves de Map\nconst mapa = new Map([['a', 1], ['b', 2], ['c', 3]]);\nlet clavesMap = '';\nfor (const [clave] of mapa) {\n  clavesMap += clave;\n}\n\n// 3. Caracteres únicos de string\nconst charsSet = new Set('javascript');\nconst charsUnicos = charsSet.size;\n\nconsole.log(sumaSet, clavesMap, charsUnicos);\n",
+      "tests": [
+        {
+          "description": "sumaSet es 60",
+          "expression": "sumaSet === 60"
+        },
+        {
+          "description": "clavesMap es 'abc'",
+          "expression": "clavesMap === 'abc'"
+        },
+        {
+          "description": "charsUnicos es 9",
+          "expression": "charsUnicos === 9"
+        },
+        {
+          "description": "Set [10,20,30,20,10] tiene 3 elementos únicos",
+          "expression": "numSet.size === 3"
+        }
+      ],
+      "hints": [
+        "`for (const [clave] of mapa)` — destructuring solo toma la clave",
+        "`new Set('javascript')` crea un Set de caracteres únicos",
+        "Set de [10,20,30,20,10] tiene 3 elementos: los duplicados se descartan"
+      ]
+    },
+    {
+      "title": "Práctica: Array.from con transformación",
+      "prompt": "Usa `Array.from()` para crear arrays a partir de otras estructuras:\n\n1. `rangoArray(inicio, fin)`: crea un array `[inicio, inicio+1, ..., fin]`\n   - Ejemplo: `rangoArray(1, 5)` → `[1, 2, 3, 4, 5]`\n   - Pista: `Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i)`\n\n2. `mapAObjeto(map)`: convierte un Map a un array de objetos `{ clave, valor }`\n\nGuarda:\n- `rango = rangoArray(1, 5)` → `[1,2,3,4,5]`\n- `objetos = mapAObjeto(new Map([['x',10],['y',20]]))` → `[{clave:'x',valor:10},{clave:'y',valor:20}]`\n- `rangoLength = rango.length` → 5",
+      "starterCode": "function rangoArray(inicio, fin) {\n  return Array.from(\n    { length: fin - inicio + 1 },\n    (_, i) => inicio + i\n  );\n}\n\nfunction mapAObjeto(map) {\n  return Array.from(map, ([clave, valor]) => ({ clave, valor }));\n}\n\nconst rango = rangoArray(1, 5);\nconst objetos = mapAObjeto(new Map([['x', 10], ['y', 20]]));\nconst rangoLength = rango.length;\n\nconsole.log(rango);\nconsole.log(objetos);\n",
+      "tests": [
+        {
+          "description": "rango es [1,2,3,4,5]",
+          "expression": "JSON.stringify(rango) === '[1,2,3,4,5]'"
+        },
+        {
+          "description": "rangoLength es 5",
+          "expression": "rangoLength === 5"
+        },
+        {
+          "description": "objetos[0].clave es 'x'",
+          "expression": "objetos[0].clave === 'x'"
+        },
+        {
+          "description": "objetos[1].valor es 20",
+          "expression": "objetos[1].valor === 20"
+        }
+      ],
+      "hints": [
+        "`{ length: n }` es un 'array-like': Array.from lo trata como si tuviera n elementos",
+        "El segundo argumento de Array.from es la función map: `(elemento, índice) => valor`",
+        "`Array.from(map, ([k, v]) => ({clave: k, valor: v}))` destructura cada par del Map"
+      ]
+    },
+    {
+      "title": "Aplicación: Pipeline de transformación de datos",
+      "prompt": "Implementa un pipeline que transforme datos de ventas usando Map, Set y operaciones de iteración avanzada:\n\nDatos:\n```javascript\nconst ventas = [\n  { vendedor: 'Ana', producto: 'A', monto: 1000 },\n  { vendedor: 'Bob', producto: 'B', monto: 1500 },\n  { vendedor: 'Ana', producto: 'B', monto: 2000 },\n  { vendedor: 'Carl', producto: 'A', monto: 800 },\n  { vendedor: 'Bob', producto: 'A', monto: 1200 },\n];\n```\n\nCalcula:\n1. `totalPorVendedor`: Map con la suma total de ventas por vendedor\n2. `productosUnicos`: Set con todos los productos únicos vendidos\n3. `mejorVendedor`: nombre del vendedor con mayor total\n4. `rankingArray`: array de `{vendedor, total}` ordenado por total descendente",
+      "starterCode": "const ventas = [\n  { vendedor: 'Ana',  producto: 'A', monto: 1000 },\n  { vendedor: 'Bob',  producto: 'B', monto: 1500 },\n  { vendedor: 'Ana',  producto: 'B', monto: 2000 },\n  { vendedor: 'Carl', producto: 'A', monto: 800  },\n  { vendedor: 'Bob',  producto: 'A', monto: 1200 },\n];\n\n// 1. Total por vendedor\nconst totalPorVendedor = new Map();\nfor (const { vendedor, monto } of ventas) {\n  totalPorVendedor.set(vendedor, (totalPorVendedor.get(vendedor) ?? 0) + monto);\n}\n\n// 2. Productos únicos\nconst productosUnicos = new Set(ventas.map(v => v.producto));\n\n// 3. Mejor vendedor\nlet mejorVendedor = '';\nlet maxTotal = 0;\nfor (const [vendedor, total] of totalPorVendedor) {\n  if (total > maxTotal) {\n    maxTotal = total;\n    mejorVendedor = vendedor;\n  }\n}\n\n// 4. Ranking\nconst rankingArray = [...totalPorVendedor.entries()]\n  .sort(([, a], [, b]) => b - a)\n  .map(([vendedor, total]) => ({ vendedor, total }));\n\nconsole.log('Totales:', [...totalPorVendedor.entries()]);\nconsole.log('Productos únicos:', [...productosUnicos]);\nconsole.log('Mejor vendedor:', mejorVendedor);\nconsole.log('Ranking:', rankingArray);\n",
+      "tests": [
+        {
+          "description": "Ana tiene total 3000",
+          "expression": "totalPorVendedor.get('Ana') === 3000"
+        },
+        {
+          "description": "mejorVendedor es 'Ana'",
+          "expression": "mejorVendedor === 'Ana'"
+        },
+        {
+          "description": "productosUnicos tiene 2 productos",
+          "expression": "productosUnicos.size === 2"
+        },
+        {
+          "description": "rankingArray[0].vendedor es 'Ana'",
+          "expression": "rankingArray[0].vendedor === 'Ana'"
+        }
+      ],
+      "hints": [
+        "`(totalPorVendedor.get(vendedor) ?? 0) + monto` — el `?? 0` maneja el caso donde el vendedor no existe aún",
+        "`new Set(ventas.map(v => v.producto))` — map extrae productos, Set elimina duplicados",
+        "`[...map.entries()].sort(([,a],[,b]) => b-a)` — spread, luego sort por valor"
+      ]
+    }
+  ]
+}

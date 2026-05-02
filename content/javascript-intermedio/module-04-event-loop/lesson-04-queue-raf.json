@@ -1,0 +1,101 @@
+{
+  "id": "js-intermedio-m4-l4",
+  "title": "queueMicrotask y requestAnimationFrame",
+  "xpReward": 60,
+  "theory": {
+    "markdown": "## Las APIs de timing del navegador\n\nAdemás de `setTimeout` y Promises, existen APIs más precisas para controlar cuándo se ejecuta código. Cada una tiene su posición en el Event Loop.\n\n---\n\n## queueMicrotask()\n\nEncola una función **directamente en la microtask queue**, sin necesidad de crear una Promise:\n\n```javascript\n// Equivalentes — ambos encolan microtasks:\nPromise.resolve().then(() => console.log('via Promise'));\nqueueMicrotask(() => console.log('via queueMicrotask'));\n\n// queueMicrotask es más eficiente:\n// - No crea un objeto Promise\n// - No involucra la resolución de Promises\n// - Misma prioridad que Promise.then\n```\n\n### Cuándo usar queueMicrotask vs Promise.then\n\n```javascript\n// queueMicrotask: cuando solo necesitas diferir, sin valor de retorno\nqueueMicrotask(() => actualizarUI());\n\n// Promise.then: cuando necesitas encadenar o retornar un valor\nfetch('/api/data')\n  .then(r => r.json())\n  .then(data => procesarDatos(data));\n```\n\n---\n\n## requestAnimationFrame (rAF)\n\n`requestAnimationFrame(callback)` es el mecanismo correcto para animaciones en el navegador. Ejecuta el callback **justo antes del próximo repintado de pantalla** (~60 veces/segundo):\n\n```javascript\nfunction animar(timestamp) {\n  // timestamp: milisegundos desde que la página cargó\n  const progreso = timestamp / 1000; // segundos transcurridos\n\n  elemento.style.left = `${Math.sin(progreso) * 100}px`;\n\n  requestAnimationFrame(animar); // Solicita el siguiente frame\n}\n\nrequestAnimationFrame(animar); // Inicia la animación\n```\n\n### Por qué rAF es mejor que setTimeout para animaciones\n\n```javascript\n// ❌ Con setTimeout: puede causar jank (saltos visuales)\nfunction animarConTimeout() {\n  elemento.style.left = calcularPosicion() + 'px';\n  setTimeout(animarConTimeout, 16); // ~60fps, pero impreciso\n}\n\n// ✅ Con rAF: sincronizado con el ciclo de repintado\nfunction animarConRAF() {\n  elemento.style.left = calcularPosicion() + 'px';\n  requestAnimationFrame(animarConRAF);\n}\n// - Se pausa automáticamente cuando la pestaña no es visible\n// - Sincronizado con la frecuencia de refresco real de la pantalla\n// - El navegador puede optimizar el batch de operaciones DOM\n```\n\n---\n\n## Posición de rAF en el Event Loop\n\n```\n┌─────────────────────────────────────────────────────┐\n│  Ciclo del Event Loop (browser)                     │\n│                                                     │\n│  1. Macrotask (1 tarea de la Task Queue)            │\n│  2. Microtasks (vacía toda la cola)                 │\n│  3. Render steps:                                   │\n│     a. requestAnimationFrame callbacks              │\n│     b. Layout                                       │\n│     c. Paint (repintado de pantalla)                │\n│  4. Vuelve a 1                                      │\n└─────────────────────────────────────────────────────┘\n```\n\nrAF ocurre **después** de microtasks pero **antes** del repintado. Si haces cambios en el DOM dentro de rAF, el navegador los agrupa en un solo repintado.\n\n---\n\n## cancelAnimationFrame\n\n```javascript\nlet frameId;\n\nfunction animar() {\n  // ... lógica de animación\n  frameId = requestAnimationFrame(animar);\n}\n\n// Iniciar:\nframeId = requestAnimationFrame(animar);\n\n// Detener:\ncancelAnimationFrame(frameId);\n```\n\n---\n\n## Comparativa de todos los mecanismos de timing\n\n| API | Cola | Frecuencia | Uso ideal |\n|-----|------|------------|-----------|\n| Síncrono | Stack | Inmediato | Lógica general |\n| `Promise.then` | Microtask | Siguiente tick | Asíncrono con valor |\n| `queueMicrotask` | Microtask | Siguiente tick | Diferir sin Promise |\n| `setTimeout(fn, 0)` | Macrotask | ~4ms mínimo | Diferir a siguiente macrotask |\n| `requestAnimationFrame` | Render | ~16ms (60fps) | Animaciones DOM |\n| `setInterval` | Macrotask | Periódico | Tareas repetitivas |\n\n---\n\n## Patrones reales con rAF\n\n```javascript\n// Throttle de actualizaciones de UI con rAF\nclass UIBatcher {\n  #pendiente = false;\n  #actualizaciones = [];\n\n  encolar(fn) {\n    this.#actualizaciones.push(fn);\n    if (!this.#pendiente) {\n      this.#pendiente = true;\n      requestAnimationFrame(() => {\n        const batch = this.#actualizaciones.splice(0);\n        batch.forEach(fn => fn());\n        this.#pendiente = false;\n      });\n    }\n  }\n}\n\nconst ui = new UIBatcher();\n// Múltiples actualizaciones en el mismo frame → un solo rAF:\nui.encolar(() => (elemento1.textContent = 'nuevo'));\nui.encolar(() => (elemento2.style.color = 'red'));\nui.encolar(() => (elemento3.classList.add('activo')));\n// Todo se aplica en un solo repintado\n```",
+    "examples": [
+      {
+        "code": "// Defer de trabajo costoso fuera del hilo crítico\nfunction procesarLote(items) {\n  if (items.length === 0) return;\n\n  // Procesa 1 item ahora\n  procesarItem(items[0]);\n\n  // Encola el resto como microtask (alta prioridad pero no bloquea el render)\n  if (items.length > 1) {\n    queueMicrotask(() => procesarLote(items.slice(1)));\n  }\n}\n\nfunction procesarItem(item) {\n  // Simulación de trabajo\n  console.log('Procesando:', item);\n}\n\nprocesarLote([1, 2, 3, 4, 5]);\nconsole.log('Esto se ejecuta después del primer item pero antes de los demás');",
+        "explanation": "queueMicrotask permite procesar items uno a uno sin bloquear el stack. Cada item cede el control brevemente antes de procesar el siguiente."
+      },
+      {
+        "code": "// Animación con rAF — solo disponible en browser\n// (Este ejemplo es conceptual — no ejecutable en el sandbox)\n\nfunction crearAnimacion(elemento, duracion) {\n  let inicio = null;\n  let frameId;\n\n  function frame(timestamp) {\n    if (!inicio) inicio = timestamp;\n    const progreso = Math.min((timestamp - inicio) / duracion, 1);\n\n    // easing: ease-in-out\n    const ease = progreso < 0.5\n      ? 2 * progreso * progreso\n      : 1 - Math.pow(-2 * progreso + 2, 2) / 2;\n\n    elemento.style.opacity = ease;\n\n    if (progreso < 1) {\n      frameId = requestAnimationFrame(frame);\n    }\n  }\n\n  frameId = requestAnimationFrame(frame);\n  return () => cancelAnimationFrame(frameId); // Retorna función para cancelar\n}\n\n// const cancelar = crearAnimacion(document.querySelector('#box'), 500);\n// setTimeout(cancelar, 250); // Cancela a mitad de la animación",
+        "explanation": "Patrón completo de animación con rAF: timestamp para cálculo preciso, easing para suavizado, cancelación limpia. El progreso va de 0 a 1 en 'duracion' ms."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: queueMicrotask vs setTimeout",
+      "prompt": "Predice el orden de salida y guárdalo correctamente:\n\n```javascript\nconsole.log('1');\nsetTimeout(() => console.log('4'), 0);\nqueueMicrotask(() => console.log('3'));\nPromise.resolve().then(() => console.log('3b')); // También microtask\nconsole.log('2');\n```\n\nEl orden es: `1, 2, 3, 3b, 4` (queueMicrotask y Promise.then son ambas microtasks, en el orden que se encolaron).\n\nGuarda:\n- `microtaskGanaAMacrotask = true` (¿las microtasks van antes que el timeout?)\n- `queueMicrotaskEsMicrotask = true`\n- `orden = ['1', '2', '3', '3b', '4']`",
+      "starterCode": "// Análisis del orden:\n// '1' → Síncrono\n// setTimeout → MacroQ\n// queueMicrotask → MicroQ\n// Promise.resolve().then → MicroQ\n// '2' → Síncrono\n//\n// Ejecución:\n// Síncronos: '1', '2'\n// Microtasks (en orden de encolado): '3', '3b'\n// Macrotasks: '4'\n\nconst microtaskGanaAMacrotask = true;\nconst queueMicrotaskEsMicrotask = true;\nconst orden = ['1', '2', '3', '3b', '4'];\n\nconsole.log(orden.join(' → '));\n",
+      "tests": [
+        {
+          "description": "microtaskGanaAMacrotask es true",
+          "expression": "microtaskGanaAMacrotask === true"
+        },
+        {
+          "description": "queueMicrotaskEsMicrotask es true",
+          "expression": "queueMicrotaskEsMicrotask === true"
+        },
+        {
+          "description": "orden correcto: 1,2,3,3b,4",
+          "expression": "JSON.stringify(orden) === '[\"1\",\"2\",\"3\",\"3b\",\"4\"]'"
+        },
+        {
+          "description": "el timeout es el último",
+          "expression": "orden[orden.length - 1] === '4'"
+        }
+      ],
+      "hints": [
+        "queueMicrotask y Promise.then tienen la misma prioridad — se ejecutan en el orden que fueron encolados",
+        "El '3' de queueMicrotask se encola antes del '3b' de Promise.then",
+        "Ambos van antes del '4' del setTimeout"
+      ]
+    },
+    {
+      "title": "Práctica: Diferir actualizaciones con queueMicrotask",
+      "prompt": "Crea una clase `Notificador` que agrupe múltiples notificaciones y las entregue en un solo batch usando `queueMicrotask`:\n\n- `#pendientes = []` — array de mensajes\n- `#programado = false` — flag para no encolar dos veces\n- `notificar(mensaje)`: agrega el mensaje a `#pendientes`. Si `#programado` es `false`, encola con `queueMicrotask` un método interno que vacíe `#pendientes` y llame al handler. Marca `#programado = true`.\n- Constructor recibe un `handler(mensajes)` — función que procesa el batch\n\nEl resultado: por mucho que llames `notificar()` de forma síncrona, el handler se llama **una sola vez** con todos los mensajes al final del tick.\n\nGuarda `llamadas` como contador de veces que se llamó el handler.",
+      "starterCode": "class Notificador {\n  #pendientes = [];\n  #programado = false;\n  #handler;\n\n  constructor(handler) {\n    this.#handler = handler;\n  }\n\n  notificar(mensaje) {\n    this.#pendientes.push(mensaje);\n\n    if (!this.#programado) {\n      this.#programado = true;\n      queueMicrotask(() => {\n        const batch = [...this.#pendientes];\n        this.#pendientes = [];\n        this.#programado = false;\n        this.#handler(batch);\n      });\n    }\n  }\n}\n\nlet llamadas = 0;\nconst mensajesRecibidos = [];\n\nconst n = new Notificador((batch) => {\n  llamadas++;\n  mensajesRecibidos.push(...batch);\n});\n\n// Múltiples notificaciones síncronas → un solo batch\nn.notificar('A');\nn.notificar('B');\nn.notificar('C');\n\n// Espera al siguiente tick\nawait Promise.resolve();\n\nconsole.log('Llamadas al handler:', llamadas);\nconsole.log('Mensajes recibidos:', mensajesRecibidos);\n",
+      "tests": [
+        {
+          "description": "El handler se llamó exactamente 1 vez",
+          "expression": "llamadas === 1"
+        },
+        {
+          "description": "Recibió los 3 mensajes",
+          "expression": "mensajesRecibidos.length === 3"
+        },
+        {
+          "description": "Los mensajes son A, B, C",
+          "expression": "JSON.stringify(mensajesRecibidos) === '[\"A\",\"B\",\"C\"]'"
+        }
+      ],
+      "hints": [
+        "La implementación ya está dada — léela y entiéndela",
+        "El flag `#programado` evita encolar múltiples microtasks para el mismo batch",
+        "Este patrón es exactamente cómo funciona el batching de React internamente"
+      ]
+    },
+    {
+      "title": "Aplicación: Animador con rAF (conceptual)",
+      "prompt": "Implementa una función `crearAnimador(duracionMs)` que simule el comportamiento de `requestAnimationFrame` usando `setTimeout` con delay 16ms (aproximando 60fps).\n\nEl animador debe:\n- Mantener un estado interno `progreso` de 0 a 1\n- Ejecutar frames hasta que `progreso >= 1`\n- En cada frame: incrementar `progreso` en `16/duracionMs`\n- Llamar a un `onFrame(progreso)` callback en cada frame\n- Retornar una Promise que se resuelve cuando la animación termina\n\nPrueba con duración de 80ms (5 frames de 16ms ≈ 80ms).",
+      "starterCode": "function crearAnimador(duracionMs, onFrame) {\n  return new Promise(resolve => {\n    let progreso = 0;\n\n    function frame() {\n      progreso = Math.min(progreso + 16 / duracionMs, 1);\n      onFrame(progreso);\n\n      if (progreso < 1) {\n        setTimeout(frame, 16); // Simula rAF con ~60fps\n      } else {\n        resolve(); // Animación completada\n      }\n    }\n\n    setTimeout(frame, 16); // Primer frame\n  });\n}\n\nconst frames = [];\nawait crearAnimador(80, (p) => frames.push(Math.round(p * 100)));\n\nconsole.log('Frames de progreso (%):', frames);\n// Debería ser algo como: [20, 40, 60, 80, 100]\n",
+      "tests": [
+        {
+          "description": "La animación termina con progreso 100%",
+          "expression": "frames[frames.length - 1] === 100"
+        },
+        {
+          "description": "El primer frame es mayor que 0",
+          "expression": "frames[0] > 0"
+        },
+        {
+          "description": "El progreso siempre aumenta",
+          "expression": "frames.every((f, i) => i === 0 || f >= frames[i-1])"
+        },
+        {
+          "description": "Hay al menos 3 frames",
+          "expression": "frames.length >= 3"
+        }
+      ],
+      "hints": [
+        "La implementación ya está dada — corre el código y analiza los frames",
+        "80ms / 16ms por frame = 5 frames aproximadamente",
+        "Cada frame suma 16/80 = 0.2 (20%) al progreso",
+        "Math.min garantiza que el progreso no supere 1"
+      ]
+    }
+  ]
+}

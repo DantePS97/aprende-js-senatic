@@ -1,0 +1,94 @@
+{
+  "id": "js-intermedio-m1-l3",
+  "title": "IIFE: funciones autoejecutadas",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## IIFE: Immediately Invoked Function Expression\n\nUna **IIFE** es una función que se define y se ejecuta en el mismo momento. Su propósito principal: **crear un scope aislado** para evitar contaminar el scope global.\n\n---\n\n## Sintaxis\n\n```javascript\n// Forma clásica (con function)\n(function () {\n  console.log('Ejecutándose inmediatamente');\n})();\n\n// Forma moderna (con arrow function)\n(() => {\n  console.log('También inmediata');\n})();\n```\n\nLos paréntesis exteriores `(function() {...})` convierten la declaración en una **expresión**. El `()` final la invoca de inmediato.\n\n---\n\n## ¿Por qué el scope aislado importa?\n\nSin IIFE, las variables globales pueden colisionar:\n\n```javascript\n// Archivo 1 (librería externa)\nvar config = { version: '1.0' };\n\n// Archivo 2 (tu código)\nvar config = { color: 'azul' }; // ❌ Sobreescribe la config anterior!\n\n// Con IIFE: cada archivo tiene su propio scope\n(function () {\n  var config = { color: 'azul' }; // Solo existe aquí\n  console.log(config.color); // 'azul'\n})();\n\nconsole.log(config.version); // '1.0' — la global no fue tocada\n```\n\n---\n\n## IIFE con parámetros\n\nPuedes pasarle argumentos como a cualquier función:\n\n```javascript\n(function (nombre, version) {\n  console.log(`App: ${nombre} v${version}`);\n})('MiApp', '2.0');\n// App: MiApp v2.0\n```\n\n---\n\n## IIFE que retorna un valor\n\n```javascript\nconst resultado = (function () {\n  const base = 10;\n  const exponente = 3;\n  return Math.pow(base, exponente); // 1000\n})();\n\nconsole.log(resultado); // 1000\n```\n\n---\n\n## El patrón Module con IIFE\n\nAntes de los módulos ES6, las IIFEs eran la forma estándar de modularizar código:\n\n```javascript\nconst Calculadora = (function () {\n  // Estado privado\n  let historial = [];\n\n  // API pública\n  return {\n    sumar(a, b) {\n      const r = a + b;\n      historial.push(`${a} + ${b} = ${r}`);\n      return r;\n    },\n    verHistorial() {\n      return [...historial]; // Copia, no la referencia directa\n    },\n  };\n})();\n\nCalculadora.sumar(5, 3);  // 8\nCalculadora.sumar(10, 2); // 12\nconsole.log(Calculadora.verHistorial());\n// ['5 + 3 = 8', '10 + 2 = 12']\nconsole.log(Calculadora.historial); // undefined — privado!\n```\n\n---\n\n## ¿Cuándo usar IIFEs hoy?\n\n| Situación | ¿Usar IIFE? |\n|-----------|-------------|\n| Módulos ES6 disponibles (`import/export`) | No, usa módulos |\n| Inicialización única sin contaminar scope | Sí |\n| Ejecutar código async inmediatamente | Sí: `(async () => { await ... })()` |\n| Crear scope en scripts sin bundler | Sí |\n\n```javascript\n// Async IIFE — muy común en código moderno\n(async () => {\n  const datos = await fetch('/api/config').then(r => r.json());\n  console.log(datos);\n})();\n```",
+    "examples": [
+      {
+        "code": "// Inicializar config sin ensuciar el scope global\nconst APP_CONFIG = (function () {\n  const entorno = 'produccion';\n  const baseUrl = entorno === 'produccion'\n    ? 'https://api.miapp.com'\n    : 'http://localhost:3000';\n\n  return { entorno, baseUrl };\n})();\n\nconsole.log(APP_CONFIG.baseUrl); // 'https://api.miapp.com'\nconsole.log(typeof entorno);     // 'undefined' — privado",
+        "explanation": "La IIFE calcula la config y retorna solo lo necesario. 'entorno' es privado, APP_CONFIG es pública."
+      },
+      {
+        "code": "// Contador aislado — dos instancias independientes\nfunction crearContadorAislado(inicio) {\n  return (function (n) {\n    let count = n;\n    return {\n      siguiente: () => ++count,\n      valor: () => count,\n    };\n  })(inicio);\n}\n\nconst c1 = crearContadorAislado(0);\nconst c2 = crearContadorAislado(100);\n\nc1.siguiente(); // 1\nc1.siguiente(); // 2\nc2.siguiente(); // 101\nconsole.log(c1.valor()); // 2\nconsole.log(c2.valor()); // 101",
+        "explanation": "Cada llamada a crearContadorAislado ejecuta una IIFE con su propio estado. c1 y c2 son completamente independientes."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Tu primera IIFE",
+      "prompt": "Escribe una IIFE que:\n1. Declare una variable `base = 5` dentro de ella\n2. Declare una variable `exponente = 3` dentro de ella\n3. Calcule `resultado = base ** exponente` (5³ = 125)\n4. Retorne `resultado`\n\nGuarda el valor retornado por la IIFE en `potencia`.",
+      "starterCode": "const potencia = (function () {\n  // Declara base y exponente\n  // Calcula y retorna\n\n})();\n\nconsole.log(potencia); // 125\n",
+      "tests": [
+        {
+          "description": "potencia es 125",
+          "expression": "potencia === 125"
+        },
+        {
+          "description": "base no es accesible en el scope global",
+          "expression": "typeof base === 'undefined'"
+        },
+        {
+          "description": "exponente no es accesible en el scope global",
+          "expression": "typeof exponente === 'undefined'"
+        }
+      ],
+      "hints": [
+        "Formato: `(function() { ... })()`",
+        "`const base = 5; const exponente = 3;`",
+        "`return base ** exponente;` — el operador `**` es potencia",
+        "Las variables dentro de la IIFE son privadas — no se filtran al scope global"
+      ]
+    },
+    {
+      "title": "Práctica: IIFE con parámetros",
+      "prompt": "Crea una IIFE que reciba dos parámetros: `nombre` y `anio`.\nLa IIFE debe retornar el string `'nombre fue fundada en anio'`.\n\nPasa `'Mozilla'` como nombre y `1998` como año.\nGuarda el resultado en `descripcion`.",
+      "starterCode": "const descripcion = (function (nombre, anio) {\n  // Retorna el string formateado\n\n})('Mozilla', 1998);\n\nconsole.log(descripcion);\n",
+      "tests": [
+        {
+          "description": "descripcion es 'Mozilla fue fundada en 1998'",
+          "expression": "descripcion === 'Mozilla fue fundada en 1998'"
+        },
+        {
+          "description": "nombre no existe en el scope global",
+          "expression": "typeof nombre === 'undefined'"
+        }
+      ],
+      "hints": [
+        "Usa template literal: `return \\`${nombre} fue fundada en ${anio}\\`;`",
+        "Los argumentos van en el segundo par de paréntesis: `})(valor1, valor2)`",
+        "El resultado de la IIFE se asigna directamente a `descripcion`"
+      ]
+    },
+    {
+      "title": "Aplicación: Módulo de utilidades",
+      "prompt": "Crea un módulo `Utilidades` usando el patrón IIFE que exponga:\n- `mayusculas(texto)`: retorna el texto en mayúsculas\n- `minusculas(texto)`: retorna el texto en minúsculas\n- `capitalizar(texto)`: retorna el texto con la primera letra en mayúscula y el resto en minúsculas\n\nEl objeto `Utilidades` debe tener exactamente esos tres métodos.\n\nEjemplo:\n```\nUtilidades.mayusculas('hola')      // 'HOLA'\nUtilidades.minusculas('MUNDO')     // 'mundo'\nUtilidades.capitalizar('jAVASCRIPT') // 'Javascript'\n```",
+      "starterCode": "const Utilidades = (function () {\n  return {\n    mayusculas(texto) {\n      // Retorna texto en mayúsculas\n    },\n    minusculas(texto) {\n      // Retorna texto en minúsculas\n    },\n    capitalizar(texto) {\n      // Primera letra mayúscula, resto minúsculas\n    },\n  };\n})();\n\nconsole.log(Utilidades.mayusculas('hola'));\nconsole.log(Utilidades.minusculas('MUNDO'));\nconsole.log(Utilidades.capitalizar('jAVASCRIPT'));\n",
+      "tests": [
+        {
+          "description": "mayusculas('hola') retorna 'HOLA'",
+          "expression": "Utilidades.mayusculas('hola') === 'HOLA'"
+        },
+        {
+          "description": "minusculas('MUNDO') retorna 'mundo'",
+          "expression": "Utilidades.minusculas('MUNDO') === 'mundo'"
+        },
+        {
+          "description": "capitalizar('jAVASCRIPT') retorna 'Javascript'",
+          "expression": "Utilidades.capitalizar('jAVASCRIPT') === 'Javascript'"
+        },
+        {
+          "description": "capitalizar('hola mundo') retorna 'Hola mundo'",
+          "expression": "Utilidades.capitalizar('hola mundo') === 'Hola mundo'"
+        }
+      ],
+      "hints": [
+        "`mayusculas`: `return texto.toUpperCase();`",
+        "`minusculas`: `return texto.toLowerCase();`",
+        "`capitalizar`: `return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();`",
+        "`texto.slice(1)` obtiene el string desde el segundo caracter en adelante"
+      ]
+    }
+  ]
+}

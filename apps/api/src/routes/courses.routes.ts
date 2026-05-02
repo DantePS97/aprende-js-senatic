@@ -31,7 +31,38 @@ const CONTENT_DIR = path.resolve(__dirname, '../../../../content');
 coursesRouter.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const courses = await CourseModel.find({ isPublished: true }).sort({ order: 1 });
-    res.json({ success: true, data: courses });
+
+    // Enriquecer cada curso con isLocked basado en si el prerequisito está completado
+    const enriched = await Promise.all(
+      courses.map(async (course) => {
+        const obj = course.toObject();
+        if (!course.prerequisiteSlug) {
+          return { ...obj, isLocked: false };
+        }
+
+        // Obtener el curso prerequisito
+        const prereq = await CourseModel.findOne({ slug: course.prerequisiteSlug, isPublished: true });
+        if (!prereq) return { ...obj, isLocked: false };
+
+        // Obtener todos los módulos y lecciones del prerequisito
+        const prereqModules = await ModuleModel.find({ courseId: prereq._id, isPublished: true });
+        const prereqModuleIds = prereqModules.map((m) => m._id);
+        const prereqLessons = await LessonModel.find({ moduleId: { $in: prereqModuleIds }, isPublished: true });
+
+        if (prereqLessons.length === 0) return { ...obj, isLocked: false };
+
+        // Verificar que todas las lecciones estén completadas por el usuario
+        const completedCount = await ProgressModel.countDocuments({
+          userId: req.user!.userId,
+          lessonId: { $in: prereqLessons.map((l) => l._id) },
+          status: 'completed',
+        });
+
+        return { ...obj, isLocked: completedCount < prereqLessons.length };
+      })
+    );
+
+    res.json({ success: true, data: enriched });
   } catch (err) {
     console.error('[courses/list]', err);
     res.status(500).json({ success: false, error: 'Error al obtener cursos.' });

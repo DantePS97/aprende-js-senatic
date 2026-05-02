@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m5-l1",
+  "title": "export e import: named y default",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## Módulos ES (ESM)\n\nAntes de los módulos, todo el código JS vivía en el scope global — cualquier variable podía colisionar con otra. Los módulos resuelven esto: cada archivo tiene su **propio scope** y solo expone lo que decide exportar.\n\n```javascript\n// Sin módulos — todo en el global:\nconst PI = 3.14;          // Global\nfunction calcular() {}    // Global — puede colisionar\n\n// Con módulos — cada archivo es su propio scope:\n// math.js\nconst PI = 3.14;          // Solo existe en math.js\nexport function calcular() {} // Esto sí es visible desde fuera\n```\n\n---\n\n## Named exports — múltiples exportaciones\n\nPermiten exportar varios valores con nombre desde un mismo archivo:\n\n```javascript\n// utils.js\nexport const VERSION = '1.0.0';\n\nexport function sumar(a, b) {\n  return a + b;\n}\n\nexport function restar(a, b) {\n  return a - b;\n}\n\nexport class Logger {\n  log(msg) { console.log(`[LOG] ${msg}`); }\n}\n```\n\n```javascript\n// main.js — importar named exports\nimport { sumar, restar, VERSION } from './utils.js';\nimport { Logger } from './utils.js';\n\nconsole.log(sumar(2, 3));  // 5\nconsole.log(VERSION);      // '1.0.0'\n```\n\n---\n\n## Alias al importar y exportar\n\n```javascript\n// Renombrar al importar:\nimport { sumar as add, restar as subtract } from './utils.js';\nconsole.log(add(2, 3)); // 5\n\n// Renombrar al exportar:\nconst x = 10;\nexport { x as valorInicial };\n\n// Exportar todo con namespace:\nimport * as Utils from './utils.js';\nconsole.log(Utils.sumar(2, 3)); // 5\nconsole.log(Utils.VERSION);     // '1.0.0'\n```\n\n---\n\n## Default export — la exportación principal\n\nCada módulo puede tener **un** default export. Se importa sin llaves y con el nombre que quieras:\n\n```javascript\n// calculadora.js\nexport default class Calculadora {\n  sumar(a, b) { return a + b; }\n  restar(a, b) { return a - b; }\n}\n\n// O con función:\n// matematicas.js\nexport default function potencia(base, exp) {\n  return base ** exp;\n}\n```\n\n```javascript\n// main.js\nimport Calculadora from './calculadora.js';     // Sin llaves\nimport potencia from './matematicas.js';        // Nombre libre\nimport MiCalc from './calculadora.js';          // También válido\n\nconst calc = new Calculadora();\nconsole.log(calc.sumar(3, 4)); // 7\nconsole.log(potencia(2, 8));   // 256\n```\n\n---\n\n## Mezclar named y default\n\n```javascript\n// api.js\nexport default async function fetchUsuarios() {\n  return fetch('/api/usuarios').then(r => r.json());\n}\n\nexport const BASE_URL = 'https://api.ejemplo.com';\nexport function formatearUsuario(u) {\n  return `${u.nombre} (${u.email})`;\n}\n```\n\n```javascript\n// main.js\nimport fetchUsuarios, { BASE_URL, formatearUsuario } from './api.js';\n//     ↑ default          ↑ named exports\n```\n\n---\n\n## Reglas importantes\n\n```javascript\n// ✅ Named: pueden ser múltiples\nexport const a = 1;\nexport const b = 2;\nexport function fn() {}\n\n// ✅ Default: exactamente uno por módulo\nexport default 42;\n\n// ❌ No puedes tener dos defaults:\nexport default 1;\nexport default 2; // SyntaxError\n\n// Los imports son LIVE BINDINGS (no copias):\n// Si el módulo cambia el valor exportado, el importador ve el cambio\n```\n\n---\n\n## Export al final (lista)\n\nPuedes agrupar todos los exports al final del archivo:\n\n```javascript\n// geometria.js\nfunction areaCirculo(r) { return Math.PI * r ** 2; }\nfunction areaRectangulo(b, h) { return b * h; }\nconst PI = Math.PI;\n\nexport { areaCirculo, areaRectangulo, PI };\nexport { areaCirculo as area }; // También con alias\n```",
+    "examples": [
+      {
+        "code": "// Ejemplo completo: módulo de validación\n// validaciones.js\nexport const REGLAS = {\n  EMAIL: /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/,\n  TELEFONO: /^\\d{10}$/,\n};\n\nexport function validarEmail(email) {\n  return REGLAS.EMAIL.test(email);\n}\n\nexport function validarTelefono(tel) {\n  return REGLAS.TELEFONO.test(String(tel));\n}\n\nexport default function validar(campo, valor) {\n  switch (campo) {\n    case 'email': return validarEmail(valor);\n    case 'telefono': return validarTelefono(valor);\n    default: return valor !== null && valor !== undefined && valor !== '';\n  }\n}\n\n// main.js\nimport validar, { validarEmail, REGLAS } from './validaciones.js';\nconsole.log(validar('email', 'test@ejemplo.com')); // true\nconsole.log(validarEmail('no-email'));              // false",
+        "explanation": "Default export para la función principal (validar), named exports para utilidades específicas. El consumidor elige qué importar."
+      },
+      {
+        "code": "// Namespace import — importar todo como objeto\nimport * as Math2 from './matematicas.js';\n// Equivale a:\n// const Math2 = { sumar, restar, PI, ... };\n\nconsole.log(Math2.sumar(1, 2));   // 3\nconsole.log(Math2.PI);            // 3.14...\n\n// Útil cuando no sabes qué necesitas aún\n// o cuando hay muchos exports y quieres agruparlos\n// bajo un namespace semántico\n\n// Con alias para evitar colisión con el Math nativo:\nimport * as MatUtils from './mat-utils.js';\nconsole.log(MatUtils.factorial(5));",
+        "explanation": "El namespace import agrupa todos los exports en un objeto. Útil para librerías con muchos exports o para documentar el origen de cada función."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Named exports",
+      "prompt": "Simula un módulo `geometria` definiendo las siguientes funciones y constante en el scope actual, luego agrúpalas en un objeto `geometria` que represente el módulo exportado:\n\n- `PI = Math.PI`\n- `areaCirculo(radio)` → `PI * radio ** 2`\n- `perimetroCirculo(radio)` → `2 * PI * radio`\n- `areaRectangulo(base, altura)` → `base * altura`\n\nCrea el objeto `geometria = { PI, areaCirculo, perimetroCirculo, areaRectangulo }`.\n\nGuarda:\n- `ac = geometria.areaCirculo(5)` (redondeado a 2 decimales con `+Number.toFixed(2)`)\n- `pr = +(geometria.perimetroCirculo(5).toFixed(2))`",
+      "starterCode": "// Simula el contenido de geometria.js\nconst PI = Math.PI;\n\nfunction areaCirculo(radio) {\n  return PI * radio ** 2;\n}\n\nfunction perimetroCirculo(radio) {\n  return 2 * PI * radio;\n}\n\nfunction areaRectangulo(base, altura) {\n  return base * altura;\n}\n\n// El 'módulo exportado'\nconst geometria = { PI, areaCirculo, perimetroCirculo, areaRectangulo };\n\n// Uso del módulo\nconst ac = +geometria.areaCirculo(5).toFixed(2);\nconst pr = +geometria.perimetroCirculo(5).toFixed(2);\n\nconsole.log(ac, pr); // 78.54, 31.42\n",
+      "tests": [
+        {
+          "description": "ac es 78.54 (área círculo radio 5)",
+          "expression": "ac === 78.54"
+        },
+        {
+          "description": "pr es 31.42 (perímetro círculo radio 5)",
+          "expression": "pr === 31.42"
+        },
+        {
+          "description": "geometria.areaRectangulo(4, 6) es 24",
+          "expression": "geometria.areaRectangulo(4, 6) === 24"
+        },
+        {
+          "description": "geometria.PI es Math.PI",
+          "expression": "geometria.PI === Math.PI"
+        }
+      ],
+      "hints": [
+        "`Math.PI * 5 ** 2 ≈ 78.53981...` → `.toFixed(2)` → `'78.54'` → `+` → `78.54`",
+        "`areaCirculo` y `perimetroCirculo` usan `PI` del scope del módulo",
+        "Los named exports son simplemente propiedades del objeto `geometria` en este ejercicio"
+      ]
+    },
+    {
+      "title": "Práctica: Default vs named",
+      "prompt": "Simula dos módulos en el scope actual:\n\n**Módulo `conversor`** (default export = función principal):\n- Default: `convertir(valor, de, a)` que convierte entre `'km'`, `'m'` y `'cm'`\n  - km→m: `* 1000`, m→cm: `* 100`, km→cm: `* 100000`\n  - m→km: `/ 1000`, cm→m: `/ 100`, cm→km: `/ 100000`\n  - mismo de y a: devuelve `valor`\n- Named: `UNIDADES = ['km', 'm', 'cm']`\n\nCrea los objetos `conversorDefault` (la función) y `conversorNamed` (el objeto `{ UNIDADES }`).\n\nGuarda:\n- `r1 = conversorDefault(5, 'km', 'm')` → 5000\n- `r2 = conversorDefault(200, 'cm', 'km')` → 0.002\n- `tieneUnidades = 'UNIDADES' in conversorNamed`",
+      "starterCode": "// Simula el módulo conversor.js\nconst UNIDADES = ['km', 'm', 'cm'];\n\nfunction convertir(valor, de, a) {\n  if (de === a) return valor;\n\n  const aMetros = { km: 1000, m: 1, cm: 0.01 };\n  const valorEnMetros = valor * aMetros[de];\n  return valorEnMetros / aMetros[a];\n}\n\n// default export → la función principal\nconst conversorDefault = convertir;\n// named exports → objeto con las exportaciones nombradas\nconst conversorNamed = { UNIDADES };\n\nconst r1 = conversorDefault(5, 'km', 'm');\nconst r2 = conversorDefault(200, 'cm', 'km');\nconst tieneUnidades = 'UNIDADES' in conversorNamed;\n\nconsole.log(r1, r2, tieneUnidades);\n",
+      "tests": [
+        {
+          "description": "r1 es 5000",
+          "expression": "r1 === 5000"
+        },
+        {
+          "description": "r2 es 0.002",
+          "expression": "r2 === 0.002"
+        },
+        {
+          "description": "tieneUnidades es true",
+          "expression": "tieneUnidades === true"
+        },
+        {
+          "description": "convertir misma unidad retorna el valor original",
+          "expression": "conversorDefault(42, 'km', 'km') === 42"
+        }
+      ],
+      "hints": [
+        "La tabla `aMetros` normaliza todo a metros primero: `valor * aMetros[de]` da el valor en metros",
+        "Luego `/ aMetros[a]` convierte de metros a la unidad destino",
+        "`200 cm * 0.01 = 2 metros`, `2 / 1000 = 0.002 km`"
+      ]
+    },
+    {
+      "title": "Aplicación: Módulo de formateo",
+      "prompt": "Crea un objeto `Formato` que simule un módulo con las siguientes funciones **named** y una función **default** (`formatear`):\n\nNamed:\n- `moneda(valor, simbolo = '$')` → `'$1.234.567'` (puntos como separador de miles)\n- `porcentaje(valor, decimales = 1)` → `'85.0%'`\n- `fecha(isoString)` → `'01/05/2026'` (formato DD/MM/YYYY)\n\nDefault (función `formatear(tipo, valor, opciones = {})`):\n- Si `tipo === 'moneda'` → llama `moneda(valor, opciones.simbolo)`\n- Si `tipo === 'porcentaje'` → llama `porcentaje(valor, opciones.decimales)`\n- Si `tipo === 'fecha'` → llama `fecha(valor)`\n\nGuarda los resultados de:\n- `fm = Formato.moneda(1234567)`\n- `fp = Formato.porcentaje(85.5)`\n- `ff = Formato.fecha('2026-05-01')`\n- `fd = Formato.formatear('moneda', 50000, { simbolo: '€' })`",
+      "starterCode": "function moneda(valor, simbolo = '$') {\n  return simbolo + valor.toLocaleString('es-CO');\n}\n\nfunction porcentaje(valor, decimales = 1) {\n  return valor.toFixed(decimales) + '%';\n}\n\nfunction fecha(isoString) {\n  const [anio, mes, dia] = isoString.split('-');\n  return `${dia}/${mes}/${anio}`;\n}\n\nfunction formatear(tipo, valor, opciones = {}) {\n  if (tipo === 'moneda') return moneda(valor, opciones.simbolo);\n  if (tipo === 'porcentaje') return porcentaje(valor, opciones.decimales);\n  if (tipo === 'fecha') return fecha(valor);\n}\n\n// El objeto 'módulo'\nconst Formato = { moneda, porcentaje, fecha, formatear };\n\nconst fm = Formato.moneda(1234567);\nconst fp = Formato.porcentaje(85.5);\nconst ff = Formato.fecha('2026-05-01');\nconst fd = Formato.formatear('moneda', 50000, { simbolo: '€' });\n\nconsole.log(fm, fp, ff, fd);\n",
+      "tests": [
+        {
+          "description": "fp es '85.5%'",
+          "expression": "fp === '85.5%'"
+        },
+        {
+          "description": "ff es '01/05/2026'",
+          "expression": "ff === '01/05/2026'"
+        },
+        {
+          "description": "fd contiene '€' y '50'",
+          "expression": "fd.includes('€') && fd.includes('50')"
+        },
+        {
+          "description": "porcentaje con 0 decimales",
+          "expression": "Formato.porcentaje(75, 0) === '75%'"
+        }
+      ],
+      "hints": [
+        "`valor.toFixed(decimales)` formatea decimales: `(85.5).toFixed(1)` → `'85.5'`",
+        "`isoString.split('-')` → `['2026', '05', '01']`",
+        "La función `formatear` actúa como dispatcher — elige qué named export llamar"
+      ]
+    }
+  ]
+}

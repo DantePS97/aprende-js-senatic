@@ -1,0 +1,96 @@
+{
+  "id": "js-intermedio-m1-l5",
+  "title": "Currying y composición de funciones",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Currying\n\n**Currying** es la técnica de transformar una función de múltiples argumentos en una secuencia de funciones de un solo argumento.\n\nEn lugar de `fn(a, b, c)`, obtienes `fn(a)(b)(c)`.\n\n---\n\n## ¿Por qué?\n\nPermite **aplicación parcial**: fijar algunos argumentos y reutilizar la función con el resto después:\n\n```javascript\n// Función normal: necesita todos los argumentos juntos\nconst sumar = (a, b) => a + b;\nsumar(2, 3); // 5\n\n// Función currificada: un argumento a la vez\nconst sumarCurry = (a) => (b) => a + b;\n\nconst sumarCinco = sumarCurry(5); // Fija a=5\nconsole.log(sumarCinco(3)); // 8\nconsole.log(sumarCinco(10)); // 15\nconsole.log(sumarCinco(1)); // 6\n```\n\n`sumarCinco` es una función especializada creada a partir de `sumarCurry`. El closure recuerda `a=5`.\n\n---\n\n## Ejemplo práctico: IVA y descuentos\n\n```javascript\nconst aplicarPorcentaje = (porcentaje) => (precio) =>\n  precio * (1 + porcentaje / 100);\n\nconst conIva19 = aplicarPorcentaje(19);\nconst conIva5 = aplicarPorcentaje(5);\n\nconsole.log(conIva19(10000)); // 11900\nconsole.log(conIva5(10000));  // 10500\n\n// Descuentos\nconst aplicarDescuento = (pct) => (precio) => precio * (1 - pct / 100);\nconst descuento20 = aplicarDescuento(20);\n\nconsole.log(descuento20(50000)); // 40000\n```\n\n---\n\n## Curry automático\n\nPuedes escribir una función `curry` que currifica cualquier función:\n\n```javascript\nfunction curry(fn) {\n  return function curried(...args) {\n    if (args.length >= fn.length) {\n      return fn(...args);\n    }\n    return (...masArgs) => curried(...args, ...masArgs);\n  };\n}\n\nconst multiplicar = curry((a, b, c) => a * b * c);\n\nconsole.log(multiplicar(2)(3)(4));  // 24\nconsole.log(multiplicar(2, 3)(4));  // 24\nconsole.log(multiplicar(2)(3, 4)); // 24\nconsole.log(multiplicar(2, 3, 4)); // 24\n```\n\n`fn.length` es el número de parámetros declarados de la función.\n\n---\n\n## Composición de funciones\n\n**Componer** funciones significa encadenarlas: la salida de una es la entrada de la siguiente.\n\n```javascript\n// compose: aplica de derecha a izquierda (matemático)\nconst compose = (...fns) => (x) =>\n  fns.reduceRight((acc, fn) => fn(acc), x);\n\n// pipe: aplica de izquierda a derecha (más legible)\nconst pipe = (...fns) => (x) =>\n  fns.reduce((acc, fn) => fn(acc), x);\n\nconst duplicar = x => x * 2;\nconst sumarDiez = x => x + 10;\nconst alCuadrado = x => x ** 2;\n\nconst transformarPipe = pipe(duplicar, sumarDiez, alCuadrado);\n// (5 * 2) = 10 → (10 + 10) = 20 → 20² = 400\nconsole.log(transformarPipe(5)); // 400\n\nconst transformarCompose = compose(alCuadrado, sumarDiez, duplicar);\n// Mismo resultado, orden inverso en la declaración\nconsole.log(transformarCompose(5)); // 400\n```\n\n---\n\n## Currying + composición en la práctica\n\n```javascript\nconst pipe = (...fns) => (x) => fns.reduce((acc, fn) => fn(acc), x);\n\n// Transformaciones currificadas\nconst multiplicarPor = (factor) => (n) => n * factor;\nconst sumar = (cantidad) => (n) => n + cantidad;\nconst redondear = (decimales) => (n) =>\n  Math.round(n * 10 ** decimales) / 10 ** decimales;\n\n// Pipeline de cálculo de precio final\nconst calcularPrecioFinal = pipe(\n  multiplicarPor(1.19), // IVA 19%\n  sumar(5000),          // Costo de envío\n  redondear(0)          // Redondear a entero\n);\n\nconsole.log(calcularPrecioFinal(50000));\n// (50000 * 1.19) + 5000 = 64500\n```",
+    "examples": [
+      {
+        "code": "// Filtro currificado para pipelines de datos\nconst filtrarPor = (propiedad) => (valor) => (array) =>\n  array.filter(item => item[propiedad] === valor);\n\nconst productos = [\n  { nombre: 'Libro JS', categoria: 'tech', precio: 45000 },\n  { nombre: 'Novela', categoria: 'literatura', precio: 25000 },\n  { nombre: 'Curso React', categoria: 'tech', precio: 80000 },\n];\n\nconst filtrarCategoria = filtrarPor('categoria');\nconst soloTech = filtrarCategoria('tech');\n\nconsole.log(soloTech(productos).map(p => p.nombre));\n// ['Libro JS', 'Curso React']",
+        "explanation": "Tres niveles de currying: primero fijas la propiedad, luego el valor, finalmente aplicas al array. Cada nivel crea una función reutilizable."
+      },
+      {
+        "code": "const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);\n\n// Transformaciones de strings\nconst trim = s => s.trim();\nconst lower = s => s.toLowerCase();\nconst replaceSpaces = (char) => (s) => s.replace(/\\s+/g, char);\nconst truncar = (max) => (s) => s.length > max ? s.slice(0, max) + '...' : s;\n\n// Pipeline para generar slugs\nconst generarSlug = pipe(\n  trim,\n  lower,\n  replaceSpaces('-'),\n  truncar(30)\n);\n\nconsole.log(generarSlug('  JavaScript para Principiantes  '));\n// 'javascript-para-principiantes'\n\nconsole.log(generarSlug('  Introducción a la Programación Funcional en JS  '));\n// 'introducción-a-la-programación-f...'",
+        "explanation": "Pipe con mezcla de funciones simples y currificadas. replaceSpaces y truncar reciben su config primero, luego se usan en el pipeline."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Función currificada manual",
+      "prompt": "Crea una función currificada `multiplicar` que:\n- Al llamar `multiplicar(a)` retorne una función\n- Esa función interna reciba `b` y retorne `a * b`\n\nLuego crea:\n- `porTres = multiplicar(3)`\n- `porDiez = multiplicar(10)`\n\nGuarda en `r1` el resultado de `porTres(7)` y en `r2` el de `porDiez(4)`.",
+      "starterCode": "// Función currificada\nconst multiplicar = (a) => (b) => {\n  // Retorna a * b\n\n};\n\nconst porTres = multiplicar(3);\nconst porDiez = multiplicar(10);\n\nconst r1 = porTres(7);\nconst r2 = porDiez(4);\n\nconsole.log(r1, r2); // 21, 40\n",
+      "tests": [
+        {
+          "description": "r1 es 21 (3 * 7)",
+          "expression": "r1 === 21"
+        },
+        {
+          "description": "r2 es 40 (10 * 4)",
+          "expression": "r2 === 40"
+        },
+        {
+          "description": "multiplicar retorna una función",
+          "expression": "typeof multiplicar(5) === 'function'"
+        },
+        {
+          "description": "multiplicar(2)(6) es 12",
+          "expression": "multiplicar(2)(6) === 12"
+        }
+      ],
+      "hints": [
+        "La sintaxis `(a) => (b) => a * b` es todo lo que necesitas",
+        "`porTres` recuerda `a=3` gracias al closure",
+        "Llama como `multiplicar(3)(7)` o crea `porTres` primero"
+      ]
+    },
+    {
+      "title": "Práctica: pipe",
+      "prompt": "Implementa la función `pipe(...fns)` que:\n1. Reciba cualquier número de funciones\n2. Retorne una función que recibe un valor inicial\n3. Aplica las funciones de izquierda a derecha sobre ese valor\n\nLuego crea un pipeline `procesarNumero` que:\n1. Multiplique por 2\n2. Le sume 10\n3. Lo eleve al cuadrado\n\nGuarda en `resultado` el valor de `procesarNumero(5)`.\n(5 × 2 = 10 → 10 + 10 = 20 → 20² = 400)",
+      "starterCode": "function pipe(...fns) {\n  return function (valorInicial) {\n    // Aplica cada función en orden usando reduce\n\n  };\n}\n\nconst procesarNumero = pipe(\n  x => x * 2,\n  x => x + 10,\n  x => x ** 2\n);\n\nconst resultado = procesarNumero(5);\nconsole.log(resultado); // 400\n",
+      "tests": [
+        {
+          "description": "resultado es 400",
+          "expression": "resultado === 400"
+        },
+        {
+          "description": "pipe con una función la aplica directamente",
+          "expression": "pipe(x => x + 1)(5) === 6"
+        },
+        {
+          "description": "pipe aplica en el orden correcto",
+          "expression": "pipe(x => x * 2, x => x - 1)(3) === 5"
+        }
+      ],
+      "hints": [
+        "`return fns.reduce((acc, fn) => fn(acc), valorInicial);`",
+        "`reduce` va acumulando: el acumulador es el valor transformado hasta el momento",
+        "El valor inicial de `reduce` es `valorInicial` (segundo argumento de reduce)"
+      ]
+    },
+    {
+      "title": "Aplicación: Pipeline de procesamiento de datos",
+      "prompt": "Tienes una lista de productos. Usa currying y pipe para construir un pipeline que:\n1. Filtre solo los productos con `stock: true`\n2. Aplique un descuento del 15% a sus precios\n3. Retorne solo los nombres de esos productos\n\nCrea las funciones currificadas necesarias y el pipeline `procesarCatalogo`.\n\nGuarda en `resultado` el resultado de aplicar `procesarCatalogo` a los productos.\nDebe ser: `['Libro JS', 'Plugin CSS']`",
+      "starterCode": "const pipe = (...fns) => x => fns.reduce((acc, fn) => fn(acc), x);\n\nconst productos = [\n  { nombre: 'Libro JS', precio: 50000, stock: true },\n  { nombre: 'Curso Python', precio: 80000, stock: false },\n  { nombre: 'Plugin CSS', precio: 30000, stock: true },\n];\n\n// Función currificada: solo los que tienen stock\nconst soloConStock = (arr) => arr.filter(p => p.stock);\n\n// Función currificada: aplicar descuento a todos\nconst aplicarDescuento = (pct) => (arr) =>\n  arr.map(p => ({ ...p, precio: p.precio * (1 - pct / 100) }));\n\n// Función: extraer nombres\nconst extraerNombres = (arr) => arr.map(p => p.nombre);\n\n// Construye el pipeline con pipe\nconst procesarCatalogo = pipe(\n  soloConStock,\n  // aplica 15% de descuento\n  // extrae nombres\n);\n\nconst resultado = procesarCatalogo(productos);\nconsole.log(resultado); // ['Libro JS', 'Plugin CSS']\n",
+      "tests": [
+        {
+          "description": "resultado es ['Libro JS', 'Plugin CSS']",
+          "expression": "JSON.stringify(resultado) === '[\"Libro JS\",\"Plugin CSS\"]'"
+        },
+        {
+          "description": "resultado tiene 2 elementos",
+          "expression": "resultado.length === 2"
+        },
+        {
+          "description": "resultado contiene strings (nombres)",
+          "expression": "typeof resultado[0] === 'string'"
+        }
+      ],
+      "hints": [
+        "El pipeline es: `pipe(soloConStock, aplicarDescuento(15), extraerNombres)`",
+        "`aplicarDescuento(15)` retorna una función que recibe el array — eso es currying",
+        "`aplicarDescuento` ya está definida, solo llámala con `15` dentro del pipe"
+      ]
+    }
+  ]
+}

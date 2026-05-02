@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m8-l2",
+  "title": "Observer y Pub/Sub",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## El problema de la comunicación entre componentes\n\nCuando los módulos de una aplicación necesitan comunicarse, el acoplamiento directo crea problemas:\n\n```javascript\n// Acoplamiento DIRECTO — problemático:\nclass Carrito {\n  agregar(item) {\n    this.items.push(item);\n    navbar.actualizarContador();   // Carrito conoce al Navbar\n    analytics.registrarEvento();    // Carrito conoce a Analytics\n    recomendaciones.actualizar();   // Carrito conoce a Recomendaciones\n    // ¡Agregar un módulo más requiere modificar Carrito!\n  }\n}\n```\n\nLa solución: los patrones Observer y Pub/Sub desacoplan el emisor de sus escuchas.\n\n---\n\n## Observer: suscripción directa\n\nEn el patrón Observer, el objeto observado mantiene una lista de **observadores** y los notifica directamente:\n\n```javascript\nclass Observable {\n  #observadores = [];\n\n  suscribir(observador) {\n    this.#observadores.push(observador);\n    return () => this.desuscribir(observador); // Retorna función de cleanup\n  }\n\n  desuscribir(observador) {\n    this.#observadores = this.#observadores.filter(o => o !== observador);\n  }\n\n  notificar(dato) {\n    this.#observadores.forEach(obs => obs(dato));\n  }\n}\n\n// Uso:\nconst carrito = new Observable();\n\nconst cancelarNavbar = carrito.suscribir(data => {\n  console.log('Navbar: items en carrito ->', data.total);\n});\n\ncarrito.suscribir(data => {\n  console.log('Analytics: evento ->', data.evento);\n});\n\ncarrito.notificar({ evento: 'agregar', total: 3 });\n// Imprime ambos mensajes\n\ncancelarNavbar(); // Desuscribe el navbar\ncarrito.notificar({ evento: 'quitar', total: 2 });\n// Solo imprime Analytics\n```\n\n---\n\n## Pub/Sub: intermediario de eventos\n\nEn Pub/Sub, hay un **intermediario** (event bus) que desacopla completamente al emisor del receptor. El emisor no sabe quién escucha:\n\n```javascript\nfunction crearEventBus() {\n  const suscriptores = new Map(); // evento → [callbacks]\n\n  return {\n    on(evento, callback) {\n      if (!suscriptores.has(evento)) suscriptores.set(evento, []);\n      suscriptores.get(evento).push(callback);\n      // Retorna función de unsuscribe:\n      return () => {\n        const cbs = suscriptores.get(evento);\n        if (cbs) suscriptores.set(evento, cbs.filter(cb => cb !== callback));\n      };\n    },\n\n    emit(evento, dato) {\n      const cbs = suscriptores.get(evento) ?? [];\n      cbs.forEach(cb => cb(dato));\n    },\n\n    off(evento, callback) {\n      const cbs = suscriptores.get(evento);\n      if (cbs) suscriptores.set(evento, cbs.filter(cb => cb !== callback));\n    },\n  };\n}\n\nconst bus = crearEventBus();\n\nbus.on('usuario:login', ({ nombre }) => console.log(`Bienvenido, ${nombre}`));\nbus.on('usuario:login', ({ nombre }) => console.log(`Analytics: ${nombre} entró`));\n\nbus.emit('usuario:login', { nombre: 'Ana', timestamp: Date.now() });\n// Carrito emite sin saber quién escucha\n```\n\n---\n\n## Observer vs Pub/Sub\n\n```\nObserver:\n  Sujeto ──notifica──▶ [Observador1, Observador2, ...]\n  (el sujeto mantiene referencias directas a los observadores)\n\nPub/Sub:\n  Publicador ──emit──▶ Bus de Eventos ──llama──▶ [Sub1, Sub2, ...]\n  (el publicador no sabe quiénes están suscritos)\n```\n\n| | Observer | Pub/Sub |\n|---|---|---|\n| Acoplamiento | El sujeto conoce a sus observadores | Completamente desacoplado |\n| Intermediario | No | Sí (event bus) |\n| Uso típico | Stores, Signals, EventEmitter | Mensajería entre módulos |\n| Ejemplo | `addEventListener` en DOM | Redux actions, `socket.on` |\n\n---\n\n## Patrón: once() — escuchar solo una vez\n\n```javascript\nfunction crearEventBusConOnce() {\n  const bus = crearEventBus();\n\n  return {\n    ...bus,\n    once(evento, callback) {\n      const cancelar = bus.on(evento, (dato) => {\n        callback(dato);\n        cancelar(); // Se auto-desuscribe después del primer evento\n      });\n      return cancelar;\n    }\n  };\n}\n```",
+    "examples": [
+      {
+        "code": "// Store reactivo con Observer (simplificado como Redux/Signal)\nfunction crearStore(estadoInicial) {\n  let estado = estadoInicial;\n  const suscriptores = new Set();\n\n  return {\n    getEstado() {\n      return estado;\n    },\n    setEstado(nuevoEstado) {\n      estado = { ...estado, ...nuevoEstado };\n      suscriptores.forEach(fn => fn(estado));\n    },\n    suscribir(fn) {\n      suscriptores.add(fn);\n      fn(estado); // Notifica inmediatamente con el estado actual\n      return () => suscriptores.delete(fn); // cleanup\n    },\n  };\n}\n\nconst store = crearStore({ usuario: null, carrito: [], cargando: false });\n\n// 'Componente' que reacciona al estado:\nconst cancelar = store.suscribir(estado => {\n  console.log('Render:', estado.cargando ? 'Cargando...' : `Usuario: ${estado.usuario}`);\n});\n\nstore.setEstado({ cargando: true });\nstore.setEstado({ cargando: false, usuario: 'Ana' });\n\ncancelar(); // Desuscribe\nstore.setEstado({ usuario: 'Bob' }); // No notifica al componente cancelado",
+        "explanation": "Este es el patrón fundamental detrás de React useState, MobX, y los Signals de Angular. El store notifica a todos los suscriptores cada vez que el estado cambia."
+      },
+      {
+        "code": "// Event Bus con historial y wildcards simplificado\nfunction crearEventBusAvanzado() {\n  const suscriptores = new Map();\n  const historial = [];\n\n  function emitirACanal(canal, dato) {\n    const cbs = suscriptores.get(canal) ?? [];\n    cbs.forEach(cb => cb(dato, canal));\n  }\n\n  return {\n    on(canal, cb) {\n      if (!suscriptores.has(canal)) suscriptores.set(canal, []);\n      suscriptores.get(canal).push(cb);\n      return () => {\n        suscriptores.set(canal, suscriptores.get(canal).filter(c => c !== cb));\n      };\n    },\n    emit(canal, dato) {\n      historial.push({ canal, dato, ts: Date.now() });\n      emitirACanal(canal, dato);\n    },\n    getHistorial(canal) {\n      return canal ? historial.filter(e => e.canal === canal) : [...historial];\n    },\n  };\n}\n\nconst bus = crearEventBusAvanzado();\nbus.on('pedido:creado', p => console.log('Nuevo pedido:', p.id));\nbus.on('pedido:creado', p => console.log('Email enviado a:', p.email));\n\nbus.emit('pedido:creado', { id: 1, email: 'ana@test.com' });\nbus.emit('pedido:creado', { id: 2, email: 'bob@test.com' });\n\nconsole.log('Historial:', bus.getHistorial('pedido:creado').length); // 2",
+        "explanation": "El historial de eventos permite recuperar eventos pasados, útil para debugging o para que nuevos suscriptores reciban el estado actual al suscribirse."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Observable simple",
+      "prompt": "Implementa una clase `Observable` con:\n- `suscribir(fn)`: agrega `fn` a la lista de observadores. Retorna una función que al llamarse elimina `fn`.\n- `notificar(dato)`: llama a todos los observadores con `dato`\n- `get total()`: número de observadores activos\n\nGuarda:\n- Suscribe 2 observadores que acumulen valores en arrays separados\n- Notifica 3 veces\n- Cancela el segundo y notifica una vez más\n- `obs1Count` → 4 notificaciones\n- `obs2Count` → 3 notificaciones",
+      "starterCode": "class Observable {\n  #suscriptores = [];\n\n  suscribir(fn) {\n    this.#suscriptores.push(fn);\n    return () => {\n      this.#suscriptores = this.#suscriptores.filter(s => s !== fn);\n    };\n  }\n\n  notificar(dato) {\n    this.#suscriptores.forEach(fn => fn(dato));\n  }\n\n  get total() {\n    return this.#suscriptores.length;\n  }\n}\n\nconst obs = new Observable();\nconst recibidos1 = [];\nconst recibidos2 = [];\n\nconst cancelar1 = obs.suscribir(v => recibidos1.push(v));\nconst cancelar2 = obs.suscribir(v => recibidos2.push(v));\n\nobs.notificar(1);\nobs.notificar(2);\nobs.notificar(3);\n\ncancelar2(); // Solo cancelamos el segundo\nobs.notificar(4);\n\nconst obs1Count = recibidos1.length; // 4\nconst obs2Count = recibidos2.length; // 3\n\nconsole.log('Obs1:', recibidos1);\nconsole.log('Obs2:', recibidos2);\n",
+      "tests": [
+        {
+          "description": "obs1Count es 4",
+          "expression": "obs1Count === 4"
+        },
+        {
+          "description": "obs2Count es 3",
+          "expression": "obs2Count === 3"
+        },
+        {
+          "description": "recibidos1 tiene [1,2,3,4]",
+          "expression": "JSON.stringify(recibidos1) === '[1,2,3,4]'"
+        },
+        {
+          "description": "recibidos2 tiene [1,2,3]",
+          "expression": "JSON.stringify(recibidos2) === '[1,2,3]'"
+        }
+      ],
+      "hints": [
+        "La función de cancelación filtra el observador: `this.#suscriptores = this.#suscriptores.filter(s => s !== fn)`",
+        "`forEach` itera los suscriptores actuales — la cancelación del segundo no afecta al primero",
+        "El getter `total` retorna `this.#suscriptores.length`"
+      ]
+    },
+    {
+      "title": "Práctica: Event Bus",
+      "prompt": "Implementa `crearEventBus()` que retorne un objeto con:\n- `on(evento, callback)`: suscribe `callback` al evento. Retorna función de cancelación.\n- `emit(evento, dato)`: emite el evento con el dato\n- `off(evento, callback)`: elimina un callback específico\n\nLos eventos son identificados por strings. Múltiples suscriptores por evento son posibles.\n\nGuarda:\n- Un bus con eventos `'suma'` y `'resta'`\n- `resultados` acumulando los valores emitidos en `'suma'`\n- Emite 'suma' 3 veces, cancela, emite una vez más\n- `totalSuma` → 3 (solo recibió 3 antes de cancelar)",
+      "starterCode": "function crearEventBus() {\n  const canales = new Map();\n\n  return {\n    on(evento, callback) {\n      if (!canales.has(evento)) canales.set(evento, []);\n      canales.get(evento).push(callback);\n      return () => {\n        const cbs = canales.get(evento);\n        if (cbs) canales.set(evento, cbs.filter(cb => cb !== callback));\n      };\n    },\n    emit(evento, dato) {\n      const cbs = canales.get(evento) ?? [];\n      cbs.forEach(cb => cb(dato));\n    },\n    off(evento, callback) {\n      const cbs = canales.get(evento);\n      if (cbs) canales.set(evento, cbs.filter(cb => cb !== callback));\n    },\n  };\n}\n\nconst bus = crearEventBus();\nconst resultados = [];\n\nconst handler = dato => resultados.push(dato);\nconst cancelar = bus.on('suma', handler);\n\nbus.emit('suma', 10);\nbus.emit('suma', 20);\nbus.emit('suma', 30);\n\ncancelar();\nbus.emit('suma', 40); // No debería llegar\n\nconst totalSuma = resultados.length;\n\nconsole.log('Resultados:', resultados);\nconsole.log('Total recibidos:', totalSuma);\n",
+      "tests": [
+        {
+          "description": "totalSuma es 3",
+          "expression": "totalSuma === 3"
+        },
+        {
+          "description": "resultados es [10,20,30]",
+          "expression": "JSON.stringify(resultados) === '[10,20,30]'"
+        },
+        {
+          "description": "el 40 no llegó",
+          "expression": "!resultados.includes(40)"
+        },
+        {
+          "description": "múltiples suscriptores funcionan",
+          "expression": "(() => { const b = crearEventBus(); const r = []; b.on('x', v => r.push(v)); b.on('x', v => r.push(v * 2)); b.emit('x', 5); return JSON.stringify(r) === '[5,10]'; })()"
+        }
+      ],
+      "hints": [
+        "`canales.get(evento) ?? []` — si no hay suscriptores, usa array vacío",
+        "La cancelación usa `filter` para remover exactamente ese callback",
+        "`new Map()` para los canales permite tener múltiples arrays de callbacks"
+      ]
+    },
+    {
+      "title": "Aplicación: Mini store reactivo",
+      "prompt": "Implementa `crearStore(estadoInicial)` — un store reactivo basado en Observer:\n\n- `getEstado()`: retorna el estado actual (copia)\n- `setEstado(cambios)`: merge de `cambios` con el estado actual, luego notifica a todos los suscriptores\n- `suscribir(fn)`: suscribe `fn`. La llama inmediatamente con el estado actual. Retorna función de cancelación.\n\nPrueba:\n- Estado inicial: `{ contador: 0, nombre: 'anon' }`\n- Suscribe un observador que acumule en `historial`\n- Incrementa el contador 3 veces\n- `historial` debe tener 4 entradas (1 inicial + 3 cambios)",
+      "starterCode": "function crearStore(estadoInicial) {\n  let estado = { ...estadoInicial };\n  const suscriptores = new Set();\n\n  return {\n    getEstado() {\n      return { ...estado }; // Retorna copia\n    },\n    setEstado(cambios) {\n      estado = { ...estado, ...cambios };\n      suscriptores.forEach(fn => fn({ ...estado }));\n    },\n    suscribir(fn) {\n      suscriptores.add(fn);\n      fn({ ...estado }); // Notifica inmediatamente\n      return () => suscriptores.delete(fn);\n    },\n  };\n}\n\nconst store = crearStore({ contador: 0, nombre: 'anon' });\nconst historial = [];\n\nconst cancelar = store.suscribir(estado => historial.push(estado.contador));\n\nstore.setEstado({ contador: 1 });\nstore.setEstado({ contador: 2 });\nstore.setEstado({ contador: 3 });\n\nconst totalHistorial = historial.length;\nconst estadoFinal = store.getEstado().contador;\n\nconsole.log('Historial de contador:', historial);\nconsole.log('Total entradas:', totalHistorial);\n",
+      "tests": [
+        {
+          "description": "totalHistorial es 4 (1 inicial + 3 cambios)",
+          "expression": "totalHistorial === 4"
+        },
+        {
+          "description": "historial empieza en 0",
+          "expression": "historial[0] === 0"
+        },
+        {
+          "description": "historial termina en 3",
+          "expression": "historial[3] === 3"
+        },
+        {
+          "description": "estadoFinal es 3",
+          "expression": "estadoFinal === 3"
+        }
+      ],
+      "hints": [
+        "`{ ...estado, ...cambios }` hace merge: los cambios sobreescriben propiedades existentes",
+        "`fn({ ...estado })` al suscribir entrega el estado actual al nuevo suscriptor inmediatamente",
+        "`Set` para suscriptores garantiza que no se registre la misma función dos veces"
+      ]
+    }
+  ]
+}

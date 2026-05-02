@@ -1,0 +1,101 @@
+{
+  "id": "js-intermedio-m4-l1",
+  "title": "Call Stack y Memory Heap",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## El motor de JavaScript\n\nCuando ejecutas código JS, el motor (V8, SpiderMonkey, etc.) usa dos estructuras principales:\n\n- **Memory Heap**: donde se almacenan los objetos y variables\n- **Call Stack**: donde se rastrea qué función está ejecutándose\n\nJavaScript es **single-threaded** — tiene un solo Call Stack. Solo puede hacer una cosa a la vez.\n\n---\n\n## Memory Heap\n\nEl Heap es una región de memoria no estructurada donde viven los objetos:\n\n```javascript\n// Todo esto va al Heap:\nconst usuario = { nombre: 'Ana' };  // Objeto → Heap\nconst lista = [1, 2, 3];           // Array → Heap\nconst fn = () => {};               // Función → Heap\n\n// Los primitivos van en el Stack (cuando son variables locales):\nconst x = 42;      // número → Stack\nconst s = 'hola';  // string → Stack (inmutable)\n```\n\nEl **Garbage Collector** limpia el Heap automáticamente cuando los objetos ya no tienen referencias.\n\n---\n\n## Call Stack: el registro de ejecución\n\nEl Call Stack es una pila (LIFO: último en entrar, primero en salir). Cada vez que llamas una función, se agrega un **frame** arriba. Cuando retorna, se elimina:\n\n```javascript\nfunction c() {\n  console.log('c ejecutándose');\n  // Stack: [main, a, b, c]\n}\n\nfunction b() {\n  c();\n  // Stack: [main, a, b]\n}\n\nfunction a() {\n  b();\n  // Stack: [main, a]\n}\n\na();\n// Stack inicial: [main]\n// Tras a(): [main, a]\n// Tras b(): [main, a, b]\n// Tras c(): [main, a, b, c]\n// Tras c retorna: [main, a, b]\n// Tras b retorna: [main, a]\n// Tras a retorna: [main]\n```\n\n---\n\n## Stack Overflow\n\nSi el stack crece sin límite (recursión infinita), obtienes un **Stack Overflow**:\n\n```javascript\nfunction infinita() {\n  return infinita(); // Nunca retorna → stack crece sin parar\n}\n\ninfiniita(); // ❌ RangeError: Maximum call stack size exceeded\n\n// Recursión correcta SIEMPRE necesita un caso base:\nfunction contarHasta(n) {\n  if (n <= 0) return; // Caso base — detiene la recursión\n  console.log(n);\n  contarHasta(n - 1);\n}\n```\n\n---\n\n## El problema del blocking\n\nComo JS tiene un solo thread, **bloquear el stack bloquea todo**:\n\n```javascript\n// ❌ Bloquea el hilo durante 3 segundos\nfunction esperarSincrono(ms) {\n  const fin = Date.now() + ms;\n  while (Date.now() < fin) {} // Ciclo vacío — bloquea\n}\n\nconsole.log('Inicio');\nesperarSincrono(3000); // 🔴 Nada puede ejecutarse aquí\nconsole.log('Fin');   // Aparece 3s después\n\n// Durante ese bloqueo:\n// - Los eventos del usuario no se procesan\n// - El DOM no se actualiza\n// - Otras operaciones esperan\n```\n\nPor eso existe el asíncrono: para **liberar el stack** mientras se espera.\n\n---\n\n## Cómo el asíncrono ayuda\n\n```javascript\n// ✅ No bloquea — libera el stack mientras espera\nconsole.log('Inicio');\n\nsetTimeout(() => {\n  console.log('Después de 3s');\n}, 3000);\n\nconsole.log('Esto aparece antes'); // No espera el timeout\n\n// Output:\n// 'Inicio'\n// 'Esto aparece antes'\n// (3s después) 'Después de 3s'\n```\n\n`setTimeout` entrega la tarea al navegador/Node y **libera el stack** inmediatamente. El callback vuelve al stack más tarde — eso es el Event Loop.",
+    "examples": [
+      {
+        "code": "// Visualizar el stack con Error.stack\nfunction tercera() {\n  const error = new Error('Traza');\n  console.log(error.stack);\n}\n\nfunction segunda() { tercera(); }\nfunction primera() { segunda(); }\n\nprimera();\n// Error: Traza\n//   at tercera (<anonymous>:2:17)\n//   at segunda (<anonymous>:7:18)\n//   at primera (<anonymous>:8:18)\n//   at <anonymous>:10:1",
+        "explanation": "Error.stack captura el Call Stack en ese momento. Leerlo de abajo hacia arriba te muestra la secuencia de llamadas que llevó hasta ese punto."
+      },
+      {
+        "code": "// Recursión con caso base — no hace stack overflow\nfunction sumaHasta(n) {\n  if (n <= 0) return 0;         // Caso base\n  return n + sumaHasta(n - 1); // Llamada recursiva\n}\n\nconsole.log(sumaHasta(5));  // 15 (5+4+3+2+1)\nconsole.log(sumaHasta(10)); // 55\n\n// Stack en sumaHasta(3):\n// [main, sumaHasta(3), sumaHasta(2), sumaHasta(1), sumaHasta(0)]\n// Luego colapsa: 0 + 1 + 2 + 3 = 6",
+        "explanation": "Cada llamada recursiva agrega un frame al stack. El caso base (n<=0) evita el crecimiento infinito y empieza el colapso de retornos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Traza de ejecución",
+      "prompt": "Dado el siguiente código, predice el orden de los `console.log` y guarda los valores en el array `orden`:\n\n```javascript\nfunction z() { return 'z'; }\nfunction y() { return z() + 'y'; }\nfunction x() { return y() + 'x'; }\n```\n\nGuarda en `resultado` el valor de `x()` — debería ser `'zyx'`.\nGuarda en `esString` si `typeof resultado === 'string'`.",
+      "starterCode": "function z() { return 'z'; }\nfunction y() { return z() + 'y'; }\nfunction x() { return y() + 'x'; }\n\nconst resultado = x();\nconst esString = typeof resultado === 'string';\n\nconsole.log(resultado); // 'zyx'\nconsole.log(esString);  // true\n",
+      "tests": [
+        {
+          "description": "resultado es 'zyx'",
+          "expression": "resultado === 'zyx'"
+        },
+        {
+          "description": "esString es true",
+          "expression": "esString === true"
+        },
+        {
+          "description": "x() siempre retorna 'zyx'",
+          "expression": "x() === 'zyx'"
+        }
+      ],
+      "hints": [
+        "x() llama a y(), y() llama a z(). El stack es: [main, x, y, z]",
+        "z retorna 'z', y retorna 'z'+'y'='zy', x retorna 'zy'+'x'='zyx'",
+        "El stack se colapsa de adentro hacia afuera"
+      ]
+    },
+    {
+      "title": "Práctica: Recursión con caso base",
+      "prompt": "Implementa la función `potencia(base, exp)` de forma recursiva:\n- Si `exp === 0`, retorna `1` (caso base: cualquier número a la 0 es 1)\n- Si no, retorna `base * potencia(base, exp - 1)`\n\nGuarda:\n- `p1 = potencia(2, 10)` → 1024\n- `p2 = potencia(3, 4)` → 81\n- `p3 = potencia(5, 0)` → 1",
+      "starterCode": "function potencia(base, exp) {\n  // Caso base: exp === 0\n\n  // Caso recursivo\n\n}\n\nconst p1 = potencia(2, 10);\nconst p2 = potencia(3, 4);\nconst p3 = potencia(5, 0);\n\nconsole.log(p1, p2, p3); // 1024, 81, 1\n",
+      "tests": [
+        {
+          "description": "p1 es 1024 (2^10)",
+          "expression": "p1 === 1024"
+        },
+        {
+          "description": "p2 es 81 (3^4)",
+          "expression": "p2 === 81"
+        },
+        {
+          "description": "p3 es 1 (caso base)",
+          "expression": "p3 === 1"
+        },
+        {
+          "description": "potencia(7, 1) es 7",
+          "expression": "potencia(7, 1) === 7"
+        }
+      ],
+      "hints": [
+        "`if (exp === 0) return 1;`",
+        "`return base * potencia(base, exp - 1);`",
+        "Stack para potencia(2,3): [main, pot(2,3), pot(2,2), pot(2,1), pot(2,0)] → 1→2→4→8"
+      ]
+    },
+    {
+      "title": "Aplicación: Aplanar array recursivamente",
+      "prompt": "Crea una función `aplanar(arr)` que tome un array anidado y retorne uno plano (sin anidamiento), usando recursión:\n\n- Si un elemento es un array, llama `aplanar` sobre él\n- Si no, agrégalo al resultado\n\nEjemplo:\n```\naplanar([1, [2, [3, [4]], 5]]) → [1, 2, 3, 4, 5]\naplanar([[1, 2], [3, [4, 5]]]) → [1, 2, 3, 4, 5]\n```\n\nGuarda `r1 = aplanar([1, [2, [3, [4]], 5]])` y `r2 = aplanar([[1,2],[3,[4,5]]])`.",
+      "starterCode": "function aplanar(arr) {\n  const resultado = [];\n\n  for (const item of arr) {\n    if (Array.isArray(item)) {\n      // Llama aplanar recursivamente y agrega los elementos al resultado\n\n    } else {\n      // Agrega el elemento directamente\n\n    }\n  }\n\n  return resultado;\n}\n\nconst r1 = aplanar([1, [2, [3, [4]], 5]]);\nconst r2 = aplanar([[1, 2], [3, [4, 5]]]);\n\nconsole.log(r1); // [1, 2, 3, 4, 5]\nconsole.log(r2); // [1, 2, 3, 4, 5]\n",
+      "tests": [
+        {
+          "description": "r1 es [1,2,3,4,5]",
+          "expression": "JSON.stringify(r1) === '[1,2,3,4,5]'"
+        },
+        {
+          "description": "r2 es [1,2,3,4,5]",
+          "expression": "JSON.stringify(r2) === '[1,2,3,4,5]'"
+        },
+        {
+          "description": "aplanar con array plano retorna igual",
+          "expression": "JSON.stringify(aplanar([1,2,3])) === '[1,2,3]'"
+        },
+        {
+          "description": "aplanar de array vacío retorna []",
+          "expression": "JSON.stringify(aplanar([])) === '[]'"
+        }
+      ],
+      "hints": [
+        "`const subArray = aplanar(item); resultado.push(...subArray);`",
+        "O más corto: `resultado.push(...aplanar(item));`",
+        "`resultado.push(item);` para elementos no-array",
+        "Cada nivel de anidamiento agrega un frame al stack — la recursión lo maneja automáticamente"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m7-l2",
+  "title": "Generadores: function*",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## El problema que resuelven los generadores\n\nImplementar el protocolo de iteración manualmente es verbose. Los **generadores** (`function*`) son funciones especiales que implementan ese protocolo automáticamente:\n\n```javascript\n// Sin generadores — mucho boilerplate:\nfunction crearRangoIterador(inicio, fin) {\n  let actual = inicio;\n  return {\n    next() {\n      if (actual <= fin) return { value: actual++, done: false };\n      return { value: undefined, done: true };\n    },\n    [Symbol.iterator]() { return this; }\n  };\n}\n\n// Con generadores — mucho más simple:\nfunction* rango(inicio, fin) {\n  for (let i = inicio; i <= fin; i++) {\n    yield i; // Pausa y retorna el valor\n  }\n}\n\nconsole.log([...rango(1, 5)]); // [1, 2, 3, 4, 5]\n```\n\n---\n\n## La mecánica de `yield`\n\nUna función generadora no se ejecuta hasta que se llama `next()`. Cada `yield` pausa la ejecución y retorna un valor. La ejecución se reanuda desde donde pausó:\n\n```javascript\nfunction* contador() {\n  console.log('Inicio');\n  yield 1;              // Pausa aquí, retorna 1\n  console.log('Entre 1 y 2');\n  yield 2;              // Pausa aquí, retorna 2\n  console.log('Entre 2 y 3');\n  yield 3;              // Pausa aquí, retorna 3\n  console.log('Fin');\n  // Al terminar la función: done: true\n}\n\nconst gen = contador();\n\ngen.next(); // Imprime 'Inicio', retorna { value: 1, done: false }\ngen.next(); // Imprime 'Entre 1 y 2', retorna { value: 2, done: false }\ngen.next(); // Imprime 'Entre 2 y 3', retorna { value: 3, done: false }\ngen.next(); // Imprime 'Fin', retorna { value: undefined, done: true }\n```\n\n---\n\n## Generadores son iterables\n\nLos generadores implementan automáticamente el protocolo de iteración:\n\n```javascript\nfunction* numeros() {\n  yield 10;\n  yield 20;\n  yield 30;\n}\n\n// for...of:\nfor (const n of numeros()) {\n  console.log(n); // 10, 20, 30\n}\n\n// Spread:\nconsole.log([...numeros()]); // [10, 20, 30]\n\n// Destructuring:\nconst [a, b, c] = numeros(); // a=10, b=20, c=30\n\n// Array.from():\nconst arr = Array.from(numeros()); // [10, 20, 30]\n```\n\n---\n\n## yield* — delegar a otro iterable\n\n```javascript\nfunction* letras() {\n  yield 'a';\n  yield 'b';\n}\n\nfunction* numeros() {\n  yield 1;\n  yield* letras(); // Delega: yield 'a', yield 'b'\n  yield 2;\n}\n\nconsole.log([...numeros()]); // [1, 'a', 'b', 2]\n\n// yield* funciona con cualquier iterable:\nfunction* mezclar(arr) {\n  yield* arr;        // Equivale a yield de cada elemento\n  yield 'extra';\n}\n\nconsole.log([...mezclar([1, 2, 3])]); // [1, 2, 3, 'extra']\n```\n\n---\n\n## El valor de retorno del generador\n\n```javascript\nfunction* conRetorno() {\n  yield 1;\n  yield 2;\n  return 'fin'; // Esto va en el último next()\n}\n\nconst gen = conRetorno();\nconsole.log(gen.next()); // { value: 1, done: false }\nconsole.log(gen.next()); // { value: 2, done: false }\nconsole.log(gen.next()); // { value: 'fin', done: true } ← el return\nconsole.log(gen.next()); // { value: undefined, done: true }\n\n// Pero for...of y spread IGNORAN el valor de retorno (done: true):\nconsole.log([...conRetorno()]); // [1, 2] — 'fin' no aparece\n```\n\n---\n\n## Generadores infinitos\n\n```javascript\n// Generador infinito de Fibonacci:\nfunction* fibonacci() {\n  let [prev, curr] = [0, 1];\n  while (true) {\n    yield prev;\n    [prev, curr] = [curr, prev + curr];\n  }\n}\n\n// Tomar los primeros N con una función helper:\nfunction take(gen, n) {\n  const result = [];\n  for (const val of gen) {\n    result.push(val);\n    if (result.length >= n) break; // for...of respeta el break\n  }\n  return result;\n}\n\nconsole.log(take(fibonacci(), 10));\n// [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]\n```",
+    "examples": [
+      {
+        "code": "// Pipeline lazy con generadores\n// Los generadores procesan elemento por elemento — no crean arrays intermedios\n\nfunction* map(iterable, fn) {\n  for (const x of iterable) yield fn(x);\n}\n\nfunction* filter(iterable, pred) {\n  for (const x of iterable) if (pred(x)) yield x;\n}\n\nfunction* take(iterable, n) {\n  let count = 0;\n  for (const x of iterable) {\n    if (count++ >= n) break;\n    yield x;\n  }\n}\n\n// Generador infinito de números naturales\nfunction* naturales() {\n  let n = 1;\n  while (true) yield n++;\n}\n\n// Pipeline: tomar los primeros 5 números pares al cuadrado\nconst resultado = take(\n  map(\n    filter(naturales(), n => n % 2 === 0),\n    n => n ** 2\n  ),\n  5\n);\n\nconsole.log([...resultado]); // [4, 16, 36, 64, 100]",
+        "explanation": "Los generadores son 'lazy' — solo calculan el siguiente valor cuando se pide. Este pipeline nunca crea un array con todos los naturales, solo los necesarios."
+      },
+      {
+        "code": "// Generador de combinaciones (útil para pruebas o puzzles)\nfunction* combinaciones(arr, r) {\n  if (r === 1) {\n    for (const x of arr) yield [x];\n    return;\n  }\n  for (let i = 0; i <= arr.length - r; i++) {\n    for (const combo of combinaciones(arr.slice(i + 1), r - 1)) {\n      yield [arr[i], ...combo];\n    }\n  }\n}\n\nconst letras = ['a', 'b', 'c', 'd'];\nconst combos = [...combinaciones(letras, 2)];\nconsole.log(combos);\n// [['a','b'],['a','c'],['a','d'],['b','c'],['b','d'],['c','d']]\nconsole.log('Total combinaciones C(4,2):', combos.length); // 6",
+        "explanation": "Los generadores son naturales para algoritmos recursivos de enumeración. yield* delega al generador recursivo, aplanando el resultado automáticamente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Crear un generador simple",
+      "prompt": "Crea los siguientes generadores:\n\n1. `function* contar(inicio, fin)`: genera números de `inicio` a `fin` inclusive\n2. `function* multiplicar(iterable, factor)`: genera cada valor del iterable multiplicado por `factor`\n\nGuarda:\n- `nums = [...contar(1, 5)]` → `[1, 2, 3, 4, 5]`\n- `dobles = [...multiplicar([3, 5, 7], 2)]` → `[6, 10, 14]`\n- `cuadrados = [...multiplicar(contar(1, 4), n => n * n)]` — espera, el segundo argumento es el factor\n\nSimplifica: `cuadrados = [...multiplicar(contar(1, 4), 2)]` → `[2, 4, 6, 8]`",
+      "starterCode": "function* contar(inicio, fin) {\n  for (let i = inicio; i <= fin; i++) {\n    yield i;\n  }\n}\n\nfunction* multiplicar(iterable, factor) {\n  for (const x of iterable) {\n    yield x * factor;\n  }\n}\n\nconst nums = [...contar(1, 5)];\nconst dobles = [...multiplicar([3, 5, 7], 2)];\nconst escalado = [...multiplicar(contar(1, 4), 2)];\n\nconsole.log(nums);\nconsole.log(dobles);\nconsole.log(escalado);\n",
+      "tests": [
+        {
+          "description": "nums es [1,2,3,4,5]",
+          "expression": "JSON.stringify(nums) === '[1,2,3,4,5]'"
+        },
+        {
+          "description": "dobles es [6,10,14]",
+          "expression": "JSON.stringify(dobles) === '[6,10,14]'"
+        },
+        {
+          "description": "escalado es [2,4,6,8]",
+          "expression": "JSON.stringify(escalado) === '[2,4,6,8]'"
+        },
+        {
+          "description": "contar retorna un generador",
+          "expression": "typeof contar(1,3)[Symbol.iterator] === 'function'"
+        }
+      ],
+      "hints": [
+        "`function*` y `yield` son la sintaxis de generadores",
+        "`for (const x of iterable) yield x * factor` itera cualquier iterable",
+        "`contar(1, 4)` retorna un generador — que es iterable — así que `multiplicar` puede consumirlo"
+      ]
+    },
+    {
+      "title": "Práctica: Generador de Fibonacci",
+      "prompt": "Implementa:\n1. `function* fibonacci()`: generador **infinito** que produce la secuencia de Fibonacci (0, 1, 1, 2, 3, 5, 8...)\n2. `function take(gen, n)`: función que toma los primeros `n` valores de un generador y retorna un array\n\nRecuerda: `[prev, curr] = [curr, prev + curr]` actualiza ambos en una línea.\n\nGuarda:\n- `fib8 = take(fibonacci(), 8)` → `[0, 1, 1, 2, 3, 5, 8, 13]`\n- `fib1 = take(fibonacci(), 1)` → `[0]`\n- `sumafib8 = fib8.reduce((a, b) => a + b, 0)` → 33",
+      "starterCode": "function* fibonacci() {\n  let [prev, curr] = [0, 1];\n  while (true) {\n    yield prev;\n    [prev, curr] = [curr, prev + curr];\n  }\n}\n\nfunction take(gen, n) {\n  const result = [];\n  for (const val of gen) {\n    result.push(val);\n    if (result.length >= n) break;\n  }\n  return result;\n}\n\nconst fib8 = take(fibonacci(), 8);\nconst fib1 = take(fibonacci(), 1);\nconst sumaFib8 = fib8.reduce((a, b) => a + b, 0);\n\nconsole.log(fib8);\nconsole.log(fib1);\nconsole.log('Suma:', sumaFib8);\n",
+      "tests": [
+        {
+          "description": "fib8 empieza con [0,1,1,2,3,5,8,13]",
+          "expression": "JSON.stringify(fib8) === '[0,1,1,2,3,5,8,13]'"
+        },
+        {
+          "description": "fib1 es [0]",
+          "expression": "JSON.stringify(fib1) === '[0]'"
+        },
+        {
+          "description": "sumaFib8 es 33",
+          "expression": "sumaFib8 === 33"
+        },
+        {
+          "description": "fibonacci es un generador infinito (puede tomar 20)",
+          "expression": "take(fibonacci(), 20).length === 20"
+        }
+      ],
+      "hints": [
+        "`while(true)` + `yield` crea un generador infinito que nunca retorna `done: true`",
+        "`[prev, curr] = [curr, prev + curr]` — la desestructuración actualiza ambas variables simultáneamente",
+        "`break` dentro de `for...of` llama al método `return()` del generador, limpiando recursos"
+      ]
+    },
+    {
+      "title": "Aplicación: Pipeline de procesamiento lazy",
+      "prompt": "Implementa tres generadores de utilidad para crear pipelines de datos:\n\n- `function* mapGen(iterable, fn)`: aplica `fn` a cada elemento\n- `function* filterGen(iterable, pred)`: mantiene elementos donde `pred` retorna true\n- `function* takeGen(iterable, n)`: toma los primeros `n` elementos\n\nUsa estos generadores en un pipeline para procesar una lista de empleados:\n\n```javascript\nconst empleados = [\n  { nombre: 'Ana', dept: 'tech', salario: 5000 },\n  { nombre: 'Bob', dept: 'hr', salario: 3500 },\n  { nombre: 'Carl', dept: 'tech', salario: 6000 },\n  { nombre: 'Diana', dept: 'tech', salario: 7000 },\n  { nombre: 'Eve', dept: 'hr', salario: 4000 },\n];\n```\n\nObtén los primeros 2 nombres de empleados de 'tech' con salario > 5000.",
+      "starterCode": "function* mapGen(iterable, fn) {\n  for (const x of iterable) yield fn(x);\n}\n\nfunction* filterGen(iterable, pred) {\n  for (const x of iterable) if (pred(x)) yield x;\n}\n\nfunction* takeGen(iterable, n) {\n  let count = 0;\n  for (const x of iterable) {\n    if (count >= n) break;\n    yield x;\n    count++;\n  }\n}\n\nconst empleados = [\n  { nombre: 'Ana',   dept: 'tech', salario: 5000 },\n  { nombre: 'Bob',   dept: 'hr',   salario: 3500 },\n  { nombre: 'Carl',  dept: 'tech', salario: 6000 },\n  { nombre: 'Diana', dept: 'tech', salario: 7000 },\n  { nombre: 'Eve',   dept: 'hr',   salario: 4000 },\n];\n\n// Pipeline: filtrar tech con salario > 5000, tomar 2, extraer nombres\nconst techSenior = filterGen(empleados, e => e.dept === 'tech' && e.salario > 5000);\nconst top2 = takeGen(techSenior, 2);\nconst nombres = [...mapGen(top2, e => e.nombre)];\n\nconsole.log('Top 2 tech senior:', nombres);\n",
+      "tests": [
+        {
+          "description": "nombres tiene 2 elementos",
+          "expression": "nombres.length === 2"
+        },
+        {
+          "description": "Carl está en el resultado",
+          "expression": "nombres.includes('Carl')"
+        },
+        {
+          "description": "Diana está en el resultado",
+          "expression": "nombres.includes('Diana')"
+        },
+        {
+          "description": "Ana NO está (salario = 5000, no > 5000)",
+          "expression": "!nombres.includes('Ana')"
+        }
+      ],
+      "hints": [
+        "El pipeline se construye envolviendo generadores: `mapGen(takeGen(filterGen(datos, ...), 2), ...)`",
+        "Cada generador es lazy — no procesa nada hasta que el consumidor final (`[...]`) pide valores",
+        "La condición `salario > 5000` excluye exactamente a Ana que tiene salario 5000"
+      ]
+    }
+  ]
+}

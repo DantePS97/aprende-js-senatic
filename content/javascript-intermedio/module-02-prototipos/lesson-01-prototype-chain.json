@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m2-l1",
+  "title": "El prototype chain",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## El prototype chain\n\nCada objeto en JavaScript tiene una propiedad interna llamada `[[Prototype]]` que apunta a **otro objeto**. Cuando buscas una propiedad en un objeto y no la encuentra, JavaScript sube por esa cadena hasta encontrarla o llegar a `null`.\n\nEso es el **prototype chain** (cadena de prototipos).\n\n---\n\n## Cómo verlo en la práctica\n\n```javascript\nconst animal = {\n  respirar() {\n    return 'inhala... exhala...';\n  },\n};\n\nconst perro = {\n  ladrar() {\n    return 'guau!';\n  },\n};\n\n// Establecemos animal como prototipo de perro\nObject.setPrototypeOf(perro, animal);\n\nconsole.log(perro.ladrar());   // 'guau!' — propiedad propia\nconsole.log(perro.respirar()); // 'inhala... exhala...' — heredada del prototipo\n```\n\nCuando llamamos `perro.respirar()`, JS busca:\n1. ¿Tiene `perro` una propiedad `respirar`? No.\n2. ¿Tiene el prototipo de `perro` (= `animal`) una propiedad `respirar`? Sí. ✅\n\n---\n\n## Acceder al prototipo\n\n```javascript\nconst obj = { x: 1 };\n\n// Forma moderna (recomendada)\nconsole.log(Object.getPrototypeOf(obj)); // {}\n\n// Propiedad heredada (no usar en producción)\nconsole.log(obj.__proto__); // {} — misma referencia\n```\n\n---\n\n## El prototipo de los objetos literales\n\nTodo objeto literal `{}` tiene `Object.prototype` como su prototipo. Por eso puedes llamar `.toString()`, `.hasOwnProperty()` etc. en cualquier objeto:\n\n```javascript\nconst usuario = { nombre: 'Ana' };\n\n// ¿De dónde vienen estos métodos?\nconsole.log(usuario.toString());             // '[object Object]'\nconsole.log(usuario.hasOwnProperty('nombre')); // true\n\n// Están en Object.prototype, no en usuario\nconsole.log('toString' in usuario);          // true (está en la cadena)\nconsole.log(usuario.hasOwnProperty('toString')); // false (no es suyo)\n```\n\n---\n\n## La cadena completa\n\n```\nperro → animal → Object.prototype → null\n```\n\n```javascript\nconst animal = { respirar() { return 'ok'; } };\nconst perro = Object.create(animal);\nperro.ladrar = () => 'guau';\n\n// Cadena de búsqueda para perro.toString():\n// 1. perro → no tiene toString\n// 2. animal → no tiene toString\n// 3. Object.prototype → ✅ tiene toString\nconsole.log(perro.toString()); // '[object Object]'\n\n// El final de toda cadena:\nconsole.log(Object.getPrototypeOf(Object.prototype)); // null\n```\n\n---\n\n## Shadowing: sobreescribir en la cadena\n\nSi defines una propiedad con el mismo nombre que una en el prototipo, la **tuya tapa** la del prototipo (sin modificarla):\n\n```javascript\nconst base = { saludar() { return 'Hola genérico'; } };\nconst especifico = Object.create(base);\n\nespecifico.saludar = function () {\n  return 'Hola específico';\n};\n\nconsole.log(especifico.saludar()); // 'Hola específico' — la suya\nconsole.log(base.saludar());       // 'Hola genérico' — intacta\n```",
+    "examples": [
+      {
+        "code": "// Cadena de 3 niveles\nconst vehiculo = {\n  tipo: 'vehículo',\n  mover() { return `${this.nombre} se mueve`; },\n};\n\nconst coche = Object.create(vehiculo);\ncoche.ruedas = 4;\n\nconst miCoche = Object.create(coche);\nmiCoche.nombre = 'Tesla';\n\n// Búsqueda en la cadena:\nconsole.log(miCoche.nombre);      // 'Tesla' — propio\nconsole.log(miCoche.ruedas);      // 4 — de coche\nconsole.log(miCoche.tipo);        // 'vehículo' — de vehiculo\nconsole.log(miCoche.mover());     // 'Tesla se mueve' — de vehiculo, this = miCoche\nconsole.log(miCoche.toString());  // de Object.prototype",
+        "explanation": "Tres niveles de cadena. 'this' en mover() se refiere al objeto que inicia la llamada (miCoche), no al que define el método."
+      },
+      {
+        "code": "// El operador 'in' busca en toda la cadena\n// hasOwnProperty solo busca en el objeto mismo\nconst proto = { heredado: true };\nconst hijo = Object.create(proto);\nhijo.propio = true;\n\nconsole.log('propio' in hijo);           // true\nconsole.log('heredado' in hijo);         // true — busca en cadena\nconsole.log(hijo.hasOwnProperty('propio'));    // true\nconsole.log(hijo.hasOwnProperty('heredado')); // false — no es suyo",
+        "explanation": "'in' recorre toda la cadena. hasOwnProperty solo verifica el objeto inmediato. Esta diferencia es crucial para iterar propiedades correctamente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Leer la cadena",
+      "prompt": "Dado el siguiente setup de prototipos, responde accediendo a propiedades:\n\n```\nconst base = { tipo: 'base', describir() { return this.tipo; } };\nconst medio = Object.create(base);\nmedio.nivel = 2;\nconst hijo = Object.create(medio);\nhijo.nombre = 'hijo';\n```\n\nGuarda en variables:\n- `nombreHijo`: la propiedad `nombre` de `hijo`\n- `nivelHijo`: la propiedad `nivel` accedida desde `hijo` (viene del prototipo)\n- `tipoHijo`: la propiedad `tipo` accedida desde `hijo` (viene de `base`)\n- `descripcionHijo`: el resultado de llamar `hijo.describir()`",
+      "starterCode": "const base = { tipo: 'base', describir() { return this.tipo; } };\nconst medio = Object.create(base);\nmedio.nivel = 2;\nconst hijo = Object.create(medio);\nhijo.nombre = 'hijo';\n\n// Accede a las propiedades a través de la cadena\nconst nombreHijo = hijo.nombre;\nconst nivelHijo = hijo.nivel;\nconst tipoHijo = hijo.tipo;\nconst descripcionHijo = hijo.describir();\n\nconsole.log(nombreHijo, nivelHijo, tipoHijo, descripcionHijo);\n",
+      "tests": [
+        {
+          "description": "nombreHijo es 'hijo'",
+          "expression": "nombreHijo === 'hijo'"
+        },
+        {
+          "description": "nivelHijo es 2 (heredado de medio)",
+          "expression": "nivelHijo === 2"
+        },
+        {
+          "description": "tipoHijo es 'base' (heredado de base)",
+          "expression": "tipoHijo === 'base'"
+        },
+        {
+          "description": "descripcionHijo es 'base' (this.tipo donde this = hijo)",
+          "expression": "descripcionHijo === 'base'"
+        }
+      ],
+      "hints": [
+        "JavaScript sube por la cadena: hijo → medio → base → Object.prototype",
+        "`hijo.nivel` no está en hijo, está en medio — JS lo encuentra ahí",
+        "`this` dentro de `describir()` es `hijo`, por eso `this.tipo` busca en la cadena desde hijo"
+      ]
+    },
+    {
+      "title": "Práctica: Construir una cadena",
+      "prompt": "Crea una cadena de prototipos:\n1. `ser` con propiedad `vivo: true` y método `existir()` que retorne `'existo'`\n2. `animal` cuyo prototipo sea `ser`, con propiedad `reino: 'animalia'`\n3. `gato` cuyo prototipo sea `animal`, con propiedad `sonido: 'miau'`\n\nVerifica que:\n- `gato.vivo` sea `true` (de `ser`)\n- `gato.reino` sea `'animalia'` (de `animal`)\n- `gato.existir()` retorne `'existo'` (de `ser`)\n- `gato.hasOwnProperty('sonido')` sea `true` (es propio)\n- `gato.hasOwnProperty('vivo')` sea `false` (es heredado)",
+      "starterCode": "// Crea ser\nconst ser = {\n  vivo: true,\n  existir() { return 'existo'; },\n};\n\n// Crea animal con prototipo ser\nconst animal = Object.create(ser);\nanimal.reino = 'animalia';\n\n// Crea gato con prototipo animal\nconst gato = Object.create(animal);\ngato.sonido = 'miau';\n\n// Verificaciones\nconst vivoDeBase = gato.vivo;\nconst reinoHeredado = gato.reino;\nconst existir = gato.existir();\nconst sonidoEsPropio = gato.hasOwnProperty('sonido');\nconst vivoEsPropio = gato.hasOwnProperty('vivo');\n\nconsole.log(vivoDeBase, reinoHeredado, existir, sonidoEsPropio, vivoEsPropio);\n",
+      "tests": [
+        {
+          "description": "gato.vivo es true (de ser)",
+          "expression": "vivoDeBase === true"
+        },
+        {
+          "description": "gato.reino es 'animalia' (de animal)",
+          "expression": "reinoHeredado === 'animalia'"
+        },
+        {
+          "description": "gato.existir() retorna 'existo'",
+          "expression": "existir === 'existo'"
+        },
+        {
+          "description": "sonido es propiedad propia de gato",
+          "expression": "sonidoEsPropio === true"
+        },
+        {
+          "description": "vivo NO es propiedad propia de gato",
+          "expression": "vivoEsPropio === false"
+        }
+      ],
+      "hints": [
+        "`Object.create(ser)` crea un objeto cuyo prototipo es `ser`",
+        "`Object.create(animal)` crea un objeto cuyo prototipo es `animal`",
+        "`hasOwnProperty` retorna `false` para propiedades heredadas, aunque sean accesibles"
+      ]
+    },
+    {
+      "title": "Aplicación: Shadowing de métodos",
+      "prompt": "Crea un objeto `formateadorBase` con un método `formatear(valor)` que retorne `String(valor)`.\n\nCrea `formateadorMoneda` cuyo prototipo sea `formateadorBase`.\nSobreescribe `formatear` en `formateadorMoneda` para que retorne `'$' + valor`.\n\nVerifica que:\n- `formateadorBase.formatear(42)` retorna `'42'`\n- `formateadorMoneda.formatear(42)` retorna `'$42'`\n- `formateadorBase` no fue modificado\n\nGuarda ambos resultados en `resultadoBase` y `resultadoMoneda`.",
+      "starterCode": "const formateadorBase = {\n  formatear(valor) {\n    return String(valor);\n  },\n};\n\nconst formateadorMoneda = Object.create(formateadorBase);\n// Sobreescribe formatear en formateadorMoneda\n\n\nconst resultadoBase = formateadorBase.formatear(42);\nconst resultadoMoneda = formateadorMoneda.formatear(42);\n\nconsole.log(resultadoBase);   // '42'\nconsole.log(resultadoMoneda); // '$42'\n",
+      "tests": [
+        {
+          "description": "resultadoBase es '42'",
+          "expression": "resultadoBase === '42'"
+        },
+        {
+          "description": "resultadoMoneda es '$42'",
+          "expression": "resultadoMoneda === '$42'"
+        },
+        {
+          "description": "formateadorBase no fue modificado (shadowing, no mutación)",
+          "expression": "formateadorBase.formatear(99) === '99'"
+        },
+        {
+          "description": "formateadorMoneda tiene su propio formatear",
+          "expression": "formateadorMoneda.hasOwnProperty('formatear')"
+        }
+      ],
+      "hints": [
+        "`formateadorMoneda.formatear = function(valor) { return '$' + valor; };`",
+        "Esto agrega `formatear` directamente en `formateadorMoneda`, tapando el del prototipo",
+        "`formateadorBase.formatear` sigue siendo el original — el shadowing no lo toca"
+      ]
+    }
+  ]
+}

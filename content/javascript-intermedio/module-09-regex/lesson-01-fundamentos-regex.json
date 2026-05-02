@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m9-l1",
+  "title": "Fundamentos de expresiones regulares",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## ¿Qué son las expresiones regulares?\n\nUna expresión regular (regex) es un **patrón** que describe un conjunto de strings. En JavaScript se usan para buscar, validar y transformar texto.\n\n```javascript\n// Dos formas de crear una regex:\nconst r1 = /hola/;           // Literal — prefiere esta para patrones estáticos\nconst r2 = new RegExp('hola'); // Constructor — úsalo cuando el patrón es dinámico\n\n// Con flags:\nconst r3 = /hola/gi;                    // g=global, i=insensible a mayúsculas\nconst r4 = new RegExp('hola', 'gi');    // Equivalente\n```\n\n---\n\n## Caracteres y metacaracteres\n\n```javascript\n// Caracteres literales:\n/abc/     → coincide con 'abc' en cualquier posición\n/hello/i  → coincide con 'hello', 'Hello', 'HELLO'\n\n// Metacaracteres (significado especial):\n.    → cualquier carácter excepto salto de línea\n\\d   → dígito [0-9]\n\\w   → letra, dígito o guión bajo [a-zA-Z0-9_]\n\\s   → espacio en blanco (espacio, tab, newline)\n\\D   → no dígito (inverso de \\d)\n\\W   → no \\w\n\\S   → no espacio\n\n// Anclas:\n^    → inicio del string (o línea con flag m)\n$    → fin del string (o línea con flag m)\n\\b   → límite de palabra\n```\n\n---\n\n## Clases de caracteres y cuantificadores\n\n```javascript\n// Clases de caracteres [ ]:\n[abc]     → 'a', 'b' o 'c'\n[a-z]     → cualquier letra minúscula\n[A-Z]     → cualquier letra mayúscula\n[0-9]     → cualquier dígito (= \\d)\n[^abc]    → cualquier carácter EXCEPTO 'a', 'b', 'c'\n[a-zA-Z]  → cualquier letra\n\n// Cuantificadores:\n*    → 0 o más\n+    → 1 o más\n?    → 0 o 1 (opcional)\n{n}  → exactamente n veces\n{n,} → n o más veces\n{n,m}→ entre n y m veces\n\n// Ejemplos:\n/\\d+/        → uno o más dígitos ('123', '5', '0042')\n/[A-Z][a-z]+/ → mayúscula seguida de minúsculas ('Ana', 'Bob')\n/\\w{3,8}/    → palabra de 3 a 8 caracteres\n```\n\n---\n\n## Métodos de String con regex\n\n```javascript\nconst texto = 'La luna llena brilla en la noche';\n\n// test(): ¿coincide?\n/luna/.test(texto);           // true\n/sol/.test(texto);            // false\n\n// match(): devuelve la primera coincidencia (o todas con /g):\ntexto.match(/l[a-z]+/);      // ['luna'] — primera coincidencia\ntexto.match(/l[a-z]+/g);     // ['luna', 'llena'] — todas\n\n// matchAll(): iterador de todas las coincidencias con grupos:\n[...texto.matchAll(/l([a-z]+)/g)];\n// [['luna', 'una'], ['llena', 'lena'], ['la', 'a'], ['la', 'a']]\n\n// replace():\ntexto.replace(/luna/, 'estrella'); // 'La estrella llena brilla...'\ntexto.replace(/la/gi, 'THE');      // Reemplaza todas 'la' e 'La'\n\n// split():\n'uno,dos,,tres'.split(/,+/); // ['uno', 'dos', 'tres']\n\n// search(): índice de la primera coincidencia:\ntexto.search(/luna/); // 3\ntexto.search(/sol/);  // -1\n```\n\n---\n\n## Flags principales\n\n```javascript\n// g — global: encuentra todas las coincidencias (no solo la primera)\n'abcabc'.match(/a/g);   // ['a', 'a']\n'abcabc'.match(/a/);    // ['a'] — solo la primera\n\n// i — insensible a mayúsculas:\n/hola/i.test('HOLA');   // true\n\n// m — multiline: ^ y $ coinciden por línea:\nconst multilinea = 'uno\\ndos\\ntres';\nmultilinea.match(/^\\w+/gm); // ['uno', 'dos', 'tres']\n\n// s — dotAll: el punto . coincide también con salto de línea:\n/a.b/s.test('a\\nb');    // true (sin 's' sería false)\n```\n\n---\n\n## Grupos de captura\n\n```javascript\n// Grupos sin nombre:\nconst fecha = '2026-05-01';\nconst [, anio, mes, dia] = fecha.match(/(\\d{4})-(\\d{2})-(\\d{2})/);\n// anio='2026', mes='05', dia='01'\n\n// Grupos con nombre (?<nombre>):\nconst { groups } = '2026-05-01'.match(\n  /(?<anio>\\d{4})-(?<mes>\\d{2})-(?<dia>\\d{2})/\n);\n// groups.anio='2026', groups.mes='05', groups.dia='01'\n```",
+    "examples": [
+      {
+        "code": "// Extraer todos los emails de un texto\nconst texto = `\n  Contactos: ana@empresa.com, bob@test.org\n  Soporte: help@servicio.co y errors@debug.net\n`;\n\nconst regexEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g;\nconst emails = texto.match(regexEmail);\n\nconsole.log(emails);\n// ['ana@empresa.com', 'bob@test.org', 'help@servicio.co', 'errors@debug.net']\n\n// Validar un email específico:\nfunction esEmailValido(email) {\n  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(email);\n}\n\nconsole.log(esEmailValido('usuario@dominio.com')); // true\nconsole.log(esEmailValido('sin-arroba'));           // false",
+        "explanation": "La regex de email: [chars]+ antes del @, luego [chars]+ para el dominio, luego \\.[a-zA-Z]{2,} para la extensión. Los ^ y $ anclan al inicio y fin para validación completa."
+      },
+      {
+        "code": "// Transformar fechas de formato americano a ISO\nconst fechasUS = ['January 5, 2026', 'March 15, 2025', 'December 31, 2026'];\n\nconst meses = {\n  January: '01', February: '02', March: '03', April: '04',\n  May: '05', June: '06', July: '07', August: '08',\n  September: '09', October: '10', November: '11', December: '12',\n};\n\nconst fechasISO = fechasUS.map(fecha => {\n  const { groups: { mes, dia, anio } } = fecha.match(\n    /(?<mes>[A-Za-z]+) (?<dia>\\d{1,2}), (?<anio>\\d{4})/\n  );\n  return `${anio}-${meses[mes]}-${dia.padStart(2, '0')}`;\n});\n\nconsole.log(fechasISO);\n// ['2026-01-05', '2025-03-15', '2026-12-31']",
+        "explanation": "Los grupos nombrados hacen el código legible: extraemos mes, dia y anio por nombre. padStart(2,'0') asegura el formato DD con cero inicial."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: test() y match()",
+      "prompt": "Usa expresiones regulares para responder estas preguntas sobre el texto:\n\n```javascript\nconst texto = 'JavaScript ES2022 tiene 10 nuevas características y 3 propuestas stage-4';\n```\n\n1. `tieneNumeros`: ¿el texto contiene al menos un número?\n2. `numeros`: array con todos los números encontrados en el texto\n3. `palabrasMayus`: array con todas las palabras que empiezan con mayúscula\n4. `tieneES`: ¿el texto contiene 'ES' seguido de dígitos?",
+      "starterCode": "const texto = 'JavaScript ES2022 tiene 10 nuevas características y 3 propuestas stage-4';\n\nconst tieneNumeros = /\\d/.test(texto);\nconst numeros = texto.match(/\\d+/g);\nconst palabrasMayus = texto.match(/[A-Z][a-zA-Z]+/g);\nconst tieneES = /ES\\d+/.test(texto);\n\nconsole.log(tieneNumeros, numeros, palabrasMayus, tieneES);\n",
+      "tests": [
+        {
+          "description": "tieneNumeros es true",
+          "expression": "tieneNumeros === true"
+        },
+        {
+          "description": "numeros contiene ['2022','10','3','4']",
+          "expression": "JSON.stringify(numeros) === '[\"2022\",\"10\",\"3\",\"4\"]'"
+        },
+        {
+          "description": "palabrasMayus incluye 'JavaScript'",
+          "expression": "palabrasMayus.includes('JavaScript')"
+        },
+        {
+          "description": "tieneES es true",
+          "expression": "tieneES === true"
+        }
+      ],
+      "hints": [
+        "`/\\d/.test(texto)` verifica si hay al menos un dígito",
+        "`texto.match(/\\d+/g)` extrae todas las secuencias de dígitos",
+        "`/[A-Z][a-zA-Z]+/g` coincide con una mayúscula seguida de más letras"
+      ]
+    },
+    {
+      "title": "Práctica: Validaciones comunes",
+      "prompt": "Implementa una función `validar(valor, tipo)` que use regex para validar diferentes tipos:\n\n- `'email'`: debe contener @ y un punto después del @\n- `'telefono'`: exactamente 10 dígitos (puede tener guiones o espacios entre grupos: `300-123-4567` o `3001234567`)\n- `'codigo-postal'`: exactamente 6 dígitos\n- `'url'`: empieza con `http://` o `https://`\n\nRetorna `true` si es válido, `false` si no.\n\nGuarda resultados de varias validaciones.",
+      "starterCode": "function validar(valor, tipo) {\n  const patrones = {\n    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/,\n    telefono: /^[\\d][\\d\\s-]{8}[\\d]$|^\\d{10}$/,\n    'codigo-postal': /^\\d{6}$/,\n    url: /^https?:\\/\\/.+/,\n  };\n\n  const patron = patrones[tipo];\n  if (!patron) throw new Error(`Tipo desconocido: ${tipo}`);\n  return patron.test(valor);\n}\n\nconst emailOK = validar('ana@test.com', 'email');       // true\nconst emailFail = validar('sin-arroba.com', 'email');   // false\nconst telOK = validar('3001234567', 'telefono');         // true\nconst telGuiones = validar('300-123-4567', 'telefono'); // true\nconst cpOK = validar('110111', 'codigo-postal');         // true\nconst cpFail = validar('11011', 'codigo-postal');        // false (5 dígitos)\nconst urlOK = validar('https://google.com', 'url');      // true\n\nconsole.log(emailOK, emailFail, telOK, cpOK, cpFail, urlOK);\n",
+      "tests": [
+        {
+          "description": "emailOK es true",
+          "expression": "emailOK === true"
+        },
+        {
+          "description": "emailFail es false",
+          "expression": "emailFail === false"
+        },
+        {
+          "description": "telOK es true",
+          "expression": "telOK === true"
+        },
+        {
+          "description": "cpOK es true y cpFail es false",
+          "expression": "cpOK === true && cpFail === false"
+        }
+      ],
+      "hints": [
+        "`/^\\d{6}$/` — ^ inicio, \\d{6} exactamente 6 dígitos, $ fin",
+        "`/^https?:\\/\\//` — http seguido de s opcional, luego ://",
+        "Para teléfono con guiones: `/^\\d{3}-?\\d{3}-?\\d{4}$/` acepta con y sin guiones"
+      ]
+    },
+    {
+      "title": "Aplicación: Parser de tokens",
+      "prompt": "Implementa `tokenizar(expresion)` que divida una expresión matemática simple en tokens usando regex:\n\nTipos de tokens:\n- `numero`: uno o más dígitos, con decimal opcional (`\\d+\\.?\\d*`)\n- `operador`: `+`, `-`, `*`, `/`\n- `parentesis`: `(` o `)`\n- `espacio`: uno o más espacios (se descartan)\n\nRetorna un array de objetos `{ tipo, valor }` sin los espacios.\n\nEjemplo: `'(10 + 5.5) * 2'` → `[{tipo:'parentesis',valor:'('},{tipo:'numero',valor:'10'},...]`",
+      "starterCode": "function tokenizar(expresion) {\n  const patron = /(?<numero>\\d+\\.?\\d*)|(?<operador>[+\\-*/])|(?<parentesis>[()])|(?<espacio>\\s+)/g;\n  const tokens = [];\n\n  for (const match of expresion.matchAll(patron)) {\n    const { numero, operador, parentesis } = match.groups;\n    if (numero)      tokens.push({ tipo: 'numero',      valor: numero });\n    else if (operador)   tokens.push({ tipo: 'operador',    valor: operador });\n    else if (parentesis) tokens.push({ tipo: 'parentesis',  valor: parentesis });\n    // Los espacios se descartan\n  }\n\n  return tokens;\n}\n\nconst tokens = tokenizar('(10 + 5.5) * 2');\n\nconst tipos = tokens.map(t => t.tipo);\nconst valores = tokens.map(t => t.valor);\nconst totalTokens = tokens.length; // 7: (, 10, +, 5.5, ), *, 2\n\nconsole.log('Tokens:', tokens);\nconsole.log('Total:', totalTokens);\n",
+      "tests": [
+        {
+          "description": "totalTokens es 7",
+          "expression": "totalTokens === 7"
+        },
+        {
+          "description": "primer token es parentesis '('",
+          "expression": "tokens[0].tipo === 'parentesis' && tokens[0].valor === '('"
+        },
+        {
+          "description": "hay dos números: '10' y '5.5' y '2'",
+          "expression": "tokens.filter(t => t.tipo === 'numero').length === 3"
+        },
+        {
+          "description": "no hay tokens de tipo espacio",
+          "expression": "tokens.every(t => t.tipo !== 'espacio')"
+        }
+      ],
+      "hints": [
+        "`matchAll()` con flag `g` retorna un iterador de todas las coincidencias con sus grupos",
+        "Los grupos nombrados `(?<nombre>...)` permiten acceder por nombre en `match.groups`",
+        "`\\d+\\.?\\d*` coincide con enteros y decimales: 10, 5.5, 3.14"
+      ]
+    }
+  ]
+}

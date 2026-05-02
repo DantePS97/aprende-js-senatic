@@ -1,0 +1,109 @@
+{
+  "id": "js-intermedio-m3-l2",
+  "title": "Herencia con extends y super",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## extends y super\n\n`extends` establece la relación de herencia entre clases. `super` te da acceso al constructor y métodos de la clase padre. Es la versión limpia de lo que hiciste manualmente en el módulo anterior.\n\n```javascript\nclass Animal {\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n\n  hablar() {\n    return `${this.nombre} hace un sonido`;\n  }\n}\n\nclass Perro extends Animal {\n  constructor(nombre, raza) {\n    super(nombre); // OBLIGATORIO: llama al constructor de Animal\n    this.raza = raza;\n  }\n\n  hablar() {\n    return `${this.nombre} dice guau`;\n  }\n\n  info() {\n    return `${this.nombre} es un ${this.raza}`;\n  }\n}\n\nconst rex = new Perro('Rex', 'Labrador');\nconsole.log(rex.hablar()); // 'Rex dice guau'\nconsole.log(rex.info());   // 'Rex es un Labrador'\nconsole.log(rex instanceof Perro);  // true\nconsole.log(rex instanceof Animal); // true\n```\n\n---\n\n## La regla de super()\n\nSi defines un `constructor` en una subclase, **debes llamar `super()` antes de usar `this`**. Si no lo haces, obtienes un `ReferenceError`:\n\n```javascript\nclass Hijo extends Padre {\n  constructor() {\n    // ❌ this.x = 1; — ReferenceError: Must call super before accessing 'this'\n    super();\n    this.x = 1; // ✅ Ahora sí\n  }\n}\n```\n\nSi **no defines constructor** en la subclase, JavaScript lo hereda automáticamente:\n\n```javascript\nclass Gato extends Animal {\n  // Sin constructor: usa el de Animal automáticamente\n  maullar() { return 'miau'; }\n}\n\nconst g = new Gato('Michi');\nconsole.log(g.nombre);    // 'Michi' — viene del constructor de Animal\nconsole.log(g.maullar()); // 'miau'\n```\n\n---\n\n## super para llamar métodos del padre\n\n`super.metodo()` llama el método del padre desde el hijo, permitiéndote **extenderlo** en lugar de reemplazarlo:\n\n```javascript\nclass Forma {\n  constructor(color) {\n    this.color = color;\n  }\n\n  describir() {\n    return `Figura de color ${this.color}`;\n  }\n}\n\nclass Circulo extends Forma {\n  constructor(color, radio) {\n    super(color);\n    this.radio = radio;\n  }\n\n  describir() {\n    const base = super.describir(); // Llama al padre\n    return `${base}, radio ${this.radio}, área ${(Math.PI * this.radio ** 2).toFixed(2)}`;\n  }\n}\n\nconst c = new Circulo('azul', 5);\nconsole.log(c.describir());\n// 'Figura de color azul, radio 5, área 78.54'\n```\n\n---\n\n## Herencia de múltiples niveles\n\n```javascript\nclass Ser {\n  constructor(nombre) { this.nombre = nombre; }\n  existir() { return `${this.nombre} existe`; }\n}\n\nclass Animal extends Ser {\n  constructor(nombre, sonido) {\n    super(nombre);\n    this.sonido = sonido;\n  }\n  hablar() { return `${this.nombre}: ${this.sonido}`; }\n}\n\nclass Mascota extends Animal {\n  constructor(nombre, sonido, dueno) {\n    super(nombre, sonido);\n    this.dueno = dueno;\n  }\n  presentar() {\n    return `${this.nombre} es la mascota de ${this.dueno}`;\n  }\n}\n\nconst luna = new Mascota('Luna', 'miau', 'Ana');\nconsole.log(luna.existir());   // 'Luna existe' — de Ser\nconsole.log(luna.hablar());    // 'Luna: miau' — de Animal\nconsole.log(luna.presentar()); // 'Luna es la mascota de Ana' — de Mascota\n```\n\n---\n\n## Lo que hace extends internamente\n\n```javascript\n// Esto:\nclass Perro extends Animal {}\n\n// Equivale a:\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro;\nObject.setPrototypeOf(Perro, Animal); // Hereda también los estáticos\n```\n\nLa única diferencia respecto al módulo anterior: `extends` también conecta los **métodos estáticos** a través de la cadena.",
+    "examples": [
+      {
+        "code": "class Error extends Error {}\n// No hagas esto — pero demuestra que puedes extender clases nativas\n\n// Extender Error para errores personalizados:\nclass ErrorValidacion extends Error {\n  constructor(campo, mensaje) {\n    super(mensaje); // Pasa el mensaje al constructor de Error\n    this.name = 'ErrorValidacion';\n    this.campo = campo;\n  }\n}\n\ntry {\n  throw new ErrorValidacion('email', 'El email no es válido');\n} catch (e) {\n  console.log(e instanceof ErrorValidacion); // true\n  console.log(e instanceof Error);           // true\n  console.log(e.name);                       // 'ErrorValidacion'\n  console.log(e.campo);                      // 'email'\n  console.log(e.message);                    // 'El email no es válido'\n}",
+        "explanation": "Extender Error es un patrón real para crear errores tipados. Permite catch específico por tipo de error."
+      },
+      {
+        "code": "class Coleccion {\n  constructor() { this._items = []; }\n  agregar(item) { this._items.push(item); return this; }\n  get size() { return this._items.length; }\n  [Symbol.iterator]() { return this._items[Symbol.iterator](); }\n}\n\nclass ColeccionOrdenada extends Coleccion {\n  agregar(item) {\n    super.agregar(item);            // Reutiliza el del padre\n    this._items.sort();             // Y ordena\n    return this;\n  }\n}\n\nconst c = new ColeccionOrdenada();\nc.agregar('banana').agregar('manzana').agregar('cereza');\nfor (const item of c) {\n  console.log(item); // 'banana', 'cereza', 'manzana' (ordenado)\n}",
+        "explanation": "super.agregar() reutiliza la lógica del padre y luego agrega comportamiento propio. Sin super, tendrías que duplicar el código."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Subclase simple",
+      "prompt": "Dada la clase `Vehiculo`:\n```javascript\nclass Vehiculo {\n  constructor(marca, velocidadMax) {\n    this.marca = marca;\n    this.velocidadMax = velocidadMax;\n  }\n  info() {\n    return `${this.marca} - máx: ${this.velocidadMax} km/h`;\n  }\n}\n```\n\nCrea `Moto extends Vehiculo` que:\n- Reciba `marca`, `velocidadMax` y `cilindrada`\n- Llame a `super` correctamente\n- Tenga un método `ficha()` que retorne `info() + ', ' + cilindrada + 'cc'`\n\nCrea `m = new Moto('Honda', 200, 500)` y guarda:\n- `fichaM = m.ficha()` → `'Honda - máx: 200 km/h, 500cc'`",
+      "starterCode": "class Vehiculo {\n  constructor(marca, velocidadMax) {\n    this.marca = marca;\n    this.velocidadMax = velocidadMax;\n  }\n  info() {\n    return `${this.marca} - máx: ${this.velocidadMax} km/h`;\n  }\n}\n\nclass Moto extends Vehiculo {\n  constructor(marca, velocidadMax, cilindrada) {\n    // Llama super con los parámetros correctos\n\n    // Asigna cilindrada\n\n  }\n\n  ficha() {\n    // Retorna info() + ', ' + cilindrada + 'cc'\n\n  }\n}\n\nconst m = new Moto('Honda', 200, 500);\nconst fichaM = m.ficha();\nconsole.log(fichaM);\n",
+      "tests": [
+        {
+          "description": "fichaM es 'Honda - máx: 200 km/h, 500cc'",
+          "expression": "fichaM === 'Honda - máx: 200 km/h, 500cc'"
+        },
+        {
+          "description": "m instanceof Moto y Vehiculo",
+          "expression": "m instanceof Moto && m instanceof Vehiculo"
+        },
+        {
+          "description": "cilindrada es propiedad propia de m",
+          "expression": "m.hasOwnProperty('cilindrada')"
+        },
+        {
+          "description": "m.info() funciona (heredado de Vehiculo)",
+          "expression": "m.info() === 'Honda - máx: 200 km/h'"
+        }
+      ],
+      "hints": [
+        "`super(marca, velocidadMax);`",
+        "`this.cilindrada = cilindrada;`",
+        "`return this.info() + ', ' + this.cilindrada + 'cc';`"
+      ]
+    },
+    {
+      "title": "Práctica: super.metodo()",
+      "prompt": "Crea una jerarquía de empleados:\n\n1. `Empleado(nombre, salarioBase)`: método `calcularPago()` retorna `salarioBase`\n2. `EmpleadoConBonus extends Empleado`: recibe además `bonus`. Sobreescribe `calcularPago()` para retornar `super.calcularPago() + bonus`\n3. `Gerente extends EmpleadoConBonus`: recibe además `equipoSize`. Sobreescribe `calcularPago()` para retornar `super.calcularPago() + equipoSize * 10000`\n\nCrea:\n- `e = new Empleado('Ana', 3000000)` → pago: 3000000\n- `eb = new EmpleadoConBonus('Luis', 3000000, 500000)` → pago: 3500000\n- `g = new Gerente('Carlos', 5000000, 1000000, 3)` → pago: 6030000\n\nGuarda los tres pagos en `pagoE`, `pagoEB`, `pagoG`.",
+      "starterCode": "class Empleado {\n  constructor(nombre, salarioBase) {\n    this.nombre = nombre;\n    this.salarioBase = salarioBase;\n  }\n  calcularPago() {\n    return this.salarioBase;\n  }\n}\n\nclass EmpleadoConBonus extends Empleado {\n  constructor(nombre, salarioBase, bonus) {\n    super(nombre, salarioBase);\n    this.bonus = bonus;\n  }\n  calcularPago() {\n    // super.calcularPago() + bonus\n\n  }\n}\n\nclass Gerente extends EmpleadoConBonus {\n  constructor(nombre, salarioBase, bonus, equipoSize) {\n    super(nombre, salarioBase, bonus);\n    this.equipoSize = equipoSize;\n  }\n  calcularPago() {\n    // super.calcularPago() + equipoSize * 10000\n\n  }\n}\n\nconst e = new Empleado('Ana', 3000000);\nconst eb = new EmpleadoConBonus('Luis', 3000000, 500000);\nconst g = new Gerente('Carlos', 5000000, 1000000, 3);\n\nconst pagoE = e.calcularPago();\nconst pagoEB = eb.calcularPago();\nconst pagoG = g.calcularPago();\n\nconsole.log(pagoE, pagoEB, pagoG);\n",
+      "tests": [
+        {
+          "description": "pagoE es 3000000",
+          "expression": "pagoE === 3000000"
+        },
+        {
+          "description": "pagoEB es 3500000",
+          "expression": "pagoEB === 3500000"
+        },
+        {
+          "description": "pagoG es 6030000 (5000000 + 1000000 + 3*10000)",
+          "expression": "pagoG === 6030000"
+        },
+        {
+          "description": "g instanceof Gerente, EmpleadoConBonus y Empleado",
+          "expression": "g instanceof Gerente && g instanceof EmpleadoConBonus && g instanceof Empleado"
+        }
+      ],
+      "hints": [
+        "`return super.calcularPago() + this.bonus;`",
+        "`return super.calcularPago() + this.equipoSize * 10000;`",
+        "super.calcularPago() en Gerente llama el de EmpleadoConBonus, que a su vez llama el de Empleado"
+      ]
+    },
+    {
+      "title": "Aplicación: Error personalizado",
+      "prompt": "Crea dos clases de error personalizadas extendiendo `Error`:\n\n1. `ErrorApp extends Error`: recibe `mensaje` y `codigo`. Asigna `this.name = 'ErrorApp'`, `this.codigo = codigo`. Llama `super(mensaje)`.\n\n2. `ErrorValidacion extends ErrorApp`: recibe `campo`, `mensaje`. Llama `super(mensaje, 400)`. Asigna `this.name = 'ErrorValidacion'` y `this.campo = campo`.\n\nCrea instancias y verifica:\n```javascript\nconst e1 = new ErrorApp('Fallo general', 500);\nconst e2 = new ErrorValidacion('email', 'Email inválido');\n```\n\nGuarda en variables:\n- `e1EsError`: `e1 instanceof Error`\n- `e2EsErrorApp`: `e2 instanceof ErrorApp`\n- `codigoE1`: `e1.codigo`\n- `campoE2`: `e2.campo`\n- `codigoE2`: `e2.codigo` (heredado: 400)",
+      "starterCode": "class ErrorApp extends Error {\n  constructor(mensaje, codigo) {\n    super(mensaje);\n    this.name = 'ErrorApp';\n    // Asigna codigo\n\n  }\n}\n\nclass ErrorValidacion extends ErrorApp {\n  constructor(campo, mensaje) {\n    // Llama super con mensaje y código 400\n\n    this.name = 'ErrorValidacion';\n    // Asigna campo\n\n  }\n}\n\nconst e1 = new ErrorApp('Fallo general', 500);\nconst e2 = new ErrorValidacion('email', 'Email inválido');\n\nconst e1EsError = e1 instanceof Error;\nconst e2EsErrorApp = e2 instanceof ErrorApp;\nconst codigoE1 = e1.codigo;\nconst campoE2 = e2.campo;\nconst codigoE2 = e2.codigo;\n\nconsole.log(e1EsError, e2EsErrorApp, codigoE1, campoE2, codigoE2);\n",
+      "tests": [
+        {
+          "description": "e1EsError es true",
+          "expression": "e1EsError === true"
+        },
+        {
+          "description": "e2EsErrorApp es true",
+          "expression": "e2EsErrorApp === true"
+        },
+        {
+          "description": "codigoE1 es 500",
+          "expression": "codigoE1 === 500"
+        },
+        {
+          "description": "campoE2 es 'email'",
+          "expression": "campoE2 === 'email'"
+        },
+        {
+          "description": "codigoE2 es 400 (heredado de ErrorApp via super)",
+          "expression": "codigoE2 === 400"
+        }
+      ],
+      "hints": [
+        "`this.codigo = codigo;`",
+        "`super(mensaje, 400);` — pasa 400 como código al constructor de ErrorApp",
+        "`this.campo = campo;`",
+        "e2.codigo funciona porque ErrorApp lo asigna en su constructor, y ErrorValidacion lo hereda"
+      ]
+    }
+  ]
+}

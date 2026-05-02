@@ -1,0 +1,97 @@
+{
+  "id": "js-intermedio-m4-l2",
+  "title": "Macrotasks vs Microtasks",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Las dos colas del Event Loop\n\nCuando el Call Stack está vacío, el Event Loop decide qué ejecutar a continuación. Pero no hay una sola cola — hay dos, con prioridades distintas:\n\n- **Microtask Queue** (cola de microtareas): alta prioridad\n- **Macrotask Queue** (cola de macrotareas / task queue): baja prioridad\n\n---\n\n## ¿Qué va en cada cola?\n\n| Microtasks | Macrotasks |\n|------------|------------|\n| `Promise.then/catch/finally` | `setTimeout` |\n| `queueMicrotask()` | `setInterval` |\n| `MutationObserver` | `setImmediate` (Node.js) |\n| `async/await` (internamente) | eventos del DOM (`click`, `load`...) |\n| | `MessageChannel` |\n\n---\n\n## La regla fundamental\n\n> **Después de cada macrotask, el motor vacía TODA la microtask queue antes de tomar la siguiente macrotask.**\n\n```javascript\nconsole.log('1 - Síncrono');\n\nsetTimeout(() => {\n  console.log('4 - Macrotask (setTimeout)');\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log('3 - Microtask (Promise)');\n});\n\nconsole.log('2 - Síncrono');\n\n// Output:\n// 1 - Síncrono\n// 2 - Síncrono\n// 3 - Microtask (Promise)\n// 4 - Macrotask (setTimeout)\n```\n\nAunque el `setTimeout` tiene delay 0, la Promise siempre gana porque las microtasks se procesan **antes** de la siguiente macrotask.\n\n---\n\n## El ciclo completo\n\n```\n┌──────────────────────────────────────────────────────┐\n│                    EVENT LOOP                        │\n│                                                      │\n│  1. Ejecuta el script completo (macrotask inicial)   │\n│                    ↓                                 │\n│  2. Vacía TODA la Microtask Queue                    │\n│                    ↓                                 │\n│  3. Toma UNA Macrotask de la Task Queue              │\n│                    ↓                                 │\n│  4. Vacía TODA la Microtask Queue                    │\n│                    ↓                                 │\n│  5. (Render si es necesario — browser)               │\n│                    ↓                                 │\n│  6. Vuelve al paso 3                                 │\n└──────────────────────────────────────────────────────┘\n```\n\n---\n\n## Microtasks dentro de microtasks\n\n¡Las microtasks pueden encolar más microtasks, y todas se vacían antes de la siguiente macrotask!\n\n```javascript\nconsole.log('inicio');\n\nPromise.resolve()\n  .then(() => {\n    console.log('microtask 1');\n    // Encola otra microtask desde dentro de una microtask\n    return Promise.resolve();\n  })\n  .then(() => {\n    console.log('microtask 2');\n  });\n\nsetTimeout(() => console.log('macrotask'), 0);\n\n// Output:\n// inicio\n// microtask 1\n// microtask 2\n// macrotask\n```\n\n---\n\n## async/await y las colas\n\n`async/await` es azúcar sobre Promises — internamente usa microtasks:\n\n```javascript\nasync function demo() {\n  console.log('B - dentro async (síncrono hasta await)');\n  await Promise.resolve(); // Pausa → encola microtask\n  console.log('D - después del await (microtask)');\n}\n\nconsole.log('A - síncrono');\ndemo();\nconsole.log('C - síncrono (continúa mientras demo espera)');\n\nsetTimeout(() => console.log('E - macrotask'), 0);\n\n// Output: A, B, C, D, E\n```\n\n`await` suspende la función async y **retorna el control al caller**, que sigue ejecutando. Cuando la promise se resuelve, la continuación de la función se encola como microtask.",
+    "examples": [
+      {
+        "code": "// Demostración con múltiples microtasks y macrotasks\nconsole.log('--- inicio ---');\n\nsetTimeout(() => console.log('timeout 1'), 0);\nsetTimeout(() => console.log('timeout 2'), 0);\n\nPromise.resolve()\n  .then(() => console.log('promise 1'))\n  .then(() => console.log('promise 2'));\n\nqueueMicrotask(() => console.log('queueMicrotask'));\n\nconsole.log('--- fin sincrónico ---');\n\n// Output:\n// --- inicio ---\n// --- fin sincrónico ---\n// promise 1\n// queueMicrotask\n// promise 2\n// timeout 1\n// timeout 2",
+        "explanation": "Todo el código síncrono primero, luego toda la microtask queue (promise 1 → queueMicrotask → promise 2), luego las macrotasks una a una."
+      },
+      {
+        "code": "// ¿Puede una microtask bloquear macrotasks?\nasync function microtasksInfinitas() {\n  while (true) {\n    await Promise.resolve(); // Encola microtask → vacía → encola otra...\n  }\n}\n\n// Si llamaras microtasksInfinitas(), los setTimeout NUNCA ejecutarían:\n// El motor vacía toda la microtask queue antes de macrotasks\n// → bucle infinito de microtasks bloquea todas las macrotasks\n\n// Por eso: si tienes operaciones largas en microtasks, considera\n// usar setTimeout para 'ceder' el turno al event loop:\nconsole.log('Esto sí se ejecuta');\nsetTimeout(() => console.log('Macrotask normal'), 0);\nPromise.resolve().then(() => console.log('Microtask normal'));",
+        "explanation": "Las microtasks tienen prioridad total. Un bucle infinito de microtasks bloquea las macrotasks para siempre. Es una forma sutil de hacer blocking."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Predecir el orden",
+      "prompt": "Analiza este código y predice el orden de salida. Guarda cada mensaje en el array `salida` en el orden que se imprimiría:\n\n```javascript\nconsole.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');\n```\n\nEl orden correcto es: A, D, C, B\n\nGuarda en `salida = ['A', 'D', 'C', 'B']` y en `primero`, `ultimo` el primer y último elemento.",
+      "starterCode": "// No ejecutes el código original — solo analiza el orden\n// A: síncrono inmediato\n// B: macrotask (setTimeout)\n// C: microtask (Promise.then)\n// D: síncrono inmediato\n\nconst salida = ['A', 'D', 'C', 'B']; // Orden correcto de ejecución\n\nconst primero = salida[0];\nconst ultimo = salida[salida.length - 1];\n\nconsole.log(salida);\nconsole.log('Primero:', primero, '| Último:', ultimo);\n",
+      "tests": [
+        {
+          "description": "El orden es ['A', 'D', 'C', 'B']",
+          "expression": "JSON.stringify(salida) === '[\"A\",\"D\",\"C\",\"B\"]'"
+        },
+        {
+          "description": "primero es 'A' (código síncrono)",
+          "expression": "primero === 'A'"
+        },
+        {
+          "description": "ultimo es 'B' (macrotask)",
+          "expression": "ultimo === 'B'"
+        },
+        {
+          "description": "C viene antes que B (microtask antes que macrotask)",
+          "expression": "salida.indexOf('C') < salida.indexOf('B')"
+        }
+      ],
+      "hints": [
+        "Primero todo el código síncrono: A, luego D",
+        "Luego todas las microtasks: Promise.then → C",
+        "Finalmente macrotasks: setTimeout → B",
+        "Aunque el delay sea 0, setTimeout es macrotask y va después de las microtasks"
+      ]
+    },
+    {
+      "title": "Práctica: Cola de microtasks con Promise",
+      "prompt": "Construye una función `encolarTareas(tareas)` que reciba un array de funciones y las ejecute **como microtasks** en orden, retornando una Promise que se resuelve cuando todas terminaron.\n\nUsa `Promise.resolve().then()` para encolar cada función en la microtask queue.\n\nLuego crea un `registro = []` y llama:\n```\nawait encolarTareas([\n  () => registro.push('tarea1'),\n  () => registro.push('tarea2'),\n  () => registro.push('tarea3'),\n]);\n```\n\nVerifica que `registro` sea `['tarea1', 'tarea2', 'tarea3']`.",
+      "starterCode": "async function encolarTareas(tareas) {\n  for (const tarea of tareas) {\n    await Promise.resolve().then(() => tarea());\n  }\n}\n\nconst registro = [];\n\n// Ejecuta encolarTareas y espera\nawait encolarTareas([\n  () => registro.push('tarea1'),\n  () => registro.push('tarea2'),\n  () => registro.push('tarea3'),\n]);\n\nconsole.log(registro);\n",
+      "tests": [
+        {
+          "description": "registro tiene 3 entradas",
+          "expression": "registro.length === 3"
+        },
+        {
+          "description": "El orden es ['tarea1', 'tarea2', 'tarea3']",
+          "expression": "JSON.stringify(registro) === '[\"tarea1\",\"tarea2\",\"tarea3\"]'"
+        }
+      ],
+      "hints": [
+        "`await Promise.resolve().then(() => tarea())` encola tarea como microtask y espera su resolución",
+        "El `for...of` con `await` garantiza que cada microtask se complete antes de encolar la siguiente",
+        "Esto es diferente a `Promise.all` — ejecuta en serie, no en paralelo"
+      ]
+    },
+    {
+      "title": "Aplicación: Scheduler de prioridades",
+      "prompt": "Crea una función `scheduler()` que retorne un objeto con dos métodos:\n- `urgente(fn)`: encola `fn` como microtask (usa `queueMicrotask`)\n- `normal(fn)`: encola `fn` como macrotask (usa `setTimeout(fn, 0)`)\n\nLuego crea un `log = []` y programa:\n```\nconst s = scheduler();\ns.normal(() => log.push('normal-1'));\ns.urgente(() => log.push('urgente-1'));\ns.normal(() => log.push('normal-2'));\ns.urgente(() => log.push('urgente-2'));\n```\n\nDespués de que todas las tareas corran, `log` debe ser:\n`['urgente-1', 'urgente-2', 'normal-1', 'normal-2']`\n\nUsa `await new Promise(r => setTimeout(r, 50))` para esperar que todo corra.",
+      "starterCode": "function scheduler() {\n  return {\n    urgente(fn) {\n      queueMicrotask(fn);\n    },\n    normal(fn) {\n      setTimeout(fn, 0);\n    },\n  };\n}\n\nconst log = [];\nconst s = scheduler();\n\ns.normal(() => log.push('normal-1'));\ns.urgente(() => log.push('urgente-1'));\ns.normal(() => log.push('normal-2'));\ns.urgente(() => log.push('urgente-2'));\n\n// Espera a que todas las tareas terminen\nawait new Promise(r => setTimeout(r, 50));\n\nconsole.log(log);\n",
+      "tests": [
+        {
+          "description": "Las urgentes van antes que las normales",
+          "expression": "log.indexOf('urgente-1') < log.indexOf('normal-1') && log.indexOf('urgente-2') < log.indexOf('normal-1')"
+        },
+        {
+          "description": "log tiene 4 entradas",
+          "expression": "log.length === 4"
+        },
+        {
+          "description": "log empieza con las urgentes",
+          "expression": "log[0].startsWith('urgente') && log[1].startsWith('urgente')"
+        },
+        {
+          "description": "log termina con las normales",
+          "expression": "log[2].startsWith('normal') && log[3].startsWith('normal')"
+        }
+      ],
+      "hints": [
+        "`queueMicrotask(fn)` encola en la microtask queue — se ejecuta antes de cualquier macrotask pendiente",
+        "`setTimeout(fn, 0)` encola en la macrotask queue",
+        "Las dos microtasks se ejecutan juntas antes que cualquiera de las macrotasks"
+      ]
+    }
+  ]
+}

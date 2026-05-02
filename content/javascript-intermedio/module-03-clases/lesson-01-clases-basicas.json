@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m3-l1",
+  "title": "Clases ES6: constructor y métodos",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Clases ES6\n\nLas clases de ES6 son **azúcar sintáctica** sobre la herencia prototípica que estudiaste en el módulo anterior. No cambian el modelo de prototipos — lo hacen más legible.\n\n```javascript\n// Lo que escribes con clases:\nclass Persona {\n  constructor(nombre, edad) {\n    this.nombre = nombre;\n    this.edad = edad;\n  }\n\n  saludar() {\n    return `Hola, soy ${this.nombre}`;\n  }\n}\n\n// Lo que JavaScript hace internamente (equivalente):\nfunction Persona(nombre, edad) {\n  this.nombre = nombre;\n  this.edad = edad;\n}\nPersona.prototype.saludar = function () {\n  return `Hola, soy ${this.nombre}`;\n};\n```\n\nAmbos son idénticos a nivel de prototipos.\n\n---\n\n## El constructor\n\nEl método `constructor` se ejecuta automáticamente con `new`. Solo puede haber uno por clase:\n\n```javascript\nclass Producto {\n  constructor(nombre, precio, stock) {\n    this.nombre = nombre;\n    this.precio = precio;\n    this.stock = stock;\n  }\n}\n\nconst libro = new Producto('JavaScript Pro', 45000, 10);\nconsole.log(libro.nombre); // 'JavaScript Pro'\nconsole.log(libro.precio); // 45000\n```\n\n---\n\n## Métodos de instancia\n\nLos métodos definidos dentro de la clase van automáticamente al prototipo:\n\n```javascript\nclass Contador {\n  constructor(inicio = 0) {\n    this.valor = inicio;\n  }\n\n  incrementar() {\n    this.valor++;\n    return this;\n  }\n\n  decrementar() {\n    this.valor--;\n    return this;\n  }\n\n  resetear() {\n    this.valor = 0;\n    return this;\n  }\n\n  obtener() {\n    return this.valor;\n  }\n}\n\nconst c = new Contador(10);\n// Retornar 'this' permite encadenamiento de métodos\nc.incrementar().incrementar().decrementar();\nconsole.log(c.obtener()); // 11\n```\n\n---\n\n## Diferencias clave vs funciones constructoras\n\n```javascript\n// 1. Las clases NO se elevan (hoisting)\nnew Persona('Ana'); // ❌ ReferenceError\nclass Persona { constructor(n) { this.nombre = n; } }\n\n// Las funciones constructoras SÍ se elevan:\nnew Persona2('Ana'); // ✅ Funciona\nfunction Persona2(n) { this.nombre = n; }\n\n// 2. Las clases siempre están en strict mode\nclass Demo {\n  metodo() {\n    // Automáticamente 'use strict'\n  }\n}\n\n// 3. Solo se pueden llamar con 'new'\nclass Punto {\n  constructor(x, y) { this.x = x; this.y = y; }\n}\nPunto(1, 2); // ❌ TypeError: Class constructor Punto cannot be invoked without 'new'\n```\n\n---\n\n## Retornar `this` para encadenamiento\n\nUn patrón muy útil llamado **method chaining** o **fluent interface**:\n\n```javascript\nclass QueryBuilder {\n  constructor() {\n    this.tabla = '';\n    this.condiciones = [];\n    this.limite = null;\n  }\n\n  from(tabla) {\n    this.tabla = tabla;\n    return this;\n  }\n\n  where(condicion) {\n    this.condiciones.push(condicion);\n    return this;\n  }\n\n  limit(n) {\n    this.limite = n;\n    return this;\n  }\n\n  build() {\n    let q = `SELECT * FROM ${this.tabla}`;\n    if (this.condiciones.length > 0)\n      q += ` WHERE ${this.condiciones.join(' AND ')}`;\n    if (this.limite) q += ` LIMIT ${this.limite}`;\n    return q;\n  }\n}\n\nconst query = new QueryBuilder()\n  .from('usuarios')\n  .where('edad > 18')\n  .where('activo = true')\n  .limit(10)\n  .build();\n\nconsole.log(query);\n// 'SELECT * FROM usuarios WHERE edad > 18 AND activo = true LIMIT 10'\n```",
+    "examples": [
+      {
+        "code": "class Temperatura {\n  constructor(celsius) {\n    this.celsius = celsius;\n  }\n\n  aFahrenheit() {\n    return this.celsius * 9 / 5 + 32;\n  }\n\n  aKelvin() {\n    return this.celsius + 273.15;\n  }\n\n  toString() {\n    return `${this.celsius}°C`;\n  }\n}\n\nconst t = new Temperatura(100);\nconsole.log(t.aFahrenheit()); // 212\nconsole.log(t.aKelvin());     // 373.15\nconsole.log(String(t));       // '100°C' (llama toString())",
+        "explanation": "toString() es un método especial que JavaScript llama automáticamente al convertir el objeto a string. Las clases lo heredan de Object.prototype pero puedes sobreescribirlo."
+      },
+      {
+        "code": "class Pila {\n  constructor() {\n    this._items = [];\n  }\n\n  push(item) {\n    this._items.push(item);\n    return this;\n  }\n\n  pop() {\n    return this._items.pop();\n  }\n\n  peek() {\n    return this._items[this._items.length - 1];\n  }\n\n  get size() {\n    return this._items.length;\n  }\n\n  isEmpty() {\n    return this._items.length === 0;\n  }\n}\n\nconst pila = new Pila();\npila.push(1).push(2).push(3);\nconsole.log(pila.peek()); // 3\nconsole.log(pila.size);   // 3\nconsole.log(pila.pop());  // 3\nconsole.log(pila.size);   // 2",
+        "explanation": "Implementación de una estructura de datos Stack con clases. El método get size actúa como propiedad pero tiene lógica — lo veremos a fondo en getters."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Tu primera clase",
+      "prompt": "Crea una clase `Rectangulo` con:\n- Constructor que reciba `base` y `altura`\n- Método `area()` que retorne `base * altura`\n- Método `perimetro()` que retorne `2 * (base + altura)`\n\nCrea `r = new Rectangulo(6, 4)` y guarda:\n- `areaR = r.area()` → 24\n- `perimetroR = r.perimetro()` → 20",
+      "starterCode": "class Rectangulo {\n  constructor(base, altura) {\n    // Asigna base y altura\n\n  }\n\n  area() {\n    // Retorna base * altura\n\n  }\n\n  perimetro() {\n    // Retorna 2 * (base + altura)\n\n  }\n}\n\nconst r = new Rectangulo(6, 4);\nconst areaR = r.area();\nconst perimetroR = r.perimetro();\n\nconsole.log(areaR, perimetroR); // 24, 20\n",
+      "tests": [
+        {
+          "description": "areaR es 24",
+          "expression": "areaR === 24"
+        },
+        {
+          "description": "perimetroR es 20",
+          "expression": "perimetroR === 20"
+        },
+        {
+          "description": "area y perimetro están en el prototipo (no en la instancia)",
+          "expression": "!r.hasOwnProperty('area') && !r.hasOwnProperty('perimetro')"
+        },
+        {
+          "description": "base y altura son propiedades propias",
+          "expression": "r.hasOwnProperty('base') && r.hasOwnProperty('altura')"
+        }
+      ],
+      "hints": [
+        "`this.base = base; this.altura = altura;`",
+        "`return this.base * this.altura;`",
+        "`return 2 * (this.base + this.altura);`"
+      ]
+    },
+    {
+      "title": "Práctica: Método chaining",
+      "prompt": "Crea una clase `Texto` con:\n- Constructor que reciba un `contenido` (string)\n- `mayusculas()`: convierte el contenido a mayúsculas y retorna `this`\n- `recortar()`: elimina espacios al inicio y al final (`trim()`) y retorna `this`\n- `reemplazar(buscar, porEsto)`: reemplaza todas las ocurrencias de `buscar` por `porEsto` y retorna `this`\n- `resultado()`: retorna el contenido actual (string)\n\nPrueba encadenando:\n```\nnew Texto('  hola mundo  ')\n  .recortar()\n  .reemplazar('mundo', 'JS')\n  .mayusculas()\n  .resultado()\n// → 'HOLA JS'\n```\n\nGuarda ese resultado en `textoFinal`.",
+      "starterCode": "class Texto {\n  constructor(contenido) {\n    this.contenido = contenido;\n  }\n\n  mayusculas() {\n    this.contenido = this.contenido.toUpperCase();\n    return this;\n  }\n\n  recortar() {\n    // trim() y retorna this\n\n  }\n\n  reemplazar(buscar, porEsto) {\n    // replaceAll y retorna this\n\n  }\n\n  resultado() {\n    return this.contenido;\n  }\n}\n\nconst textoFinal = new Texto('  hola mundo  ')\n  .recortar()\n  .reemplazar('mundo', 'JS')\n  .mayusculas()\n  .resultado();\n\nconsole.log(textoFinal); // 'HOLA JS'\n",
+      "tests": [
+        {
+          "description": "textoFinal es 'HOLA JS'",
+          "expression": "textoFinal === 'HOLA JS'"
+        },
+        {
+          "description": "recortar retorna la instancia (this)",
+          "expression": "(() => { const t = new Texto(' a '); return t.recortar() === t; })()"
+        },
+        {
+          "description": "reemplazar retorna la instancia (this)",
+          "expression": "(() => { const t = new Texto('ab'); return t.reemplazar('a','x') === t; })()"
+        },
+        {
+          "description": "encadenamiento funciona en cualquier orden",
+          "expression": "new Texto(' JS ').recortar().mayusculas().resultado() === 'JS'"
+        }
+      ],
+      "hints": [
+        "`this.contenido = this.contenido.trim(); return this;`",
+        "`this.contenido = this.contenido.replaceAll(buscar, porEsto); return this;`",
+        "Retornar `this` es la clave del method chaining"
+      ]
+    },
+    {
+      "title": "Aplicación: Clase Carrito",
+      "prompt": "Crea una clase `Carrito` con:\n- Constructor sin parámetros: inicializa `this.items = []`\n- `agregar(producto)`: agrega el producto al array (producto tiene `nombre` y `precio`), retorna `this`\n- `eliminar(nombre)`: elimina el producto con ese nombre del array, retorna `this`\n- `total()`: retorna la suma de todos los precios\n- `cantidad()`: retorna el número de items\n\nCrea `carrito = new Carrito()` y ejecuta:\n```\ncarrito.agregar({nombre:'Libro',precio:25000})\n       .agregar({nombre:'Curso',precio:50000})\n       .agregar({nombre:'Plugin',precio:15000})\n       .eliminar('Plugin');\n```\n\nGuarda `totalFinal = carrito.total()` y `cantidadFinal = carrito.cantidad()`.",
+      "starterCode": "class Carrito {\n  constructor() {\n    this.items = [];\n  }\n\n  agregar(producto) {\n    this.items.push(producto);\n    return this;\n  }\n\n  eliminar(nombre) {\n    // Filtra el item con ese nombre y actualiza this.items\n\n    return this;\n  }\n\n  total() {\n    // Suma todos los precios\n\n  }\n\n  cantidad() {\n    return this.items.length;\n  }\n}\n\nconst carrito = new Carrito();\ncarrito\n  .agregar({ nombre: 'Libro', precio: 25000 })\n  .agregar({ nombre: 'Curso', precio: 50000 })\n  .agregar({ nombre: 'Plugin', precio: 15000 })\n  .eliminar('Plugin');\n\nconst totalFinal = carrito.total();\nconst cantidadFinal = carrito.cantidad();\n\nconsole.log(totalFinal, cantidadFinal); // 75000, 2\n",
+      "tests": [
+        {
+          "description": "totalFinal es 75000 (25000 + 50000)",
+          "expression": "totalFinal === 75000"
+        },
+        {
+          "description": "cantidadFinal es 2",
+          "expression": "cantidadFinal === 2"
+        },
+        {
+          "description": "agregar retorna this (chaining)",
+          "expression": "(() => { const c = new Carrito(); return c.agregar({nombre:'x',precio:1}) === c; })()"
+        },
+        {
+          "description": "eliminar remueve el producto correcto",
+          "expression": "!carrito.items.find(i => i.nombre === 'Plugin')"
+        }
+      ],
+      "hints": [
+        "`this.items = this.items.filter(p => p.nombre !== nombre);`",
+        "`return this.items.reduce((sum, p) => sum + p.precio, 0);`",
+        "El encadenamiento funciona porque `agregar` y `eliminar` retornan `this`"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m6-l3",
+  "title": "WeakMap y WeakSet",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## El problema de memoria con Map y Set\n\nCuando usas un `Map` con objetos como claves, el Map mantiene una **referencia fuerte** a esos objetos — impide que el garbage collector los limpie aunque ya no se usen en ningún otro lugar:\n\n```javascript\nlet usuario = { nombre: 'Ana' };\n\nconst metadata = new Map();\nmetadata.set(usuario, { sesiones: 5 });\n\nusuario = null; // Quiero 'olvidar' al usuario\n\n// Pero el Map aún mantiene la referencia:\n// metadata sigue teniendo { { nombre: 'Ana' } → { sesiones: 5 } }\n// El objeto { nombre: 'Ana' } NO puede ser liberado por GC\n// Memory leak potencial si esto ocurre con muchos objetos\n```\n\n---\n\n## WeakMap: referencias débiles para objetos\n\n`WeakMap` es como un `Map`, pero sus claves son referencias **débiles** — si el objeto clave no tiene otras referencias, puede ser garbage collected:\n\n```javascript\nlet usuario = { nombre: 'Ana' };\n\nconst metadata = new WeakMap();\nmetadata.set(usuario, { sesiones: 5 });\n\nusuario = null;\n// Ahora el objeto { nombre: 'Ana' } puede ser recolectado por el GC\n// La entrada en el WeakMap desaparece automáticamente\n```\n\n### Restricciones importantes\n\n```javascript\nconst wm = new WeakMap();\n\n// Solo acepta objetos como claves (no primitivos):\nwm.set({ id: 1 }, 'dato');  // ✅\nwm.set('clave', 'dato');    // ❌ TypeError\nwm.set(42, 'dato');         // ❌ TypeError\n\n// NO es iterable — no hay .keys(), .values(), .forEach(), .size\n// Esto es intencional: las entradas pueden desaparecer en cualquier momento\n\n// API limitada:\nconst obj = { id: 1 };\nwm.set(obj, 'valor');\nwm.get(obj);      // 'valor'\nwm.has(obj);      // true\nwm.delete(obj);   // true\n```\n\n---\n\n## Casos de uso de WeakMap\n\n### 1. Metadata privada de objetos (patron antes de campos privados `#`)\n\n```javascript\n// Antes de los campos privados:\nconst _privados = new WeakMap();\n\nclass Persona {\n  constructor(nombre, edad) {\n    _privados.set(this, { nombre, edad });\n  }\n\n  saludar() {\n    const { nombre } = _privados.get(this);\n    return `Hola, soy ${nombre}`;\n  }\n\n  cumplirAnios() {\n    _privados.get(this).edad++;\n  }\n}\n\nconst p = new Persona('Ana', 30);\nconsole.log(p.saludar()); // 'Hola, soy Ana'\n// p.nombre === undefined — no hay acceso externo\n// Cuando p sea GC'd, su entrada en _privados también desaparece\n```\n\n### 2. Caché de cómputos costosos\n\n```javascript\nconst cache = new WeakMap();\n\nfunction procesarObjeto(obj) {\n  if (cache.has(obj)) return cache.get(obj); // Resultado cacheado\n\n  const resultado = /* cómputo costoso */({ ...obj, procesado: true });\n  cache.set(obj, resultado);\n  return resultado;\n}\n// Cuando obj es GC'd, su caché también se libera automáticamente\n```\n\n---\n\n## WeakSet: conjunto de referencias débiles\n\n`WeakSet` es a `Set` lo que `WeakMap` es a `Map`: solo almacena objetos, con referencias débiles:\n\n```javascript\nconst visitados = new WeakSet();\n\nlet pagina = { url: '/inicio' };\nvisitados.add(pagina);\nconsole.log(visitados.has(pagina)); // true\n\npagina = null; // La entrada desaparece del WeakSet automáticamente\n\n// API:\nconst ws = new WeakSet();\nws.add(obj);     // ✅ Solo objetos\nws.has(obj);     // true/false\nws.delete(obj);  // true si existía\n// Sin .size, sin iteración\n```\n\n---\n\n## Caso de uso principal de WeakSet: marcar objetos\n\n```javascript\n// Detectar referencias circulares en serialización\nfunction serializarSeguro(obj, visto = new WeakSet()) {\n  if (typeof obj !== 'object' || obj === null) return obj;\n\n  if (visto.has(obj)) return '[Circular]';\n  visto.add(obj);\n\n  const resultado = {};\n  for (const [k, v] of Object.entries(obj)) {\n    resultado[k] = serializarSeguro(v, visto);\n  }\n  return resultado;\n}\n\nconst a = { nombre: 'A' };\na.self = a; // Referencia circular\nconsole.log(serializarSeguro(a)); // { nombre: 'A', self: '[Circular]' }\n```\n\n---\n\n## Resumen comparativo\n\n| | Map | WeakMap | Set | WeakSet |\n|---|---|---|---|---|\n| Tipo de claves/valores | Cualquiera | Solo objetos | Cualquiera | Solo objetos |\n| Referencia | Fuerte | Débil | Fuerte | Débil |\n| GC automático | No | Sí | No | Sí |\n| Iterable | Sí | No | Sí | No |\n| `.size` | Sí | No | Sí | No |\n| Uso principal | Diccionario | Metadata privada | Conjunto | Marcar objetos |",
+    "examples": [
+      {
+        "code": "// Patrón: metadata privada con WeakMap\n// Util para asociar datos a objetos sin modificarlos\n\nconst _datos = new WeakMap();\n\nfunction crearNodo(valor) {\n  const nodo = { valor };\n  _datos.set(nodo, { visitado: false, profundidad: 0 });\n  return nodo;\n}\n\nfunction marcarVisitado(nodo, profundidad) {\n  const meta = _datos.get(nodo);\n  meta.visitado = true;\n  meta.profundidad = profundidad;\n}\n\nfunction estaVisitado(nodo) {\n  return _datos.get(nodo)?.visitado ?? false;\n}\n\nconst n1 = crearNodo('A');\nconst n2 = crearNodo('B');\n\nmarcarVisitado(n1, 0);\nmarcarVisitado(n2, 1);\n\nconsole.log('n1 visitado:', estaVisitado(n1)); // true\nconsole.log('n2 profundidad:', _datos.get(n2).profundidad); // 1\nconsole.log('n1.visitado directo:', n1.visitado); // undefined — es privado",
+        "explanation": "WeakMap asocia metadata a objetos sin contaminarlo. El objeto original (nodo) no sabe que tiene metadata. Cuando el nodo sea GC'd, su metadata también."
+      },
+      {
+        "code": "// WeakSet para tracking de objetos procesados\n// Evita procesar el mismo objeto dos veces en un flujo\n\nconst procesados = new WeakSet();\n\nfunction procesar(objeto) {\n  if (procesados.has(objeto)) {\n    console.log('Ya procesado:', objeto.id);\n    return objeto;\n  }\n\n  // Simula procesamiento\n  const resultado = { ...objeto, procesado: true, timestamp: Date.now() };\n  procesados.add(objeto);\n  console.log('Procesando:', objeto.id);\n  return resultado;\n}\n\nconst item1 = { id: 1, datos: 'abc' };\nconst item2 = { id: 2, datos: 'xyz' };\n\nprocesar(item1); // 'Procesando: 1'\nprocesar(item2); // 'Procesando: 2'\nprocesar(item1); // 'Ya procesado: 1'\n\nconsole.log('¿item1 procesado?', procesados.has(item1)); // true",
+        "explanation": "WeakSet como 'seen tracker' evita procesamiento duplicado. No necesitas size ni iteración — solo verificar si un objeto fue marcado."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: API de WeakMap",
+      "prompt": "Demuestra el uso de `WeakMap` para asociar metadata a objetos:\n\nCrea un `WeakMap` llamado `perfiles`. Para los siguientes objetos:\n```javascript\nconst user1 = { id: 1 };\nconst user2 = { id: 2 };\n```\n\nAsigna:\n- `user1` → `{ rol: 'admin', activo: true }`\n- `user2` → `{ rol: 'user', activo: false }`\n\nGuarda:\n- `rolUser1 = perfiles.get(user1).rol` → `'admin'`\n- `activoUser2 = perfiles.get(user2).activo` → `false`\n- `tieneUser1 = perfiles.has(user1)` → `true`\n- `esIterable = typeof perfiles[Symbol.iterator] === 'function'` → `false` (WeakMap no es iterable)",
+      "starterCode": "const perfiles = new WeakMap();\n\nconst user1 = { id: 1 };\nconst user2 = { id: 2 };\n\nperfiles.set(user1, { rol: 'admin', activo: true });\nperfiles.set(user2, { rol: 'user', activo: false });\n\nconst rolUser1 = perfiles.get(user1).rol;\nconst activoUser2 = perfiles.get(user2).activo;\nconst tieneUser1 = perfiles.has(user1);\nconst esIterable = typeof perfiles[Symbol.iterator] === 'function';\n\nconsole.log(rolUser1, activoUser2, tieneUser1, esIterable);\n",
+      "tests": [
+        {
+          "description": "rolUser1 es 'admin'",
+          "expression": "rolUser1 === 'admin'"
+        },
+        {
+          "description": "activoUser2 es false",
+          "expression": "activoUser2 === false"
+        },
+        {
+          "description": "tieneUser1 es true",
+          "expression": "tieneUser1 === true"
+        },
+        {
+          "description": "WeakMap no es iterable",
+          "expression": "esIterable === false"
+        }
+      ],
+      "hints": [
+        "`perfiles.set(user1, datos)` asocia el objeto usuario con sus datos",
+        "`perfiles.get(user1).rol` accede al campo del objeto asociado",
+        "WeakMap no tiene `[Symbol.iterator]` — por eso no es iterable"
+      ]
+    },
+    {
+      "title": "Práctica: Metadata privada con WeakMap",
+      "prompt": "Implementa un sistema de validación usando WeakMap para almacenar errores privados:\n\nCrea `crearFormulario()` que retorne un objeto formulario con:\n- `_errores`: un WeakMap (privado conceptualmente)\n- `validar(campo, valor, regla)`: aplica la regla al valor. Si falla, agrega `campo: 'Error en campo'` a los errores del campo (guarda en `_errores` usando `campo` como objeto-key — pero como campo es string, usa el propio formulario como clave y un objeto plano para errores)\n- `tieneErrores()`: retorna `true` si hay algún error\n- `obtenerErrores()`: retorna el objeto de errores\n\nSimplifica: usa un Map normal internamente (WeakMap requiere objetos como claves). El punto es entender el patrón de metadata asociada a un 'dueño'.",
+      "starterCode": "function crearFormulario() {\n  // Usamos el formulario mismo como clave del WeakMap\n  const _metadataStore = new WeakMap();\n\n  const formulario = {\n    validar(campo, valor, regla) {\n      if (!_metadataStore.has(formulario)) {\n        _metadataStore.set(formulario, { errores: {} });\n      }\n      const meta = _metadataStore.get(formulario);\n      if (!regla(valor)) {\n        meta.errores[campo] = `Error en ${campo}`;\n      } else {\n        delete meta.errores[campo];\n      }\n    },\n    tieneErrores() {\n      const meta = _metadataStore.get(formulario);\n      if (!meta) return false;\n      return Object.keys(meta.errores).length > 0;\n    },\n    obtenerErrores() {\n      return _metadataStore.get(formulario)?.errores ?? {};\n    },\n  };\n\n  return formulario;\n}\n\nconst form = crearFormulario();\n\nform.validar('nombre', 'Ana', v => v.length > 0);       // OK\nform.validar('email', 'no-es-email', v => v.includes('@')); // Error\nform.validar('edad', 25, v => v >= 18);                    // OK\n\nconst tieneErrores = form.tieneErrores();\nconst errores = form.obtenerErrores();\n\nconsole.log('Tiene errores:', tieneErrores);\nconsole.log('Errores:', errores);\n",
+      "tests": [
+        {
+          "description": "tieneErrores es true (email falló)",
+          "expression": "tieneErrores === true"
+        },
+        {
+          "description": "hay error en email",
+          "expression": "'email' in errores"
+        },
+        {
+          "description": "no hay error en nombre",
+          "expression": "!('nombre' in errores)"
+        },
+        {
+          "description": "no hay error en edad",
+          "expression": "!('edad' in errores)"
+        }
+      ],
+      "hints": [
+        "El WeakMap usa el objeto `formulario` como clave — asocia metadata al formulario sin contaminarlo",
+        "`_metadataStore.has(formulario)` verifica si el formulario ya tiene metadata inicializada",
+        "Este patrón es cómo se implementaba privacidad antes de los campos `#`"
+      ]
+    },
+    {
+      "title": "Aplicación: Detector de referencias circulares",
+      "prompt": "Implementa `esCircular(obj)` que detecte si un objeto tiene referencias circulares usando `WeakSet`:\n\nAlgoritmo:\n1. Usa un `WeakSet` para rastrear objetos visitados\n2. Función recursiva interna que recorra todas las propiedades del objeto\n3. Si encuentra un objeto que ya está en el WeakSet → es circular\n4. Si no, agrega el objeto al WeakSet y recorre sus propiedades\n\nPrueba:\n- `obj1 = { a: 1, b: { c: 2 } }` → no circular\n- `obj2 = { a: 1 }; obj2.self = obj2` → circular",
+      "starterCode": "function esCircular(obj) {\n  const visitados = new WeakSet();\n\n  function recorrer(valor) {\n    if (typeof valor !== 'object' || valor === null) return false;\n    if (visitados.has(valor)) return true; // ¡Circular!\n    visitados.add(valor);\n    for (const prop of Object.values(valor)) {\n      if (recorrer(prop)) return true;\n    }\n    return false;\n  }\n\n  return recorrer(obj);\n}\n\nconst obj1 = { a: 1, b: { c: 2 } };\nconst obj2 = { a: 1 };\nobj2.self = obj2; // Referencia circular\n\nconst esCircular1 = esCircular(obj1); // false\nconst esCircular2 = esCircular(obj2); // true\n\nconsole.log('obj1 circular:', esCircular1);\nconsole.log('obj2 circular:', esCircular2);\n",
+      "tests": [
+        {
+          "description": "obj1 no es circular",
+          "expression": "esCircular1 === false"
+        },
+        {
+          "description": "obj2 es circular",
+          "expression": "esCircular2 === true"
+        },
+        {
+          "description": "null no es circular",
+          "expression": "esCircular(null) === false"
+        },
+        {
+          "description": "objeto anidado sin circular",
+          "expression": "esCircular({ a: { b: { c: { d: 1 } } } }) === false"
+        }
+      ],
+      "hints": [
+        "`visitados.has(valor)` detecta si ya visitamos este objeto exacto",
+        "`WeakSet` es ideal aquí: los objetos temporales de la recursión se liberan solos",
+        "`typeof valor !== 'object' || valor === null` — los primitivos y null no son objetos"
+      ]
+    }
+  ]
+}

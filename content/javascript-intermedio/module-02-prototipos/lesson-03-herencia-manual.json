@@ -1,0 +1,110 @@
+{
+  "id": "js-intermedio-m2-l3",
+  "title": "Herencia prototípica manual",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## Herencia prototípica manual\n\nAntes de las clases ES6, la herencia se implementaba a mano conectando prototipos de funciones constructoras. Entender esto te explica QUÉ hacen `class` y `extends` bajo el capó.\n\n---\n\n## Funciones constructoras\n\nCuando llamas una función con `new`, JavaScript:\n1. Crea un nuevo objeto\n2. Le asigna como `[[Prototype]]` el `.prototype` de la función\n3. Ejecuta la función con `this` apuntando al nuevo objeto\n4. Retorna el objeto\n\n```javascript\nfunction Animal(nombre, sonido) {\n  this.nombre = nombre;\n  this.sonido = sonido;\n}\n\n// Los métodos van en el PROTOTIPO (compartidos entre instancias)\nAnimal.prototype.hablar = function () {\n  return `${this.nombre} dice ${this.sonido}`;\n};\n\nconst gato = new Animal('Michi', 'miau');\nconst perro = new Animal('Rex', 'guau');\n\nconsole.log(gato.hablar()); // 'Michi dice miau'\nconsole.log(perro.hablar()); // 'Rex dice guau'\n\n// El método es compartido — UNA sola copia\nconsole.log(gato.hablar === perro.hablar); // true\n```\n\n---\n\n## Implementar herencia entre constructoras\n\nPara que `Perro` herede de `Animal`, necesitas dos pasos:\n\n**Paso 1:** Llamar al constructor padre desde el hijo (herencia de datos)\n**Paso 2:** Conectar los prototipos (herencia de métodos)\n\n```javascript\nfunction Animal(nombre) {\n  this.nombre = nombre;\n}\nAnimal.prototype.respirar = function () {\n  return `${this.nombre} respira`;\n};\n\n// ─── Herencia ────────────────────────────────────────────────────────────────\n\nfunction Perro(nombre, raza) {\n  Animal.call(this, nombre); // Paso 1: hereda datos\n  this.raza = raza;\n}\n\n// Paso 2: hereda métodos\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro; // Reparar constructor\n\nPerro.prototype.ladrar = function () {\n  return `${this.nombre} (${this.raza}) dice guau`;\n};\n\nconst rex = new Perro('Rex', 'Labrador');\nconsole.log(rex.respirar()); // 'Rex respira' — heredado\nconsole.log(rex.ladrar());   // 'Rex (Labrador) dice guau' — propio\nconsole.log(rex instanceof Perro);  // true\nconsole.log(rex instanceof Animal); // true\n```\n\n---\n\n## ¿Por qué reparar el constructor?\n\n```javascript\nfunction Animal(nombre) { this.nombre = nombre; }\nfunction Perro(nombre) { Animal.call(this, nombre); }\n\n// Sin reparar:\nPerro.prototype = Object.create(Animal.prototype);\nconsole.log(new Perro('Rex').constructor === Animal); // true ← INCORRECTO\n\n// Con reparación:\nPerro.prototype.constructor = Perro;\nconsole.log(new Perro('Rex').constructor === Perro); // true ← CORRECTO\n```\n\n---\n\n## Cadena completa: 3 niveles\n\n```javascript\n// Nivel 1\nfunction Ser() {}\nSer.prototype.existir = () => 'existo';\n\n// Nivel 2\nfunction Animal(nombre) {\n  Ser.call(this);\n  this.nombre = nombre;\n}\nAnimal.prototype = Object.create(Ser.prototype);\nAnimal.prototype.constructor = Animal;\nAnimal.prototype.moverse = function () {\n  return `${this.nombre} se mueve`;\n};\n\n// Nivel 3\nfunction Perro(nombre, raza) {\n  Animal.call(this, nombre);\n  this.raza = raza;\n}\nPerro.prototype = Object.create(Animal.prototype);\nPerro.prototype.constructor = Perro;\nPerro.prototype.ladrar = function () {\n  return 'guau';\n};\n\nconst rex = new Perro('Rex', 'Labrador');\nconsole.log(rex.existir()); // 'existo' — de Ser\nconsole.log(rex.moverse()); // 'Rex se mueve' — de Animal\nconsole.log(rex.ladrar());  // 'guau' — de Perro\n```\n\n---\n\n## Equivalencia con clases ES6\n\nEsto es exactamente lo que hace `class` / `extends` internamente:\n\n```javascript\n// Clases ES6 — azúcar sintáctica sobre prototipos\nclass Animal {\n  constructor(nombre) { this.nombre = nombre; }\n  respirar() { return `${this.nombre} respira`; }\n}\n\nclass Perro extends Animal {\n  constructor(nombre, raza) {\n    super(nombre); // = Animal.call(this, nombre)\n    this.raza = raza;\n  }\n  ladrar() { return 'guau'; }\n}\n\n// El resultado a nivel de prototipos es IDÉNTICO al manual\n```",
+    "examples": [
+      {
+        "code": "// Verificar la cadena de prototipos manualmente\nfunction Vehiculo(marca) { this.marca = marca; }\nVehiculo.prototype.tipo = 'vehiculo';\n\nfunction Coche(marca, modelo) {\n  Vehiculo.call(this, marca);\n  this.modelo = modelo;\n}\nCoche.prototype = Object.create(Vehiculo.prototype);\nCoche.prototype.constructor = Coche;\n\nconst c = new Coche('Toyota', 'Corolla');\n\n// Verificaciones de la cadena\nconsole.log(c instanceof Coche);    // true\nconsole.log(c instanceof Vehiculo); // true\nconsole.log(c.tipo);                // 'vehiculo' (heredado)\nconsole.log(Object.getPrototypeOf(c) === Coche.prototype); // true\nconsole.log(Object.getPrototypeOf(Coche.prototype) === Vehiculo.prototype); // true",
+        "explanation": "instanceof recorre el prototype chain. Object.getPrototypeOf confirma la conexión entre prototipos."
+      },
+      {
+        "code": "// Llamar al método del padre (super manual)\nfunction Forma(color) { this.color = color; }\nForma.prototype.describir = function () {\n  return `Forma de color ${this.color}`;\n};\n\nfunction Circulo(color, radio) {\n  Forma.call(this, color);\n  this.radio = radio;\n}\nCirculo.prototype = Object.create(Forma.prototype);\nCirculo.prototype.constructor = Circulo;\n\nCirculo.prototype.describir = function () {\n  // Llamar al método del padre (equivalente a super.describir())\n  const base = Forma.prototype.describir.call(this);\n  return `${base}, radio ${this.radio}`;\n};\n\nconst c = new Circulo('rojo', 5);\nconsole.log(c.describir()); // 'Forma de color rojo, radio 5'",
+        "explanation": "Para llamar el método del padre se usa Padre.prototype.metodo.call(this). Esto es exactamente lo que hace 'super.metodo()' en las clases ES6."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Constructor con prototipo",
+      "prompt": "Crea una función constructora `Producto(nombre, precio)` que asigne esas propiedades en `this`.\n\nAgrega en `Producto.prototype` un método `info()` que retorne el string `nombre + ': $' + precio`.\n\nCrea instancias:\n- `p1 = new Producto('Libro', 25000)`\n- `p2 = new Producto('Curso', 80000)`\n\nGuarda en `infoP1` e `infoP2` los resultados de llamar `info()` en cada una.",
+      "starterCode": "function Producto(nombre, precio) {\n  // Asigna nombre y precio en this\n\n}\n\n// Agrega info() al prototipo\nProducto.prototype.info = function () {\n  // Retorna 'nombre: $precio'\n\n};\n\nconst p1 = new Producto('Libro', 25000);\nconst p2 = new Producto('Curso', 80000);\n\nconst infoP1 = p1.info();\nconst infoP2 = p2.info();\n\nconsole.log(infoP1); // 'Libro: $25000'\nconsole.log(infoP2); // 'Curso: $80000'\n",
+      "tests": [
+        {
+          "description": "infoP1 es 'Libro: $25000'",
+          "expression": "infoP1 === 'Libro: $25000'"
+        },
+        {
+          "description": "infoP2 es 'Curso: $80000'",
+          "expression": "infoP2 === 'Curso: $80000'"
+        },
+        {
+          "description": "p1 e p2 comparten el mismo método info",
+          "expression": "p1.info === p2.info"
+        },
+        {
+          "description": "info no es propiedad propia de p1",
+          "expression": "!p1.hasOwnProperty('info')"
+        }
+      ],
+      "hints": [
+        "`this.nombre = nombre; this.precio = precio;`",
+        "`return this.nombre + ': $' + this.precio;`",
+        "Los métodos van en el PROTOTIPO para que sean compartidos, no en cada instancia"
+      ]
+    },
+    {
+      "title": "Práctica: Herencia de dos niveles",
+      "prompt": "Implementa herencia manual:\n\n1. `Persona(nombre, edad)`: constructor con esas propiedades. Método en prototipo: `presentarse()` que retorne `'Soy ' + nombre + ', tengo ' + edad + ' años'`\n\n2. `Estudiante(nombre, edad, carrera)`: hereda de `Persona`. Agrega `carrera`. Método propio en prototipo: `estudia()` que retorne `nombre + ' estudia ' + carrera`\n\nConecta los prototipos correctamente y repara el constructor.\n\nCrea `e = new Estudiante('Ana', 22, 'Sistemas')` y guarda:\n- `presentacion = e.presentarse()`\n- `estudio = e.estudia()`",
+      "starterCode": "function Persona(nombre, edad) {\n  this.nombre = nombre;\n  this.edad = edad;\n}\nPersona.prototype.presentarse = function () {\n  return 'Soy ' + this.nombre + ', tengo ' + this.edad + ' años';\n};\n\nfunction Estudiante(nombre, edad, carrera) {\n  // Llama al constructor de Persona\n\n  this.carrera = carrera;\n}\n\n// Conecta prototipos\nEstudiante.prototype = Object.create(Persona.prototype);\nEstudiante.prototype.constructor = Estudiante;\n\n// Agrega método estudia()\nEstudiante.prototype.estudia = function () {\n  // Retorna 'nombre estudia carrera'\n\n};\n\nconst e = new Estudiante('Ana', 22, 'Sistemas');\nconst presentacion = e.presentarse();\nconst estudio = e.estudia();\n\nconsole.log(presentacion);\nconsole.log(estudio);\n",
+      "tests": [
+        {
+          "description": "presentacion es 'Soy Ana, tengo 22 años'",
+          "expression": "presentacion === 'Soy Ana, tengo 22 años'"
+        },
+        {
+          "description": "estudio es 'Ana estudia Sistemas'",
+          "expression": "estudio === 'Ana estudia Sistemas'"
+        },
+        {
+          "description": "e instanceof Estudiante",
+          "expression": "e instanceof Estudiante"
+        },
+        {
+          "description": "e instanceof Persona (herencia funciona)",
+          "expression": "e instanceof Persona"
+        },
+        {
+          "description": "constructor reparado correctamente",
+          "expression": "e.constructor === Estudiante"
+        }
+      ],
+      "hints": [
+        "`Persona.call(this, nombre, edad);` en el constructor de Estudiante",
+        "`Estudiante.prototype = Object.create(Persona.prototype);` — ya está",
+        "`Estudiante.prototype.constructor = Estudiante;` — ya está",
+        "`return this.nombre + ' estudia ' + this.carrera;`"
+      ]
+    },
+    {
+      "title": "Aplicación: Llamar al método padre",
+      "prompt": "Implementa una jerarquía donde el método hijo extiende el del padre:\n\n1. `Forma(color)`: método `describir()` que retorne `'Figura ' + color`\n2. `Rectangulo(color, base, altura)`: hereda de `Forma`. Sobreescribe `describir()` para retornar el resultado de `Forma.prototype.describir.call(this)` + `', base=' + base + ', altura=' + altura`\n   También agrega `area()` que retorne `base * altura`\n\nCrea `rect = new Rectangulo('azul', 6, 4)` y guarda:\n- `desc = rect.describir()` → `'Figura azul, base=6, altura=4'`\n- `areaRect = rect.area()` → `24`",
+      "starterCode": "function Forma(color) {\n  this.color = color;\n}\nForma.prototype.describir = function () {\n  return 'Figura ' + this.color;\n};\n\nfunction Rectangulo(color, base, altura) {\n  Forma.call(this, color);\n  this.base = base;\n  this.altura = altura;\n}\nRectangulo.prototype = Object.create(Forma.prototype);\nRectangulo.prototype.constructor = Rectangulo;\n\nRectangulo.prototype.describir = function () {\n  // Llama Forma.prototype.describir.call(this) y agrega la info extra\n\n};\n\nRectangulo.prototype.area = function () {\n  // Retorna base * altura\n\n};\n\nconst rect = new Rectangulo('azul', 6, 4);\nconst desc = rect.describir();\nconst areaRect = rect.area();\n\nconsole.log(desc);     // 'Figura azul, base=6, altura=4'\nconsole.log(areaRect); // 24\n",
+      "tests": [
+        {
+          "description": "desc es 'Figura azul, base=6, altura=4'",
+          "expression": "desc === 'Figura azul, base=6, altura=4'"
+        },
+        {
+          "description": "areaRect es 24",
+          "expression": "areaRect === 24"
+        },
+        {
+          "description": "rect instanceof Rectangulo y Forma",
+          "expression": "rect instanceof Rectangulo && rect instanceof Forma"
+        },
+        {
+          "description": "Forma.prototype.describir sin cambios",
+          "expression": "new Forma('rojo').describir() === 'Figura rojo'"
+        }
+      ],
+      "hints": [
+        "`const base = Forma.prototype.describir.call(this);`",
+        "`return base + ', base=' + this.base + ', altura=' + this.altura;`",
+        "`return this.base * this.altura;`",
+        "Esto es el equivalente manual de `super.describir()` en clases ES6"
+      ]
+    }
+  ]
+}

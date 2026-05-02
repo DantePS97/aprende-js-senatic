@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m5-l2",
+  "title": "Re-exportación y barrel files",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## El problema de las importaciones dispersas\n\nCuando un proyecto crece, los imports se vuelven verbosos:\n\n```javascript\n// Sin barrel files — cada import apunta a un archivo diferente:\nimport { validarEmail } from './utils/validarEmail.js';\nimport { validarTelefono } from './utils/validarTelefono.js';\nimport { formatearFecha } from './utils/formatearFecha.js';\nimport { formatearMoneda } from './utils/formatearMoneda.js';\nimport { sumar, restar } from './utils/matematicas.js';\n```\n\nLa solución: un **barrel file** (archivo barril) que re-exporta todo desde un punto central.\n\n---\n\n## Re-exportación: la sintaxis\n\n```javascript\n// utils/index.js — el barrel file\nexport { validarEmail } from './validarEmail.js';\nexport { validarTelefono } from './validarTelefono.js';\nexport { formatearFecha, formatearMoneda } from './formateo.js';\nexport { sumar, restar } from './matematicas.js';\n```\n\n```javascript\n// Ahora un solo import:\nimport { validarEmail, formatearFecha, sumar } from './utils/index.js';\n// O incluso más corto si hay un index.js:\nimport { validarEmail, formatearFecha, sumar } from './utils';\n```\n\n---\n\n## Formas de re-exportar\n\n```javascript\n// 1. Re-exportar exports específicos:\nexport { nombre, apellido } from './persona.js';\n\n// 2. Re-exportar con alias:\nexport { calcular as calcularPrecio } from './precios.js';\n\n// 3. Re-exportar TODO (namespace re-export):\nexport * from './matematicas.js';\n\n// 4. Re-exportar TODO con namespace:\nexport * as Math from './matematicas.js';\n\n// 5. Re-exportar el default como named:\nexport { default as Calculadora } from './calculadora.js';\n\n// 6. Re-exportar el default como default:\nexport { default } from './principal.js';\n```\n\n---\n\n## Estructura de proyecto con barrel files\n\n```\nsrc/\n├── components/\n│   ├── Button.js\n│   ├── Input.js\n│   ├── Modal.js\n│   └── index.js          ← barrel: re-exporta Button, Input, Modal\n├── utils/\n│   ├── validaciones.js\n│   ├── formateo.js\n│   ├── fechas.js\n│   └── index.js          ← barrel: re-exporta todo\n├── services/\n│   ├── api.js\n│   ├── auth.js\n│   └── index.js          ← barrel\n└── index.js              ← barrel raíz: re-exporta todo lo público\n```\n\n---\n\n## Cuándo NO usar barrel files\n\n**Tree shaking**: los bundlers modernos (Vite, Webpack, Rollup) eliminan código no usado. Los barrel files con `export * from` pueden dificultar el tree shaking si el bundler no puede analizar estáticamente qué se usa:\n\n```javascript\n// ❌ Dificulta tree shaking en algunos casos:\nexport * from './enorme-libreria.js'; // Exporta 500 funciones\n\n// ✅ Mejor: exportar explícitamente lo que se usa:\nexport { funcionA, funcionB } from './libreria.js';\n```\n\nEn proyectos modernos con Vite o Rollup, los imports explícitos en barrel files (`export { X } from ...`) generalmente sí permiten tree shaking.\n\n---\n\n## Re-exportación del default en barrel files\n\n```javascript\n// clases/Persona.js\nexport default class Persona {\n  constructor(nombre) { this.nombre = nombre; }\n}\n\n// clases/Producto.js\nexport default class Producto {\n  constructor(nombre, precio) {\n    this.nombre = nombre;\n    this.precio = precio;\n  }\n}\n\n// clases/index.js — barrel\nexport { default as Persona } from './Persona.js';\nexport { default as Producto } from './Producto.js';\n\n// main.js\nimport { Persona, Producto } from './clases/index.js';\n// Los defaults se importan como named — sintaxis más limpia\n```",
+    "examples": [
+      {
+        "code": "// Simular un barrel file de utilidades\n// --- utils/matematicas.js ---\nconst _mat = {\n  sumar: (a, b) => a + b,\n  restar: (a, b) => a - b,\n  multiplicar: (a, b) => a * b,\n};\n\n// --- utils/strings.js ---\nconst _str = {\n  capitalizar: s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(),\n  invertir: s => s.split('').reverse().join(''),\n};\n\n// --- utils/index.js (barrel) ---\nconst Utils = { ..._mat, ..._str };\n\n// --- main.js ---\nconst { sumar, capitalizar, invertir } = Utils;\n\nconsole.log(sumar(3, 4));           // 7\nconsole.log(capitalizar('hOLA'));   // 'Hola'\nconsole.log(invertir('JavaScript')); // 'tpircSavaJ'",
+        "explanation": "En el sandbox simulamos el barrel con spread. En código real, sería: export { sumar } from './matematicas.js'; export { capitalizar } from './strings.js';"
+      },
+      {
+        "code": "// Re-exportación con alias para resolver colisiones\n// Dos módulos con una función llamada 'format'\nconst fechaUtils = {\n  format: (iso) => new Date(iso).toLocaleDateString('es'),\n};\nconst monedaUtils = {\n  format: (n) => '$' + n.toLocaleString(),\n};\n\n// Barrel con alias para evitar colisión:\nconst { format: formatFecha } = fechaUtils;\nconst { format: formatMoneda } = monedaUtils;\n\n// Equivale en ESM a:\n// export { format as formatFecha } from './fechas.js';\n// export { format as formatMoneda } from './moneda.js';\n\nconsole.log(formatFecha('2026-05-01'));  // '1/5/2026'\nconsole.log(formatMoneda(50000));        // '$50.000'",
+        "explanation": "Los alias en re-exportación resuelven conflictos de nombres. En lugar de exponer dos 'format', expones 'formatFecha' y 'formatMoneda'."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Construir un barrel",
+      "prompt": "Simula tres 'módulos' y un barrel file que los unifica:\n\n```\nmódulo A: { duplicar: n => n * 2, triplicar: n => n * 3 }\nmódulo B: { mayusculas: s => s.toUpperCase(), minusculas: s => s.toLowerCase() }\nmódulo C: { hoy: () => new Date().getFullYear() }\n```\n\nCrea el objeto `barrel` que re-exporta todo de los tres módulos en un solo lugar.\n\nGuarda:\n- `r1 = barrel.duplicar(7)` → 14\n- `r2 = barrel.mayusculas('hola')` → 'HOLA'\n- `tieneHoy = typeof barrel.hoy === 'function'`",
+      "starterCode": "const moduloA = { duplicar: n => n * 2, triplicar: n => n * 3 };\nconst moduloB = { mayusculas: s => s.toUpperCase(), minusculas: s => s.toLowerCase() };\nconst moduloC = { hoy: () => new Date().getFullYear() };\n\n// Barrel file: unifica los tres módulos\nconst barrel = {\n  ...moduloA,\n  ...moduloB,\n  ...moduloC,\n};\n\nconst r1 = barrel.duplicar(7);\nconst r2 = barrel.mayusculas('hola');\nconst tieneHoy = typeof barrel.hoy === 'function';\n\nconsole.log(r1, r2, tieneHoy);\n",
+      "tests": [
+        {
+          "description": "r1 es 14",
+          "expression": "r1 === 14"
+        },
+        {
+          "description": "r2 es 'HOLA'",
+          "expression": "r2 === 'HOLA'"
+        },
+        {
+          "description": "tieneHoy es true",
+          "expression": "tieneHoy === true"
+        },
+        {
+          "description": "barrel tiene todas las funciones de los tres módulos",
+          "expression": "['duplicar','triplicar','mayusculas','minusculas','hoy'].every(k => k in barrel)"
+        }
+      ],
+      "hints": [
+        "`...moduloA` copia todas las propiedades de moduloA al barrel",
+        "El spread en objetos es el equivalente de `export * from './moduloA.js'`",
+        "Si hay colisión de nombres, el último spread gana"
+      ]
+    },
+    {
+      "title": "Práctica: Re-exportar con alias",
+      "prompt": "Dos módulos tienen funciones con el mismo nombre (`procesar`). Crea un barrel que las exponga con alias para evitar la colisión:\n\n```\nmoduloPagos: { procesar: (monto) => 'Pago: $' + monto }\nmoduloEnvios: { procesar: (paquete) => 'Enviando: ' + paquete }\n```\n\nCrea un `barrel` con:\n- `procesarPago` → la función `procesar` de `moduloPagos`\n- `procesarEnvio` → la función `procesar` de `moduloEnvios`\n\nGuarda:\n- `rPago = barrel.procesarPago(1500)` → `'Pago: $1500'`\n- `rEnvio = barrel.procesarEnvio('Libro')` → `'Enviando: Libro'`\n- `tieneConflicto = 'procesar' in barrel` → `false` (el nombre conflictivo no debe estar expuesto)",
+      "starterCode": "const moduloPagos = { procesar: (monto) => 'Pago: $' + monto };\nconst moduloEnvios = { procesar: (paquete) => 'Enviando: ' + paquete };\n\n// Barrel con alias para resolver la colisión\nconst barrel = {\n  procesarPago: moduloPagos.procesar,\n  procesarEnvio: moduloEnvios.procesar,\n};\n\nconst rPago = barrel.procesarPago(1500);\nconst rEnvio = barrel.procesarEnvio('Libro');\nconst tieneConflicto = 'procesar' in barrel;\n\nconsole.log(rPago, rEnvio, tieneConflicto);\n",
+      "tests": [
+        {
+          "description": "rPago es 'Pago: $1500'",
+          "expression": "rPago === 'Pago: $1500'"
+        },
+        {
+          "description": "rEnvio es 'Enviando: Libro'",
+          "expression": "rEnvio === 'Enviando: Libro'"
+        },
+        {
+          "description": "tieneConflicto es false",
+          "expression": "tieneConflicto === false"
+        },
+        {
+          "description": "procesarPago y procesarEnvio son funciones",
+          "expression": "typeof barrel.procesarPago === 'function' && typeof barrel.procesarEnvio === 'function'"
+        }
+      ],
+      "hints": [
+        "En ESM sería: `export { procesar as procesarPago } from './pagos.js'`",
+        "Aquí lo simulamos asignando directamente: `procesarPago: moduloPagos.procesar`",
+        "El barrel NO expone `procesar` — solo los alias"
+      ]
+    },
+    {
+      "title": "Aplicación: API pública de una librería",
+      "prompt": "Estás construyendo una librería `FormKit`. Tienes módulos internos y debes crear un barrel que exponga solo la API pública.\n\nMódulos internos:\n```javascript\nconst _internos = {\n  _validarTipo: (v, t) => typeof v === t,      // Privado\n  _normalizarString: s => s.trim().toLowerCase(), // Privado\n};\n\nconst campos = {\n  texto: (valor) => typeof valor === 'string' && valor.trim().length > 0,\n  numero: (valor) => typeof valor === 'number' && !isNaN(valor),\n  email: (valor) => /^[^@]+@[^@]+\\.[^@]+$/.test(valor),\n};\n\nconst formulario = {\n  validar: (datos, reglas) => {\n    const errores = {};\n    for (const campo in reglas) {\n      if (!reglas[campo](datos[campo])) errores[campo] = 'inválido';\n    }\n    return { valido: Object.keys(errores).length === 0, errores };\n  },\n};\n```\n\nCrea `FormKit` como barrel público que exponga SOLO:\n- `validarCampo` (alias de `campos`)\n- `validarFormulario` (alias de `formulario.validar`)\n- NO exponer `_internos`\n\nPrueba con un formulario de login.",
+      "starterCode": "const _internos = {\n  _validarTipo: (v, t) => typeof v === t,\n  _normalizarString: s => s.trim().toLowerCase(),\n};\n\nconst campos = {\n  texto: (valor) => typeof valor === 'string' && valor.trim().length > 0,\n  numero: (valor) => typeof valor === 'number' && !isNaN(valor),\n  email: (valor) => /^[^@]+@[^@]+\\.[^@]+$/.test(valor),\n};\n\nconst formulario = {\n  validar: (datos, reglas) => {\n    const errores = {};\n    for (const campo in reglas) {\n      if (!reglas[campo](datos[campo])) errores[campo] = 'inválido';\n    }\n    return { valido: Object.keys(errores).length === 0, errores };\n  },\n};\n\n// API pública del barrel\nconst FormKit = {\n  validarCampo: campos,\n  validarFormulario: formulario.validar,\n};\n\n// Prueba\nconst loginData = { usuario: 'ana', email: 'ana@test.com', edad: 25 };\nconst loginReglas = {\n  usuario: FormKit.validarCampo.texto,\n  email: FormKit.validarCampo.email,\n  edad: FormKit.validarCampo.numero,\n};\n\nconst resultadoValido = FormKit.validarFormulario(loginData, loginReglas);\nconst resultadoInvalido = FormKit.validarFormulario(\n  { usuario: '', email: 'no-es-email', edad: NaN },\n  loginReglas\n);\n\nconsole.log(resultadoValido);\nconsole.log(resultadoInvalido);\n",
+      "tests": [
+        {
+          "description": "resultadoValido.valido es true",
+          "expression": "resultadoValido.valido === true"
+        },
+        {
+          "description": "resultadoInvalido.valido es false",
+          "expression": "resultadoInvalido.valido === false"
+        },
+        {
+          "description": "resultadoInvalido tiene errores en usuario y email",
+          "expression": "'usuario' in resultadoInvalido.errores && 'email' in resultadoInvalido.errores"
+        },
+        {
+          "description": "FormKit NO expone _internos",
+          "expression": "!('_internos' in FormKit) && !('_validarTipo' in FormKit)"
+        }
+      ],
+      "hints": [
+        "`validarCampo: campos` — expone el objeto completo de validadores de campos",
+        "`validarFormulario: formulario.validar` — expone solo la función, no el objeto interno",
+        "El barrel controla qué es público y qué es privado — `_internos` no se incluye"
+      ]
+    }
+  ]
+}

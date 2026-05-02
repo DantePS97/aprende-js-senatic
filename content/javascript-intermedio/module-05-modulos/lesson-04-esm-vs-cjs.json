@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m5-l4",
+  "title": "ESM vs CommonJS",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Dos sistemas de módulos en JavaScript\n\nJavaScript tiene dos sistemas de módulos que coexisten: **ESM** (ES Modules, el estándar moderno) y **CommonJS** (el sistema de Node.js original). Entender sus diferencias te permite trabajar en cualquier entorno.\n\n---\n\n## Sintaxis: la diferencia más visible\n\n```javascript\n// ── ESM (ES Modules) ───────────────────────────────\n// Exportar:\nexport const PI = 3.14;\nexport function sumar(a, b) { return a + b; }\nexport default class Calculadora {}\n\n// Importar:\nimport { sumar, PI } from './matematicas.js';\nimport Calculadora from './calculadora.js';\nimport * as Mat from './matematicas.js';\n\n// ── CommonJS (CJS) ─────────────────────────────────\n// Exportar:\nconst PI = 3.14;\nfunction sumar(a, b) { return a + b; }\nclass Calculadora {}\n\nmodule.exports = { PI, sumar };\n// O:\nmodule.exports = Calculadora; // Export principal\n// O:\nexports.PI = 3.14;           // Equivale a agregar propiedad\n\n// Importar:\nconst { sumar, PI } = require('./matematicas');\nconst Calculadora = require('./calculadora');\n```\n\n---\n\n## Carga: estática vs dinámica\n\nEsta es la diferencia más importante a nivel de comportamiento:\n\n```javascript\n// ESM — carga ESTÁTICA (se resuelve antes de ejecutar)\n// El motor analiza todos los imports ANTES de correr cualquier código\nimport { sumar } from './matematicas.js'; // Resuelto en tiempo de compilación\n\n// Consecuencias:\n// ✅ Tree shaking posible (el bundler sabe qué se usa)\n// ✅ Errores de import detectados antes de ejecutar\n// ❌ No puedes usar import() dentro de if (usa el import() dinámico)\n\n// CJS — carga DINÁMICA (se ejecuta en tiempo de ejecución)\nconst modulo = require('./matematicas'); // Se ejecuta cuando llega esta línea\n\n// Consecuencias:\n// ✅ Puedes hacer require() condicional\nif (process.env.NODE_ENV === 'test') {\n  const mock = require('./matematicas-mock');\n}\n// ❌ Tree shaking difícil (el bundler no sabe qué se usará)\n// ❌ Errores de require detectados solo al ejecutar esa línea\n```\n\n---\n\n## Live bindings vs copias\n\n```javascript\n// ── ESM: Live bindings ─────────────────────────────\n// contador.mjs\nexport let count = 0;\nexport function incrementar() { count++; }\n\n// main.mjs\nimport { count, incrementar } from './contador.mjs';\nconsole.log(count); // 0\nincrementar();\nconsole.log(count); // 1 ← ¡Ve el cambio!\n// count es una referencia viva al valor en el módulo original\n\n// ── CJS: Copias ────────────────────────────────────\n// contador.js\nlet count = 0;\nfunction incrementar() { count++; }\nmodule.exports = { count, incrementar };\n\n// main.js\nconst { count, incrementar } = require('./contador');\nconsole.log(count); // 0\nincrementar();\nconsole.log(count); // 0 ← No ve el cambio (es una copia)\n// Para ver el cambio: require('./contador').count (re-accede al objeto)\n```\n\n---\n\n## Scope y modo estricto\n\n```javascript\n// ESM — siempre en strict mode, scope de módulo\n// No necesitas 'use strict' — ya está activo\nthis === undefined; // true (en el top-level de un módulo ESM)\n\n// Variables no son globales:\nconst local = 'solo en este módulo';\n// window.local === undefined en browser\n\n// CJS — NO es strict mode por defecto, scope de función\n// (el código del módulo se envuelve en una función internamente)\nthis === module.exports; // true en el top-level de CJS\n\nvar global = 'atención: esto puede filtrar al scope global en algunos entornos';\n```\n\n---\n\n## Variables especiales: `__dirname` y `__filename`\n\n```javascript\n// CJS — disponibles de forma nativa:\nconsole.log(__dirname);  // /home/usuario/proyecto/src\nconsole.log(__filename); // /home/usuario/proyecto/src/app.js\n\n// ESM — NO existen, pero puedes recrearlas:\nimport { fileURLToPath } from 'url';\nimport { dirname } from 'path';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\n// O usando import.meta.url directamente:\nconsole.log(import.meta.url); // file:///home/usuario/proyecto/src/app.mjs\n```\n\n---\n\n## Identificar el sistema de módulos\n\n```json\n// package.json\n{\n  \"type\": \"module\"    // → todos los .js son tratados como ESM\n  // \"type\": \"commonjs\" → todos los .js son CJS (es el default)\n}\n```\n\n```\nExtensiones como pista:\n.mjs → siempre ESM\n.cjs → siempre CJS\n.js  → depende del \"type\" en package.json\n```\n\n---\n\n## Interop: usar CJS desde ESM y viceversa\n\n```javascript\n// ESM importando CJS — funciona con sintaxis default:\nimport miModuloCJS from './modulo.cjs';\n// El module.exports se convierte en el default import\n// Los named imports desde CJS son experimentales/limitados\n\n// CJS importando ESM — NO funciona con require():\n// require('./modulo.mjs') → ERROR\n// Solución: dynamic import() dentro de async function:\nasync function cargar() {\n  const { sumar } = await import('./modulo.mjs');\n  return sumar(1, 2);\n}\n```\n\n---\n\n## Resumen comparativo\n\n| Característica | ESM | CommonJS |\n|---|---|---|\n| Sintaxis | `import/export` | `require/module.exports` |\n| Carga | Estática (compile-time) | Dinámica (runtime) |\n| Bindings | Live (referencias vivas) | Copias |\n| Strict mode | Siempre activo | No por defecto |\n| `__dirname` | No (usar `import.meta`) | Sí |\n| Tree shaking | Nativo | Difícil |\n| Entorno | Browser + Node 12+ | Node.js |\n| Async top-level | Soportado | No |\n| Extensión típica | `.mjs` o `.js` (con `\"type\":\"module\"`) | `.cjs` o `.js` |",
+    "examples": [
+      {
+        "code": "// Simular el comportamiento de 'live bindings' vs 'copias'\n// ESM usa live bindings: el importador ve cambios en el valor original\n\n// Simulamos un módulo contador (como si fuera ESM)\nconst modulo = (() => {\n  let _count = 0;\n\n  // En ESM real, el importador accede directamente a _count\n  // Lo simulamos con un getter\n  return {\n    get count() { return _count; },  // Live binding simulation\n    incrementar() { _count++; },\n    resetear() { _count = 0; },\n  };\n})();\n\n// Importador\nconst { count: copia } = { count: modulo.count }; // CJS: copia del valor\nconst liveCount = () => modulo.count;              // ESM: acceso vivo\n\nconsole.log('Antes:', copia, liveCount()); // 0, 0\nmodulo.incrementar();\nmodulo.incrementar();\nconsole.log('Después:', copia, liveCount()); // 0, 2 — ¡la copia no cambia!",
+        "explanation": "El getter simula el live binding de ESM: quien consume el módulo siempre lee el valor actual. La desestructuración copia el valor en ese momento, como hace CommonJS."
+      },
+      {
+        "code": "// Simular require() con caché (como Node.js internamente)\nconst _cache = {};\n\nfunction require(nombreModulo) {\n  if (_cache[nombreModulo]) {\n    console.log(`[cache hit] ${nombreModulo}`);\n    return _cache[nombreModulo];\n  }\n\n  // Simula la 'ejecución' del módulo\n  const modulos = {\n    'matematicas': { sumar: (a,b) => a+b, PI: 3.14 },\n    'strings': { mayusculas: s => s.toUpperCase() },\n  };\n\n  const exports = modulos[nombreModulo];\n  if (!exports) throw new Error(`Cannot find module '${nombreModulo}'`);\n\n  _cache[nombreModulo] = exports;\n  return exports;\n}\n\nconst mat1 = require('matematicas'); // Ejecuta el módulo\nconst mat2 = require('matematicas'); // Devuelve del caché\n\nconsole.log(mat1 === mat2); // true — misma referencia\nconsole.log(mat1.sumar(2, 3)); // 5",
+        "explanation": "Node.js cachea módulos CJS exactamente así. El primer require() ejecuta el módulo, los siguientes devuelven la misma instancia cacheada. ESM también cachea, pero la implementación es diferente al ser estática."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Identificar el sistema de módulos",
+      "prompt": "Dado el siguiente código, determina si es ESM o CommonJS y explica las variables de clasificación:\n\n```javascript\n// Fragmento A:\nconst { readFile } = require('fs');\nmodule.exports = { leer: readFile };\n\n// Fragmento B:\nimport { readFile } from 'fs';\nexport function leer(path) { return readFile(path); }\n```\n\nGuarda:\n- `sistemaA = 'CommonJS'`\n- `sistemaB = 'ESM'`\n- `usaRequire = 'CommonJS'` (¿qué sistema usa `require()`?)\n- `usaLiveBindings = 'ESM'` (¿qué sistema tiene live bindings?)\n- `tieneTreeShaking = 'ESM'` (¿qué sistema soporta tree shaking nativo?)",
+      "starterCode": "// Clasificación de sistemas de módulos\nconst sistemaA = 'CommonJS'; // usa require() y module.exports\nconst sistemaB = 'ESM';      // usa import y export\n\nconst usaRequire = 'CommonJS';\nconst usaLiveBindings = 'ESM';\nconst tieneTreeShaking = 'ESM';\n\nconsole.log('A:', sistemaA, '| B:', sistemaB);\nconsole.log('Live bindings:', usaLiveBindings);\nconsole.log('Tree shaking:', tieneTreeShaking);\n",
+      "tests": [
+        {
+          "description": "sistemaA es 'CommonJS'",
+          "expression": "sistemaA === 'CommonJS'"
+        },
+        {
+          "description": "sistemaB es 'ESM'",
+          "expression": "sistemaB === 'ESM'"
+        },
+        {
+          "description": "usaRequire es 'CommonJS'",
+          "expression": "usaRequire === 'CommonJS'"
+        },
+        {
+          "description": "usaLiveBindings es 'ESM'",
+          "expression": "usaLiveBindings === 'ESM'"
+        },
+        {
+          "description": "tieneTreeShaking es 'ESM'",
+          "expression": "tieneTreeShaking === 'ESM'"
+        }
+      ],
+      "hints": [
+        "`require()` y `module.exports` son exclusivos de CommonJS",
+        "`import` y `export` son la sintaxis de ESM (estándar del lenguaje)",
+        "Tree shaking requiere análisis estático — solo ESM lo permite de forma nativa"
+      ]
+    },
+    {
+      "title": "Práctica: Live bindings vs copias",
+      "prompt": "Implementa dos versiones de un módulo contador que demuestren la diferencia entre live bindings (ESM) y copias (CJS):\n\n**Versión ESM** (simula live binding con getter):\n```javascript\nconst esmContador = (() => {\n  let _n = 0;\n  return {\n    get valor() { return _n; },\n    incrementar() { _n++; }\n  };\n})();\n```\n\n**Versión CJS** (simula copia del valor):\nDesestructura `{ valor }` del contador y llama `incrementar()` — el `valor` desestructurado NO cambia.\n\nGuarda:\n- `antes = esmContador.valor` → 0\n- Llama `esmContador.incrementar()` 3 veces\n- `despues = esmContador.valor` → 3\n- `cjsCopia` = valor desestructurado antes de incrementar → 0\n- `cjsCopiaDespues` = `cjsCopia` después de incrementar → sigue siendo 0",
+      "starterCode": "// Simula ESM con live binding\nconst esmContador = (() => {\n  let _n = 0;\n  return {\n    get valor() { return _n; },\n    incrementar() { _n++; },\n  };\n})();\n\n// Simula CJS con copia\nconst { valor: cjsCopia } = esmContador; // Copia el valor en este momento\n\nconst antes = esmContador.valor; // 0\n\nesmContador.incrementar();\nesmContador.incrementar();\nesmContador.incrementar();\n\nconst despues = esmContador.valor;       // 3 (live binding)\nconst cjsCopiaDespues = cjsCopia;        // 0 (copia no cambia)\n\nconsole.log('ESM antes:', antes, '→ después:', despues);\nconsole.log('CJS copia:', cjsCopia, '→ sigue siendo:', cjsCopiaDespues);\n",
+      "tests": [
+        {
+          "description": "antes es 0",
+          "expression": "antes === 0"
+        },
+        {
+          "description": "despues es 3 (live binding)",
+          "expression": "despues === 3"
+        },
+        {
+          "description": "cjsCopia es 0 (valor al momento de copiar)",
+          "expression": "cjsCopia === 0"
+        },
+        {
+          "description": "cjsCopiaDespues es 0 (la copia no cambió)",
+          "expression": "cjsCopiaDespues === 0"
+        }
+      ],
+      "hints": [
+        "El getter `get valor()` simula el live binding: cada acceso lee el valor actual",
+        "La desestructuración `const { valor }` toma una instantánea del valor en ese momento",
+        "ESM siempre da una 'ventana' al valor actual; CJS da una copia del valor en el momento del require"
+      ]
+    },
+    {
+      "title": "Aplicación: Simular require() con módulo registry",
+      "prompt": "Implementa un sistema de módulos simplificado que simule cómo funciona CommonJS internamente:\n\n```javascript\nconst registry = {\n  'utils/math': { sumar: (a,b) => a+b, PI: 3.14159 },\n  'utils/string': { trim: s => s.trim(), upper: s => s.toUpperCase() },\n  'config': { version: '1.0.0', debug: false },\n};\n```\n\nImplementa `crearSistemaModulos()` que retorne un objeto con:\n- `require(nombre)`: retorna el módulo del registry. Si ya se cargó, devuelve la misma instancia del caché (no una copia). Si no existe, lanza `Error('Cannot find module: ' + nombre)`.\n- `cacheSize()`: retorna cuántos módulos hay en el caché.\n\nVerifica que:\n- `require('utils/math') === require('utils/math')` → true (misma instancia)\n- `require('config').version` → `'1.0.0'`\n- El caché crece solo cuando se cargan módulos nuevos",
+      "starterCode": "const registry = {\n  'utils/math': { sumar: (a, b) => a + b, PI: 3.14159 },\n  'utils/string': { trim: s => s.trim(), upper: s => s.toUpperCase() },\n  'config': { version: '1.0.0', debug: false },\n};\n\nfunction crearSistemaModulos() {\n  const cache = {};\n\n  return {\n    require(nombre) {\n      if (cache[nombre]) return cache[nombre];\n      if (!registry[nombre]) throw new Error('Cannot find module: ' + nombre);\n      cache[nombre] = registry[nombre];\n      return cache[nombre];\n    },\n    cacheSize() {\n      return Object.keys(cache).length;\n    },\n  };\n}\n\nconst sistema = crearSistemaModulos();\n\nconst math1 = sistema.require('utils/math');\nconst math2 = sistema.require('utils/math'); // Cache hit\nconst config = sistema.require('config');\n\nconst mismaInstancia = math1 === math2;\nconst version = config.version;\nconst tamanoCache = sistema.cacheSize(); // 2: math + config\n\nlet errorAtrapado = false;\ntry {\n  sistema.require('no-existe');\n} catch (e) {\n  errorAtrapado = e.message.includes('Cannot find module');\n}\n\nconsole.log('Misma instancia:', mismaInstancia);\nconsole.log('Versión:', version);\nconsole.log('Caché size:', tamanoCache);\nconsole.log('Error atrapado:', errorAtrapado);\n",
+      "tests": [
+        {
+          "description": "math1 === math2 (misma instancia desde caché)",
+          "expression": "mismaInstancia === true"
+        },
+        {
+          "description": "version es '1.0.0'",
+          "expression": "version === '1.0.0'"
+        },
+        {
+          "description": "tamanoCache es 2",
+          "expression": "tamanoCache === 2"
+        },
+        {
+          "description": "require de módulo inexistente lanza error",
+          "expression": "errorAtrapado === true"
+        }
+      ],
+      "hints": [
+        "`if (cache[nombre]) return cache[nombre]` — devuelve la instancia cacheada si existe",
+        "La clave del patrón: `cache[nombre] = registry[nombre]` guarda la REFERENCIA, no una copia",
+        "Por eso `math1 === math2` — apuntan al mismo objeto en memoria"
+      ]
+    }
+  ]
+}

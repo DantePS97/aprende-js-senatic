@@ -1,0 +1,100 @@
+{
+  "id": "js-intermedio-m4-l3",
+  "title": "setTimeout vs Promise: ¿quién gana?",
+  "xpReward": 60,
+  "theory": {
+    "markdown": "## La pregunta que define si entiendes el Event Loop\n\nSi alguien te pregunta qué imprime este código, tu respuesta revela si realmente entiendes cómo funciona JavaScript:\n\n```javascript\nconsole.log('1');\n\nsetTimeout(() => console.log('2'), 0);\n\nPromise.resolve().then(() => console.log('3'));\n\nconsole.log('4');\n```\n\nLa respuesta es `1, 4, 3, 2` — y ahora sabes exactamente por qué.\n\n---\n\n## Desglosando paso a paso\n\n```javascript\nconsole.log('A');                          // [1] Síncrono → stack\n\nsetTimeout(() => console.log('E'), 0);    // [2] Web API → MacroQ\nsetTimeout(() => console.log('F'), 100);  // [3] Web API → MacroQ (100ms después)\n\nPromise.resolve()\n  .then(() => console.log('C'))           // [4] → MicroQ\n  .then(() => console.log('D'));          // [5] → MicroQ (tras C)\n\nconsole.log('B');                          // [6] Síncrono → stack\n\n// Orden de ejecución:\n// A → B (síncrono)\n// C → D (microtasks, vaciados antes de macrotasks)\n// E     (macrotask 1, delay ~0ms)\n// F     (macrotask 2, delay ~100ms)\n```\n\n---\n\n## Ejercicio clásico: async/await vs setTimeout\n\n```javascript\nasync function asyncFn() {\n  console.log('2 - sync en async');\n  await null;                    // Suspende → microtask\n  console.log('4 - tras await'); // Microtask\n}\n\nconsole.log('1 - antes');\nasyncFn();\nconsole.log('3 - después de llamar async');\nsetTimeout(() => console.log('5 - timeout'), 0);\n\n// Output: 1, 2, 3, 4, 5\n```\n\nLa clave: `asyncFn()` ejecuta de forma síncrona hasta el `await`, luego retorna. El `3` se imprime antes del `4` porque sigue siendo síncrono.\n\n---\n\n## El caso con Promise anidada en setTimeout\n\n```javascript\nsetTimeout(() => {\n  console.log('timeout');\n  Promise.resolve().then(() => console.log('promise dentro de timeout'));\n}, 0);\n\nPromise.resolve().then(() => console.log('promise fuera'));\n\n// Output:\n// promise fuera\n// timeout\n// promise dentro de timeout\n```\n\nPaso a paso:\n1. `timeout` → MacroQ\n2. `promise fuera` → MicroQ\n3. Stack vacío → vacía MicroQ → imprime `'promise fuera'`\n4. Toma macrotask → imprime `'timeout'` → encola nueva microtask\n5. Vacía MicroQ → imprime `'promise dentro de timeout'`\n\n---\n\n## El caso más complejo: múltiples async/await\n\n```javascript\nasync function uno() {\n  await dos();\n  console.log('D - uno después de await');\n}\n\nasync function dos() {\n  console.log('B - dentro de dos');\n}\n\nconsole.log('A - síncrono');\nuno();\nconsole.log('C - síncrono final');\n\n// Output: A, B, C, D\n```\n\n`dos()` no tiene `await` propio, pero al ser llamada con `await`, su resolución se encola como microtask — `D` espera al siguiente tick.\n\n---\n\n## Regla nemotécnica\n\n```\nS → M → T\nSíncrono → Microtasks → Macrotasks (Timers)\n```\n\nO en inglés: **S**tack → **M**icro → **M**acro (SMM)\n\nSiempre que veas código mezclado, clasifica cada instrucción en uno de los tres niveles y el orden se vuelve predecible.",
+    "examples": [
+      {
+        "code": "// El examen definitivo del Event Loop\nconsole.log('1');\n\nsetTimeout(() => {\n  console.log('5');\n  Promise.resolve().then(() => console.log('6'));\n}, 0);\n\nPromise.resolve()\n  .then(() => {\n    console.log('3');\n    setTimeout(() => console.log('7'), 0);\n  })\n  .then(() => console.log('4'));\n\nconsole.log('2');\n\n// Output: 1, 2, 3, 4, 5, 6, 7\n// 1,2: síncronos\n// 3: microtask del primer .then (encola timeout 7 y otra microtask)\n// 4: microtask del segundo .then (se procesó al vaciar toda la MicroQ)\n// 5: macrotask del timeout 0 (encola promise 6)\n// 6: microtask encolada por 5 (se vacía antes de tomar timeout 7)\n// 7: macrotask del timeout encolado dentro de la promise",
+        "explanation": "Este es el ejemplo que más confunde. La clave: después de cada macrotask se vacía TODA la microtask queue. Los timeouts encolados desde microtasks van al final de la macrotask queue."
+      },
+      {
+        "code": "// Promisificar setTimeout — util para pruebas y timing\nconst esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms));\n\nasync function secuencia() {\n  console.log('Inicio');\n  await esperar(100);\n  console.log('100ms después');\n  await esperar(200);\n  console.log('300ms en total');\n}\n\nsecuencia();\nconsole.log('Esto aparece antes (síncrono)');\n\n// Output:\n// 'Inicio'\n// 'Esto aparece antes (síncrono)'\n// (100ms) '100ms después'\n// (200ms más) '300ms en total'",
+        "explanation": "Convertir setTimeout a Promise permite usarlo con async/await. Es el patrón estándar para delays en código asíncrono moderno."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Clasificar instrucciones",
+      "prompt": "Clasifica cada instrucción del siguiente código en su tipo (S=síncrono, Mi=microtask, Ma=macrotask) y determina el orden correcto:\n\n```javascript\nconsole.log('X');                          // tipo: S\nsetTimeout(() => console.log('Y'), 0);    // tipo: ?\nPromise.resolve().then(() => console.log('Z')); // tipo: ?\nconsole.log('W');                          // tipo: S\n```\n\nEl orden de salida es: X, W, Z, Y\n\nGuarda `orden = ['X', 'W', 'Z', 'Y']`.\nGuarda `tipoY = 'macrotask'` y `tipoZ = 'microtask'`.",
+      "starterCode": "// Clasificación:\n// X → Síncrono\n// Y → Macrotask (setTimeout)\n// Z → Microtask (Promise.then)\n// W → Síncrono\n\nconst orden = ['X', 'W', 'Z', 'Y'];\nconst tipoY = 'macrotask';\nconst tipoZ = 'microtask';\n\nconsole.log('Orden:', orden.join(', '));\nconsole.log('Y es:', tipoY);\nconsole.log('Z es:', tipoZ);\n",
+      "tests": [
+        {
+          "description": "orden es ['X', 'W', 'Z', 'Y']",
+          "expression": "JSON.stringify(orden) === '[\"X\",\"W\",\"Z\",\"Y\"]'"
+        },
+        {
+          "description": "tipoY es 'macrotask'",
+          "expression": "tipoY === 'macrotask'"
+        },
+        {
+          "description": "tipoZ es 'microtask'",
+          "expression": "tipoZ === 'microtask'"
+        },
+        {
+          "description": "Z aparece antes que Y en el orden",
+          "expression": "orden.indexOf('Z') < orden.indexOf('Y')"
+        }
+      ],
+      "hints": [
+        "Regla S → Mi → Ma: síncronos primero, luego microtasks, luego macrotasks",
+        "setTimeout siempre es macrotask aunque el delay sea 0",
+        "Promise.then siempre es microtask"
+      ]
+    },
+    {
+      "title": "Práctica: Promisificar timeout",
+      "prompt": "Crea una función `esperar(ms)` que retorne una Promise que se resuelva después de `ms` milisegundos usando `setTimeout`.\n\nLuego crea una función async `medir(fn)` que:\n1. Guarda `Date.now()` en `inicio`\n2. Espera `await fn()`\n3. Retorna `Date.now() - inicio` (el tiempo transcurrido en ms)\n\nPrueba con `await medir(() => esperar(100))` — debe retornar un número ≥ 100.\n\nGuarda en `tiempo` ese resultado y en `esRazonable` si `tiempo >= 100 && tiempo < 500`.",
+      "starterCode": "function esperar(ms) {\n  return new Promise(resolve => {\n    // Usa setTimeout para resolver después de ms\n\n  });\n}\n\nasync function medir(fn) {\n  const inicio = Date.now();\n  // Espera fn()\n\n  return Date.now() - inicio;\n}\n\nconst tiempo = await medir(() => esperar(100));\nconst esRazonable = tiempo >= 100 && tiempo < 500;\n\nconsole.log('Tiempo:', tiempo, 'ms');\nconsole.log('Razonable:', esRazonable);\n",
+      "tests": [
+        {
+          "description": "esperar retorna una Promise",
+          "expression": "esperar(10) instanceof Promise"
+        },
+        {
+          "description": "tiempo es al menos 100ms",
+          "expression": "tiempo >= 100"
+        },
+        {
+          "description": "esRazonable es true",
+          "expression": "esRazonable === true"
+        }
+      ],
+      "hints": [
+        "`return new Promise(resolve => setTimeout(resolve, ms));`",
+        "`await fn();` y luego `return Date.now() - inicio;`",
+        "`setTimeout(resolve, ms)` llama a `resolve()` después de `ms` ms, resolviendo la Promise"
+      ]
+    },
+    {
+      "title": "Aplicación: Cola de tareas con prioridad",
+      "prompt": "Implementa una función `ejecutarConPrioridad(tareas)` que reciba un array de objetos `{fn, prioridad}` donde prioridad es `'alta'` o `'normal'`.\n\nLas tareas de alta prioridad deben ejecutarse primero (como microtasks con `queueMicrotask`) y las normales después (como macrotasks con `setTimeout(fn, 0)`).\n\nRetorna una Promise que se resuelve cuando todas las tareas hayan corrido.\n\nPrueba con:\n```javascript\nconst log = [];\nawait ejecutarConPrioridad([\n  { fn: () => log.push('normal-1'), prioridad: 'normal' },\n  { fn: () => log.push('alta-1'),   prioridad: 'alta' },\n  { fn: () => log.push('normal-2'), prioridad: 'normal' },\n  { fn: () => log.push('alta-2'),   prioridad: 'alta' },\n]);\n// log → ['alta-1', 'alta-2', 'normal-1', 'normal-2']\n```",
+      "starterCode": "function ejecutarConPrioridad(tareas) {\n  return new Promise(resolve => {\n    const altas = tareas.filter(t => t.prioridad === 'alta');\n    const normales = tareas.filter(t => t.prioridad === 'normal');\n\n    // Encola las altas como microtasks\n    for (const tarea of altas) {\n      queueMicrotask(tarea.fn);\n    }\n\n    // Encola las normales como macrotasks y resuelve cuando la última corra\n    let completadas = 0;\n    if (normales.length === 0) {\n      // Si no hay normales, resuelve como microtask\n      queueMicrotask(resolve);\n      return;\n    }\n\n    for (const tarea of normales) {\n      setTimeout(() => {\n        tarea.fn();\n        completadas++;\n        if (completadas === normales.length) resolve();\n      }, 0);\n    }\n  });\n}\n\nconst log = [];\nawait ejecutarConPrioridad([\n  { fn: () => log.push('normal-1'), prioridad: 'normal' },\n  { fn: () => log.push('alta-1'),   prioridad: 'alta' },\n  { fn: () => log.push('normal-2'), prioridad: 'normal' },\n  { fn: () => log.push('alta-2'),   prioridad: 'alta' },\n]);\n\nconsole.log(log);\n",
+      "tests": [
+        {
+          "description": "Las altas van antes que las normales",
+          "expression": "log.indexOf('alta-1') < log.indexOf('normal-1') && log.indexOf('alta-2') < log.indexOf('normal-1')"
+        },
+        {
+          "description": "log tiene 4 entradas",
+          "expression": "log.length === 4"
+        },
+        {
+          "description": "Las dos primeras son altas",
+          "expression": "log[0].startsWith('alta') && log[1].startsWith('alta')"
+        },
+        {
+          "description": "Las dos últimas son normales",
+          "expression": "log[2].startsWith('normal') && log[3].startsWith('normal')"
+        }
+      ],
+      "hints": [
+        "La implementación ya está dada — léela y entiéndela",
+        "`queueMicrotask` ejecuta antes que `setTimeout` aunque se llamen en el orden inverso",
+        "El contador `completadas` determina cuándo resolver la Promise principal"
+      ]
+    }
+  ]
+}

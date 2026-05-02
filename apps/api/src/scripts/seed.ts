@@ -20,6 +20,22 @@ async function upsertLesson(moduleId: mongoose.Types.ObjectId, data: {
   if (!exists) await LessonModel.create({ moduleId, ...data });
 }
 
+async function seedModule(
+  courseId: mongoose.Types.ObjectId,
+  order: number,
+  title: string,
+  description: string,
+  lessons: { order: number; title: string; xpReward: number; contentId: string }[]
+) {
+  let mod = await ModuleModel.findOne({ courseId, order });
+  if (!mod) {
+    mod = await ModuleModel.create({ courseId, order, title, description });
+  }
+  for (const lesson of lessons) {
+    await upsertLesson(mod._id as mongoose.Types.ObjectId, lesson);
+  }
+}
+
 async function seed() {
   if (!MONGODB_URI) {
     console.error('❌  MONGODB_URI no configurado');
@@ -374,6 +390,113 @@ async function seed() {
     { order: 2, title: 'Media Queries',       xpReward: 35, contentId: 'html-css-basico/module-05-responsive/lesson-02-media-queries' },
   ]) await upsertLesson(htmlMod5._id, l);
   console.log('✅  Módulo HTML 5 listo (2 lecciones)');
+
+  // ─── Curso: JavaScript Intermedio ────────────────────────────────────────────
+  let jsIntermedio = await CourseModel.findOne({ slug: 'javascript-intermedio' });
+  if (!jsIntermedio) {
+    jsIntermedio = await CourseModel.create({
+      slug: 'javascript-intermedio',
+      title: 'JavaScript Intermedio',
+      description: 'Closures, OOP, el Event Loop, módulos ES y patrones de diseño',
+      level: 'intermediate',
+      iconEmoji: '⚙️',
+      order: 2,
+      isPublished: true,
+      prerequisiteSlug: 'javascript-basico',
+    });
+    console.log('✅  Curso "JavaScript Intermedio" creado');
+  }
+
+  // Módulo 1 — Closures y funciones avanzadas
+  await seedModule(jsIntermedio._id, 1, 'Closures y funciones avanzadas', 'Domina el mecanismo de cierre y los patrones funcionales', [
+    { order: 1, title: '¿Qué es un closure?',               xpReward: 40, contentId: 'javascript-intermedio/module-01-closures/lesson-01-que-es-un-closure' },
+    { order: 2, title: 'Casos de uso de closures',          xpReward: 45, contentId: 'javascript-intermedio/module-01-closures/lesson-02-casos-de-uso' },
+    { order: 3, title: 'IIFE: funciones autoejecutadas',    xpReward: 40, contentId: 'javascript-intermedio/module-01-closures/lesson-03-iife' },
+    { order: 4, title: 'Funciones de orden superior',       xpReward: 45, contentId: 'javascript-intermedio/module-01-closures/lesson-04-higher-order' },
+    { order: 5, title: 'Currying y composición',            xpReward: 55, contentId: 'javascript-intermedio/module-01-closures/lesson-05-currying' },
+  ]);
+  console.log('✅  Módulo JS-I 1 listo (5 lecciones)');
+
+  // Módulo 2 — Prototipos y cadena de herencia
+  await seedModule(jsIntermedio._id, 2, 'Prototipos y cadena de herencia', 'Entiende el motor real detrás de la OOP en JavaScript', [
+    { order: 1, title: 'El prototype chain',                xpReward: 45, contentId: 'javascript-intermedio/module-02-prototipos/lesson-01-prototype-chain' },
+    { order: 2, title: 'Object.create()',                   xpReward: 45, contentId: 'javascript-intermedio/module-02-prototipos/lesson-02-object-create' },
+    { order: 3, title: 'Herencia prototípica manual',       xpReward: 50, contentId: 'javascript-intermedio/module-02-prototipos/lesson-03-herencia-manual' },
+    { order: 4, title: 'hasOwnProperty e instanceof',       xpReward: 40, contentId: 'javascript-intermedio/module-02-prototipos/lesson-04-hasownproperty' },
+  ]);
+  console.log('✅  Módulo JS-I 2 listo (4 lecciones)');
+
+  // Módulo 3 — Clases y OOP
+  await seedModule(jsIntermedio._id, 3, 'Clases y Programación Orientada a Objetos', 'OOP moderna con clases ES6 y encapsulación', [
+    { order: 1, title: 'Clases ES6: constructor y métodos',  xpReward: 45, contentId: 'javascript-intermedio/module-03-clases/lesson-01-clases-basicas' },
+    { order: 2, title: 'Herencia con extends y super',       xpReward: 50, contentId: 'javascript-intermedio/module-03-clases/lesson-02-herencia' },
+    { order: 3, title: 'Getters y setters',                  xpReward: 45, contentId: 'javascript-intermedio/module-03-clases/lesson-03-getters-setters' },
+    { order: 4, title: 'Métodos y propiedades estáticos',    xpReward: 45, contentId: 'javascript-intermedio/module-03-clases/lesson-04-static' },
+    { order: 5, title: 'Campos privados con #',              xpReward: 50, contentId: 'javascript-intermedio/module-03-clases/lesson-05-privados' },
+  ]);
+  console.log('✅  Módulo JS-I 3 listo (5 lecciones)');
+
+  // Módulo 4 — El Event Loop
+  await seedModule(jsIntermedio._id, 4, 'El Event Loop', 'Cómo JavaScript ejecuta código asíncrono bajo el capó', [
+    { order: 1, title: 'Call Stack y Memory Heap',           xpReward: 50, contentId: 'javascript-intermedio/module-04-event-loop/lesson-01-call-stack' },
+    { order: 2, title: 'Macrotasks vs Microtasks',           xpReward: 55, contentId: 'javascript-intermedio/module-04-event-loop/lesson-02-macro-micro' },
+    { order: 3, title: 'setTimeout vs Promise: ¿quién gana?', xpReward: 60, contentId: 'javascript-intermedio/module-04-event-loop/lesson-03-orden-ejecucion' },
+    { order: 4, title: 'queueMicrotask y requestAnimationFrame', xpReward: 60, contentId: 'javascript-intermedio/module-04-event-loop/lesson-04-queue-raf' },
+  ]);
+  console.log('✅  Módulo JS-I 4 listo (4 lecciones)');
+
+  // Módulo 5 — Módulos ES
+  await seedModule(jsIntermedio._id, 5, 'Módulos ES', 'Organiza tu código con el sistema de módulos nativo', [
+    { order: 1, title: 'export e import: named y default',   xpReward: 40, contentId: 'javascript-intermedio/module-05-modulos/lesson-01-import-export' },
+    { order: 2, title: 'Re-exportación y barrel files',      xpReward: 40, contentId: 'javascript-intermedio/module-05-modulos/lesson-02-reexportacion' },
+    { order: 3, title: 'Importación dinámica con import()',  xpReward: 50, contentId: 'javascript-intermedio/module-05-modulos/lesson-03-dynamic-import' },
+    { order: 4, title: 'ESM vs CommonJS',                    xpReward: 45, contentId: 'javascript-intermedio/module-05-modulos/lesson-04-esm-vs-cjs' },
+  ]);
+  console.log('✅  Módulo JS-I 5 listo (4 lecciones)');
+
+  // Módulo 6 — Colecciones avanzadas
+  await seedModule(jsIntermedio._id, 6, 'Colecciones avanzadas', 'Map, Set, WeakMap y WeakSet', [
+    { order: 1, title: 'Map: el objeto mejorado',            xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-01-map' },
+    { order: 2, title: 'Set: valores únicos',                xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-02-set' },
+    { order: 3, title: 'WeakMap y WeakSet',                  xpReward: 55, contentId: 'javascript-intermedio/module-06-colecciones/lesson-03-weak' },
+    { order: 4, title: 'Iteración sobre colecciones',        xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-04-iteracion' },
+  ]);
+  console.log('✅  Módulo JS-I 6 listo (4 lecciones)');
+
+  // Módulo 7 — Iteradores y Generadores
+  await seedModule(jsIntermedio._id, 7, 'Iteradores y Generadores', 'El protocolo iterable y evaluación lazy', [
+    { order: 1, title: 'El protocolo iterable',              xpReward: 50, contentId: 'javascript-intermedio/module-07-generadores/lesson-01-iterable' },
+    { order: 2, title: 'function* y yield',                  xpReward: 55, contentId: 'javascript-intermedio/module-07-generadores/lesson-02-generators' },
+    { order: 3, title: 'Generadores infinitos y lazy',       xpReward: 60, contentId: 'javascript-intermedio/module-07-generadores/lesson-03-lazy' },
+    { order: 4, title: 'for...of bajo el capó',              xpReward: 50, contentId: 'javascript-intermedio/module-07-generadores/lesson-04-for-of' },
+  ]);
+  console.log('✅  Módulo JS-I 7 listo (4 lecciones)');
+
+  // Módulo 8 — Patrones de diseño
+  await seedModule(jsIntermedio._id, 8, 'Patrones de diseño en JavaScript', 'Soluciones probadas a problemas recurrentes', [
+    { order: 1, title: 'Module Pattern',                     xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-01-module-pattern' },
+    { order: 2, title: 'Observer y PubSub',                  xpReward: 60, contentId: 'javascript-intermedio/module-08-patrones/lesson-02-observer' },
+    { order: 3, title: 'Factory y Builder',                  xpReward: 60, contentId: 'javascript-intermedio/module-08-patrones/lesson-03-factory' },
+    { order: 4, title: 'Singleton',                          xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-04-singleton' },
+  ]);
+  console.log('✅  Módulo JS-I 8 listo (4 lecciones)');
+
+  // Módulo 9 — Expresiones regulares
+  await seedModule(jsIntermedio._id, 9, 'Expresiones regulares', 'Busca, valida y transforma texto con regex', [
+    { order: 1, title: 'Sintaxis: clases, cuantificadores, grupos', xpReward: 50, contentId: 'javascript-intermedio/module-09-regex/lesson-01-sintaxis' },
+    { order: 2, title: 'test(), match(), replace() y exec()',       xpReward: 55, contentId: 'javascript-intermedio/module-09-regex/lesson-02-metodos' },
+    { order: 3, title: 'Casos reales: emails, teléfonos, slugs',    xpReward: 60, contentId: 'javascript-intermedio/module-09-regex/lesson-03-casos-reales' },
+  ]);
+  console.log('✅  Módulo JS-I 9 listo (3 lecciones)');
+
+  // Módulo 10 — APIs del navegador avanzadas
+  await seedModule(jsIntermedio._id, 10, 'APIs del navegador avanzadas', 'Observadores y procesamiento en paralelo', [
+    { order: 1, title: 'IntersectionObserver: lazy loading',  xpReward: 55, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-01-intersection-observer' },
+    { order: 2, title: 'MutationObserver',                    xpReward: 55, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-02-mutation-observer' },
+    { order: 3, title: 'ResizeObserver',                      xpReward: 50, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-03-resize-observer' },
+    { order: 4, title: 'Introducción a Web Workers',          xpReward: 65, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-04-web-workers' },
+  ]);
+  console.log('✅  Módulo JS-I 10 listo (4 lecciones)');
 
   // ─── Logros ───────────────────────────────────────────────────────────────
 

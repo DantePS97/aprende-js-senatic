@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m6-l2",
+  "title": "Set: colecciones sin duplicados",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## ¿Qué es un Set?\n\nUn `Set` es una colección de valores **únicos** — no permite duplicados. Cuando agregas un valor que ya existe, simplemente se ignora.\n\n```javascript\nconst s = new Set([1, 2, 3, 2, 1]);\nconsole.log(s);       // Set { 1, 2, 3 } — sin duplicados\nconsole.log(s.size);  // 3\n\n// El caso más común: eliminar duplicados de un array:\nconst nums = [1, 2, 2, 3, 3, 3, 4];\nconst unicos = [...new Set(nums)];\nconsole.log(unicos); // [1, 2, 3, 4]\n```\n\n---\n\n## API de Set\n\n```javascript\nconst colores = new Set();\n\n// Agregar:\ncolores.add('rojo');\ncolores.add('verde');\ncolores.add('azul');\ncolores.add('rojo'); // Ignorado — ya existe\n\n// Consultar:\ncolores.has('rojo');   // true\ncolores.has('negro');  // false\ncolores.size;          // 3\n\n// Eliminar:\ncolores.delete('verde'); // true\ncolores.clear();         // vacía el Set\n\n// Inicialización con iterable:\nconst letras = new Set('abracadabra'.split(''));\nconsole.log([...letras]); // ['a', 'b', 'r', 'c', 'd'] — únicas, en orden de aparición\n```\n\n---\n\n## Iteración\n\nSet mantiene el orden de **primera inserción**:\n\n```javascript\nconst tags = new Set(['js', 'react', 'css', 'js', 'html']);\n\nfor (const tag of tags) {\n  console.log(tag); // js, react, css, html (orden de inserción, sin duplicado)\n}\n\n// Spread a array:\nconst arrayTags = [...tags]; // ['js', 'react', 'css', 'html']\n\n// forEach (valor, valor, set) — la clave y el valor son lo mismo en Set:\ntags.forEach(tag => console.log(tag));\n\n// Métodos de iteración (compatibilidad con Map):\ntags.values(); // Iterador\ntags.keys();   // Igual que values() en Set\ntags.entries(); // [valor, valor] — redundante pero existe por simetría con Map\n```\n\n---\n\n## Operaciones de conjunto\n\nSet no tiene métodos nativos para unión/intersección, pero son fáciles de implementar:\n\n```javascript\nconst A = new Set([1, 2, 3, 4]);\nconst B = new Set([3, 4, 5, 6]);\n\n// Unión (A ∪ B):\nconst union = new Set([...A, ...B]);\n// Set { 1, 2, 3, 4, 5, 6 }\n\n// Intersección (A ∩ B):\nconst interseccion = new Set([...A].filter(x => B.has(x)));\n// Set { 3, 4 }\n\n// Diferencia (A - B, elementos en A pero no en B):\nconst diferencia = new Set([...A].filter(x => !B.has(x)));\n// Set { 1, 2 }\n\n// Diferencia simétrica (elementos en uno pero no en ambos):\nconst simetrica = new Set(\n  [...A].filter(x => !B.has(x)).concat([...B].filter(x => !A.has(x)))\n);\n// Set { 1, 2, 5, 6 }\n```\n\n---\n\n## Casos de uso reales\n\n```javascript\n// 1. Eliminar duplicados:\nconst ids = [1, 2, 3, 2, 1, 4];\nconst unicos = [...new Set(ids)]; // [1, 2, 3, 4]\n\n// 2. Verificar membresía eficientemente:\nconst permisosAdmin = new Set(['read', 'write', 'delete', 'admin']);\nif (permisosAdmin.has('admin')) { /* ... */ }\n// has() en Set es O(1), indexOf() en Array es O(n)\n\n// 3. Tracking de visitas únicas:\nconst paginasVistas = new Set();\npaginasVistas.add('/inicio');\npaginasVistas.add('/productos');\npaginasVistas.add('/inicio'); // No cuenta dos veces\nconsole.log('Páginas únicas:', paginasVistas.size); // 2\n\n// 4. Tags únicos de posts:\nconst todosLosTags = posts.flatMap(p => p.tags);\nconst tagsUnicos = [...new Set(todosLosTags)];\n```\n\n---\n\n## Set vs Array: ¿cuándo usar cada uno?\n\n```javascript\n// ✅ Usa Set cuando:\n// - Los valores deben ser únicos\n// - Necesitas verificar membresía frecuentemente (has() es O(1))\n// - Haces operaciones de conjunto (unión, intersección)\n\n// ✅ Usa Array cuando:\n// - Necesitas acceso por índice: arr[2]\n// - El orden importa y hay duplicados\n// - Necesitas map/filter/reduce\n// - La semántica es secuencia, no conjunto\n```",
+    "examples": [
+      {
+        "code": "// Eliminar duplicados preservando orden\nfunction unique(array) {\n  return [...new Set(array)];\n}\n\nconst compras = ['leche', 'pan', 'leche', 'huevos', 'pan', 'café'];\nconsole.log(unique(compras)); // ['leche', 'pan', 'huevos', 'café']\n\n// Con objetos NO funciona directamente (referencias diferentes):\nconst usuarios = [\n  { id: 1, nombre: 'Ana' },\n  { id: 2, nombre: 'Bob' },\n  { id: 1, nombre: 'Ana' }, // 'duplicado' pero referencia diferente\n];\nconsole.log(unique(usuarios).length); // 3 — ¡no detecta el duplicado!\n\n// Para objetos, necesitas deduplicar por propiedad:\nfunction uniqueBy(array, getKey) {\n  const seen = new Set();\n  return array.filter(item => {\n    const key = getKey(item);\n    if (seen.has(key)) return false;\n    seen.add(key);\n    return true;\n  });\n}\n\nconsole.log(uniqueBy(usuarios, u => u.id).length); // 2 — correcto",
+        "explanation": "Set usa igualdad referencial para objetos. Para deduplicar por propiedad, se usa Set como 'seen tracker' dentro de filter — uno de los patrones más útiles."
+      },
+      {
+        "code": "// Verificar permisos eficientemente\nfunction crearSistemaPermisos(permisosIniciales) {\n  const permisos = new Set(permisosIniciales);\n\n  return {\n    tiene: (permiso) => permisos.has(permiso),\n    agregar: (permiso) => permisos.add(permiso),\n    revocar: (permiso) => permisos.delete(permiso),\n    todos: () => [...permisos],\n    tieneAlguno: (...lista) => lista.some(p => permisos.has(p)),\n    tieneTodos: (...lista) => lista.every(p => permisos.has(p)),\n  };\n}\n\nconst usuario = crearSistemaPermisos(['read', 'write']);\nconsole.log(usuario.tiene('admin'));                    // false\nconsole.log(usuario.tieneAlguno('read', 'admin'));      // true\nconsole.log(usuario.tieneTodos('read', 'write'));       // true\nconsole.log(usuario.tieneTodos('read', 'write', 'admin')); // false\nusuario.agregar('delete');\nconsole.log(usuario.todos()); // ['read', 'write', 'delete']",
+        "explanation": "has() en Set es O(1) vs O(n) de Array.includes(). Para sistemas de permisos que se consultan frecuentemente, Set es la elección correcta."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Eliminar duplicados",
+      "prompt": "Usa `Set` para eliminar duplicados de arrays:\n\n1. `eliminarDuplicados(array)`: retorna un array sin duplicados (preservando orden de primera aparición)\n2. Aplícalo a:\n   - `numeros = [1, 2, 3, 2, 1, 4, 3]` → `[1, 2, 3, 4]`\n   - `palabras = ['hola', 'mundo', 'hola', 'js']` → `['hola', 'mundo', 'js']`\n\nGuarda:\n- `r1 = eliminarDuplicados(numeros)` como array\n- `r2 = eliminarDuplicados(palabras)` como array\n- `r1Length = r1.length` → 4\n- `r2Length = r2.length` → 3",
+      "starterCode": "function eliminarDuplicados(array) {\n  return [...new Set(array)];\n}\n\nconst numeros = [1, 2, 3, 2, 1, 4, 3];\nconst palabras = ['hola', 'mundo', 'hola', 'js'];\n\nconst r1 = eliminarDuplicados(numeros);\nconst r2 = eliminarDuplicados(palabras);\nconst r1Length = r1.length;\nconst r2Length = r2.length;\n\nconsole.log(r1, r1Length);\nconsole.log(r2, r2Length);\n",
+      "tests": [
+        {
+          "description": "r1Length es 4",
+          "expression": "r1Length === 4"
+        },
+        {
+          "description": "r2Length es 3",
+          "expression": "r2Length === 3"
+        },
+        {
+          "description": "r1 contiene [1,2,3,4] en orden",
+          "expression": "JSON.stringify(r1) === '[1,2,3,4]'"
+        },
+        {
+          "description": "r2 contiene ['hola','mundo','js'] en orden",
+          "expression": "JSON.stringify(r2) === '[\"hola\",\"mundo\",\"js\"]'"
+        }
+      ],
+      "hints": [
+        "`new Set(array)` crea un Set sin duplicados",
+        "`[...set]` convierte el Set de vuelta a array",
+        "En una línea: `[...new Set(array)]`"
+      ]
+    },
+    {
+      "title": "Práctica: Operaciones de conjunto",
+      "prompt": "Implementa tres funciones de operaciones de conjunto usando `Set`:\n\n- `union(a, b)`: todos los elementos de ambos arrays, sin duplicados\n- `interseccion(a, b)`: elementos que están en AMBOS arrays\n- `diferencia(a, b)`: elementos que están en `a` pero NO en `b`\n\nRetornan arrays (no Sets).\n\nGuarda:\n- `setA = [1, 2, 3, 4]`, `setB = [3, 4, 5, 6]`\n- `u = union(setA, setB)` → `[1,2,3,4,5,6]`\n- `i = interseccion(setA, setB)` → `[3,4]`\n- `d = diferencia(setA, setB)` → `[1,2]`",
+      "starterCode": "function union(a, b) {\n  return [...new Set([...a, ...b])];\n}\n\nfunction interseccion(a, b) {\n  const setB = new Set(b);\n  return [...new Set(a)].filter(x => setB.has(x));\n}\n\nfunction diferencia(a, b) {\n  const setB = new Set(b);\n  return [...new Set(a)].filter(x => !setB.has(x));\n}\n\nconst setA = [1, 2, 3, 4];\nconst setB = [3, 4, 5, 6];\n\nconst u = union(setA, setB);\nconst i = interseccion(setA, setB);\nconst d = diferencia(setA, setB);\n\nconsole.log('Unión:', u);\nconsole.log('Intersección:', i);\nconsole.log('Diferencia:', d);\n",
+      "tests": [
+        {
+          "description": "union incluye todos los elementos únicos",
+          "expression": "JSON.stringify(u) === '[1,2,3,4,5,6]'"
+        },
+        {
+          "description": "interseccion son los elementos comunes",
+          "expression": "JSON.stringify(i) === '[3,4]'"
+        },
+        {
+          "description": "diferencia son elementos solo en A",
+          "expression": "JSON.stringify(d) === '[1,2]'"
+        },
+        {
+          "description": "union tiene 6 elementos",
+          "expression": "u.length === 6"
+        }
+      ],
+      "hints": [
+        "Unión: `[...new Set([...a, ...b])]` — spread ambos arrays en un Set",
+        "Intersección: convertir `b` a Set, luego filtrar `a` con `setB.has(x)`",
+        "Diferencia: igual que intersección pero con `!setB.has(x)`"
+      ]
+    },
+    {
+      "title": "Aplicación: Analizador de texto",
+      "prompt": "Crea una función `analizarTexto(texto)` que retorne un objeto con estadísticas usando Set y Map:\n\n- `palabrasUnicas`: número de palabras únicas (Set)\n- `caracteresUnicos`: número de caracteres únicos sin contar espacios (Set)\n- `frecuenciaPalabras`: Map con la frecuencia de cada palabra\n- `palabraMasFrecuente`: la palabra que más veces aparece\n\nIgnora mayúsculas (convierte todo a minúsculas). Las palabras se separan por espacios.\n\nPrueba con: `'el sol sale y el sol brilla y el sol ilumina'`",
+      "starterCode": "function analizarTexto(texto) {\n  const palabras = texto.toLowerCase().split(' ');\n\n  // Palabras únicas\n  const setPalabras = new Set(palabras);\n\n  // Caracteres únicos (sin espacios)\n  const setCaracteres = new Set(texto.toLowerCase().replace(/ /g, '').split(''));\n\n  // Frecuencia de palabras\n  const frecuencia = new Map();\n  for (const palabra of palabras) {\n    frecuencia.set(palabra, (frecuencia.get(palabra) ?? 0) + 1);\n  }\n\n  // Palabra más frecuente\n  let masFrecuente = '';\n  let maxCount = 0;\n  for (const [palabra, count] of frecuencia) {\n    if (count > maxCount) {\n      maxCount = count;\n      masFrecuente = palabra;\n    }\n  }\n\n  return {\n    palabrasUnicas: setPalabras.size,\n    caracteresUnicos: setCaracteres.size,\n    frecuenciaPalabras: frecuencia,\n    palabraMasFrecuente: masFrecuente,\n  };\n}\n\nconst resultado = analizarTexto('el sol sale y el sol brilla y el sol ilumina');\n\nconsole.log('Palabras únicas:', resultado.palabrasUnicas);\nconsole.log('Caracteres únicos:', resultado.caracteresUnicos);\nconsole.log('Más frecuente:', resultado.palabraMasFrecuente);\nconsole.log('Frecuencia de \"el\":', resultado.frecuenciaPalabras.get('el'));\n",
+      "tests": [
+        {
+          "description": "palabrasUnicas es 6",
+          "expression": "resultado.palabrasUnicas === 6"
+        },
+        {
+          "description": "palabraMasFrecuente es 'el'",
+          "expression": "resultado.palabraMasFrecuente === 'el'"
+        },
+        {
+          "description": "frecuencia de 'el' es 3",
+          "expression": "resultado.frecuenciaPalabras.get('el') === 3"
+        },
+        {
+          "description": "frecuenciaPalabras es un Map",
+          "expression": "resultado.frecuenciaPalabras instanceof Map"
+        }
+      ],
+      "hints": [
+        "`new Set(palabras).size` cuenta palabras únicas directamente",
+        "`(frecuencia.get(palabra) ?? 0) + 1` es el patrón de incremento con valor por defecto",
+        "El loop `for...of` sobre un Map desctructura en `[clave, valor]`"
+      ]
+    }
+  ]
+}

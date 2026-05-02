@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m8-l1",
+  "title": "Singleton y Factory",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## ¿Qué son los patrones de diseño?\n\nLos patrones de diseño son **soluciones probadas a problemas recurrentes** en el diseño de software. No son código para copiar — son conceptos para reconocer y adaptar. En JavaScript, se implementan de forma idiomática usando closures, prototipos y módulos.\n\n---\n\n## Singleton: una sola instancia\n\nEl patrón Singleton garantiza que una clase tenga **exactamente una instancia** y provee un punto de acceso global a ella.\n\n```javascript\n// Cuándo lo necesitas:\n// - Conexión a base de datos (no quieres 100 conexiones abiertas)\n// - Logger (todos los módulos deben escribir al mismo archivo)\n// - Configuración de la app (una sola fuente de verdad)\n\n// Implementación con módulo ESM (la forma más idiomática en JS moderno):\n// config.js\nconst config = {\n  baseUrl: 'https://api.ejemplo.com',\n  timeout: 5000,\n  version: '1.0',\n};\nexport default config;\n\n// ← En ESM, el módulo se carga UNA sola vez y se cachea.\n// Cada import del mismo módulo retorna la MISMA instancia.\n```\n\n### Singleton clásico con clase\n\n```javascript\nclass Database {\n  static #instance = null;\n  #conexiones = 0;\n\n  constructor() {\n    if (Database.#instance) {\n      return Database.#instance; // Retorna la instancia existente\n    }\n    this.#conexiones = 0;\n    Database.#instance = this;\n  }\n\n  static getInstance() {\n    if (!Database.#instance) {\n      Database.#instance = new Database();\n    }\n    return Database.#instance;\n  }\n\n  conectar() { this.#conexiones++; }\n  getConexiones() { return this.#conexiones; }\n}\n\nconst db1 = Database.getInstance();\nconst db2 = Database.getInstance();\nconsole.log(db1 === db2); // true — misma instancia\n```\n\n### Singleton con closure (más idiomático en JS)\n\n```javascript\nconst crearLogger = (() => {\n  let instancia = null;\n\n  return function() {\n    if (!instancia) {\n      instancia = {\n        logs: [],\n        log(msg) { this.logs.push(`[${new Date().toISOString()}] ${msg}`); },\n        getLogs() { return [...this.logs]; },\n      };\n    }\n    return instancia;\n  };\n})();\n\nconst logger1 = crearLogger();\nconst logger2 = crearLogger();\nlogger1.log('Inicio de sesión');\nconsole.log(logger2.getLogs()); // ['[...] Inicio de sesión'] — misma instancia\n```\n\n---\n\n## Factory: crear objetos sin exponer construcción\n\nEl patrón Factory centraliza la lógica de creación de objetos, separándola del código que los usa:\n\n```javascript\n// Sin factory — el cliente sabe qué clase instanciar:\nif (tipo === 'perro') new Perro(...);\nelse if (tipo === 'gato') new Gato(...);\nelse if (tipo === 'pez') new Pez(...);\n// Repetido en cada lugar que crea animales — frágil\n\n// Con factory — la decisión está centralizada:\nfunction crearAnimal(tipo, nombre) {\n  const animales = {\n    perro: (n) => ({ nombre: n, sonido: 'guau', patas: 4 }),\n    gato:  (n) => ({ nombre: n, sonido: 'miau', patas: 4 }),\n    pez:   (n) => ({ nombre: n, sonido: '-', patas: 0 }),\n  };\n\n  if (!animales[tipo]) throw new Error(`Tipo desconocido: ${tipo}`);\n  return animales[tipo](nombre);\n}\n\nconst p = crearAnimal('perro', 'Rex');\nconst g = crearAnimal('gato', 'Mimi');\n```\n\n### Factory Method con clase\n\n```javascript\nclass ConexionBD {\n  static crear(tipo) {\n    const configuraciones = {\n      postgres: { puerto: 5432, driver: 'pg' },\n      mysql:    { puerto: 3306, driver: 'mysql2' },\n      sqlite:   { puerto: null, driver: 'better-sqlite3' },\n    };\n\n    const config = configuraciones[tipo];\n    if (!config) throw new Error(`DB no soportada: ${tipo}`);\n\n    return new ConexionBD({ tipo, ...config });\n  }\n\n  #config;\n  constructor(config) { this.#config = config; }\n  getDriver() { return this.#config.driver; }\n  getPuerto() { return this.#config.puerto; }\n}\n\nconst pg = ConexionBD.crear('postgres');\nconsole.log(pg.getDriver()); // 'pg'\nconsole.log(pg.getPuerto()); // 5432\n```",
+    "examples": [
+      {
+        "code": "// Singleton: contador de requests HTTP (como middleware)\nconst Stats = (() => {\n  let instancia;\n\n  function crearInstancia() {\n    const datos = { requests: 0, errores: 0, inicio: Date.now() };\n    return {\n      registrarRequest() { datos.requests++; },\n      registrarError()   { datos.errores++; },\n      getStats() {\n        return {\n          ...datos,\n          uptime: Math.round((Date.now() - datos.inicio) / 1000) + 's',\n        };\n      },\n    };\n  }\n\n  return {\n    getInstance() {\n      if (!instancia) instancia = crearInstancia();\n      return instancia;\n    }\n  };\n})();\n\n// Múltiples 'módulos' usando el mismo Stats:\nconst statsA = Stats.getInstance();\nconst statsB = Stats.getInstance();\n\nstatsA.registrarRequest();\nstatsA.registrarRequest();\nstatsB.registrarError();\n\nconsole.log(statsA === statsB); // true\nconsole.log(statsA.getStats()); // { requests: 2, errores: 1, ... }",
+        "explanation": "La IIFE crea el scope privado. getInstance() asegura que solo se crea una instancia. Esto es más idiomático en JS que el constructor con return."
+      },
+      {
+        "code": "// Factory: sistema de notificaciones\nfunction crearNotificacion(tipo, mensaje, opciones = {}) {\n  const base = {\n    id: Math.random().toString(36).slice(2),\n    mensaje,\n    timestamp: new Date().toISOString(),\n  };\n\n  const estilos = {\n    info:    { icono: 'ℹ️',  color: 'azul',  duracion: 3000 },\n    exito:   { icono: '✅', color: 'verde', duracion: 3000 },\n    error:   { icono: '❌', color: 'rojo',  duracion: 0 },    // 0 = no desaparece\n    alerta:  { icono: '⚠️', color: 'naranja', duracion: 5000 },\n  };\n\n  if (!estilos[tipo]) throw new Error(`Tipo de notificación inválido: ${tipo}`);\n\n  return { ...base, tipo, ...estilos[tipo], ...opciones };\n}\n\nconst n1 = crearNotificacion('exito', 'Guardado correctamente');\nconst n2 = crearNotificacion('error', 'Sin conexión', { duracion: 10000 });\n\nconsole.log(n1.icono, n1.color);\nconsole.log(n2.duracion); // 10000 — opciones override el default",
+        "explanation": "La factory centraliza la lógica de construcción. El cliente no necesita conocer los detalles de cada tipo de notificación — solo pide el tipo y el mensaje."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Singleton con closure",
+      "prompt": "Implementa un Singleton de configuración de aplicación usando el patrón de closure:\n\nCrea `crearConfig` como IIFE que retorne un objeto `{ getInstance() }`. `getInstance()` retorna siempre la misma instancia de:\n```javascript\n{ host: 'localhost', port: 3000, debug: false }\n```\n\nGuarda:\n- `config1 = crearConfig.getInstance()`\n- `config2 = crearConfig.getInstance()`\n- `esMismaInstancia = config1 === config2` → `true`\n- `hostValue = config1.host` → `'localhost'`",
+      "starterCode": "const crearConfig = (() => {\n  let instancia = null;\n\n  return {\n    getInstance() {\n      if (!instancia) {\n        instancia = { host: 'localhost', port: 3000, debug: false };\n      }\n      return instancia;\n    }\n  };\n})();\n\nconst config1 = crearConfig.getInstance();\nconst config2 = crearConfig.getInstance();\nconst esMismaInstancia = config1 === config2;\nconst hostValue = config1.host;\n\nconsole.log(esMismaInstancia, hostValue);\n",
+      "tests": [
+        {
+          "description": "esMismaInstancia es true",
+          "expression": "esMismaInstancia === true"
+        },
+        {
+          "description": "hostValue es 'localhost'",
+          "expression": "hostValue === 'localhost'"
+        },
+        {
+          "description": "config1.port es 3000",
+          "expression": "config1.port === 3000"
+        },
+        {
+          "description": "modificar config1 afecta config2 (misma referencia)",
+          "expression": "(() => { config1.port = 4000; return config2.port === 4000; })()"
+        }
+      ],
+      "hints": [
+        "La IIFE `(() => { ... })()` ejecuta la función inmediatamente",
+        "`let instancia = null` vive en el closure — persiste entre llamadas a `getInstance()`",
+        "La condición `if (!instancia)` solo crea la instancia la primera vez"
+      ]
+    },
+    {
+      "title": "Práctica: Factory de validadores",
+      "prompt": "Implementa `crearValidador(tipo)` — una factory que retorne diferentes funciones de validación según el tipo:\n\n- `'email'` → función que verifica que el string contiene `@` y un `.` después del `@`\n- `'telefono'` → verifica que sean exactamente 10 dígitos\n- `'password'` → verifica al menos 8 caracteres, al menos una mayúscula y un número\n\nSi el tipo no existe, lanza `Error('Tipo de validador desconocido: ' + tipo)`.\n\nGuarda:\n- `validarEmail = crearValidador('email')`\n- `validarTel = crearValidador('telefono')`\n- `emailOK = validarEmail('user@test.com')` → true\n- `emailFail = validarEmail('no-email')` → false\n- `telOK = validarTel('3001234567')` → true",
+      "starterCode": "function crearValidador(tipo) {\n  const validadores = {\n    email: (v) => /^[^@]+@[^@]+\\.[^@]+$/.test(v),\n    telefono: (v) => /^\\d{10}$/.test(v),\n    password: (v) => v.length >= 8 && /[A-Z]/.test(v) && /\\d/.test(v),\n  };\n\n  if (!validadores[tipo]) {\n    throw new Error('Tipo de validador desconocido: ' + tipo);\n  }\n\n  return validadores[tipo];\n}\n\nconst validarEmail = crearValidador('email');\nconst validarTel = crearValidador('telefono');\n\nconst emailOK = validarEmail('user@test.com');\nconst emailFail = validarEmail('no-email');\nconst telOK = validarTel('3001234567');\n\nconsole.log(emailOK, emailFail, telOK);\n",
+      "tests": [
+        {
+          "description": "emailOK es true",
+          "expression": "emailOK === true"
+        },
+        {
+          "description": "emailFail es false",
+          "expression": "emailFail === false"
+        },
+        {
+          "description": "telOK es true",
+          "expression": "telOK === true"
+        },
+        {
+          "description": "tipo desconocido lanza error",
+          "expression": "(() => { try { crearValidador('otp'); return false; } catch(e) { return e.message.includes('desconocido'); } })()"
+        }
+      ],
+      "hints": [
+        "La factory retorna una función, no un objeto — el cliente recibe directamente el validador",
+        "`/^[^@]+@[^@]+\\.[^@]+$/.test(v)` valida email básico",
+        "`/^\\d{10}$/.test(v)` verifica exactamente 10 dígitos"
+      ]
+    },
+    {
+      "title": "Aplicación: Sistema de plugins con Factory",
+      "prompt": "Implementa un sistema de plugins donde la factory puede registrar y crear plugins.\n\nCrea `crearSistemaPlugins()`:\n- `registrar(nombre, constructor)`: registra un tipo de plugin\n- `crear(nombre, opciones)`: crea una instancia del plugin. Lanza error si el tipo no está registrado.\n- `listar()`: retorna array con los nombres de plugins registrados\n\nPrueba registrando y usando dos plugins:\n- `'logger'`: constructor recibe `{prefix}`, retorna `{log: msg => prefix + ': ' + msg}`\n- `'cache'`: constructor recibe `{maxSize}`, retorna `{datos: new Map(), maxSize}`",
+      "starterCode": "function crearSistemaPlugins() {\n  const registro = new Map();\n\n  return {\n    registrar(nombre, constructor) {\n      registro.set(nombre, constructor);\n    },\n    crear(nombre, opciones = {}) {\n      if (!registro.has(nombre)) {\n        throw new Error(`Plugin no registrado: ${nombre}`);\n      }\n      return registro.get(nombre)(opciones);\n    },\n    listar() {\n      return [...registro.keys()];\n    },\n  };\n}\n\nconst plugins = crearSistemaPlugins();\n\n// Registrar plugins\nplugins.registrar('logger', ({ prefix = 'LOG' }) => ({\n  log: (msg) => `${prefix}: ${msg}`,\n}));\n\nplugins.registrar('cache', ({ maxSize = 100 }) => ({\n  datos: new Map(),\n  maxSize,\n}));\n\n// Usar\nconst logger = plugins.crear('logger', { prefix: 'APP' });\nconst cache = plugins.crear('cache', { maxSize: 50 });\n\nconst mensajeLog = logger.log('Sistema iniciado');\nconst cacheMaxSize = cache.maxSize;\nconst pluginsDisponibles = plugins.listar();\n\nconsole.log(mensajeLog, cacheMaxSize, pluginsDisponibles);\n",
+      "tests": [
+        {
+          "description": "mensajeLog es 'APP: Sistema iniciado'",
+          "expression": "mensajeLog === 'APP: Sistema iniciado'"
+        },
+        {
+          "description": "cacheMaxSize es 50",
+          "expression": "cacheMaxSize === 50"
+        },
+        {
+          "description": "pluginsDisponibles tiene 2 entradas",
+          "expression": "pluginsDisponibles.length === 2"
+        },
+        {
+          "description": "plugin no registrado lanza error",
+          "expression": "(() => { try { plugins.crear('noExiste'); return false; } catch(e) { return e.message.includes('no registrado'); } })()"
+        }
+      ],
+      "hints": [
+        "`registro.get(nombre)(opciones)` llama al constructor con las opciones",
+        "`[...registro.keys()]` convierte el iterador de claves del Map a array",
+        "El sistema de plugins es una factory extensible — registrar añade nuevos tipos sin modificar el sistema"
+      ]
+    }
+  ]
+}

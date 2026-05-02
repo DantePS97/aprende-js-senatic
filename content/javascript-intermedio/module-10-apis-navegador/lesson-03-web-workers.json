@@ -1,0 +1,100 @@
+{
+  "id": "js-intermedio-m10-l3",
+  "title": "Web Workers: paralelismo en el navegador",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## El problema del hilo único\n\nJavaScript corre en un solo hilo. Operaciones costosas bloquean la UI:\n\n```javascript\n// ❌ Esto congela el navegador:\nfunction calcularPrimos(limite) {\n  // Operación costosa — puede tomar segundos\n  const primos = [];\n  for (let n = 2; n < limite; n++) {\n    let esPrimo = true;\n    for (let i = 2; i <= Math.sqrt(n); i++) {\n      if (n % i === 0) { esPrimo = false; break; }\n    }\n    if (esPrimo) primos.push(n);\n  }\n  return primos;\n}\n\ncalcularPrimos(1_000_000); // UI congelada durante el cálculo\n```\n\n---\n\n## Web Workers: hilos en el navegador\n\nLos Web Workers ejecutan JavaScript en un **hilo separado**, sin bloquear la UI:\n\n```javascript\n// ── worker.js ──────────────────────────────────────\n// El worker escucha mensajes:\nself.addEventListener('message', ({ data }) => {\n  const { limite } = data;\n\n  const primos = [];\n  for (let n = 2; n < limite; n++) {\n    let esPrimo = true;\n    for (let i = 2; i <= Math.sqrt(n); i++) {\n      if (n % i === 0) { esPrimo = false; break; }\n    }\n    if (esPrimo) primos.push(n);\n  }\n\n  // Envía el resultado de vuelta:\n  self.postMessage({ primos, total: primos.length });\n});\n\n// ── main.js ────────────────────────────────────────\nconst worker = new Worker('./worker.js');\n\nworker.addEventListener('message', ({ data }) => {\n  console.log('Primos encontrados:', data.total);\n  console.log('Primeros 5:', data.primos.slice(0, 5));\n});\n\n// Enviar tarea al worker (no bloquea la UI):\nworker.postMessage({ limite: 1_000_000 });\nconsole.log('La UI sigue respondiendo...'); // Se imprime de inmediato\n```\n\n---\n\n## Comunicación bidireccional\n\n```javascript\n// Enviar y recibir:\nconst worker = new Worker('./worker.js');\n\n// Escuchar respuestas:\nworker.addEventListener('message', ({ data }) => {\n  console.log('Resultado:', data);\n});\n\n// Manejar errores del worker:\nworker.addEventListener('error', (err) => {\n  console.error('Error en worker:', err.message);\n});\n\n// Enviar datos al worker:\nworker.postMessage({ tipo: 'calcular', valor: 42 });\n\n// Transferir datos sin copiar (para ArrayBuffers grandes):\nconst buffer = new ArrayBuffer(1_000_000);\nworker.postMessage({ buffer }, [buffer]); // buffer es transferido, no copiado\n// Después de transferir: buffer.byteLength === 0 en el hilo principal\n\n// Detener el worker:\nworker.terminate();\n```\n\n---\n\n## Worker con módulos (ESM)\n\n```javascript\n// Crear un worker inline con URL.createObjectURL:\nconst codigo = `\n  self.addEventListener('message', ({ data }) => {\n    const resultado = data.map(x => x * 2);\n    self.postMessage(resultado);\n  });\n`;\n\nconst blob = new Blob([codigo], { type: 'text/javascript' });\nconst url = URL.createObjectURL(blob);\nconst worker = new Worker(url);\n\nworker.postMessage([1, 2, 3, 4, 5]);\nworker.addEventListener('message', ({ data }) => {\n  console.log(data); // [2, 4, 6, 8, 10]\n  URL.revokeObjectURL(url); // Liberar memoria\n});\n```\n\n---\n\n## Limitaciones de los Workers\n\n```javascript\n// Los Workers NO tienen acceso a:\n// - El DOM (document, window, document.querySelector, etc.)\n// - localStorage (usan IndexedDB o cache API)\n// - alert(), confirm(), prompt()\n\n// Los Workers SÍ tienen:\n// - fetch() y XMLHttpRequest\n// - IndexedDB\n// - WebSockets\n// - Timers (setTimeout, setInterval)\n// - Crypto API\n// - Importar scripts con importScripts()\n```\n\n---\n\n## Cuándo usar Workers\n\n```javascript\n// ✅ Usa Workers para:\n// - Cálculos matemáticos pesados (ML, simulaciones, criptografía)\n// - Procesamiento de imágenes/audio/video\n// - Comprimir/descomprimir datos grandes\n// - Parsear archivos grandes (JSON, CSV)\n// - Operaciones que toman > 50ms\n\n// ❌ No uses Workers para:\n// - Manipulación del DOM\n// - Operaciones rápidas (el overhead de postMessage no vale la pena)\n// - Cuando necesitas shared state simple\n```",
+    "examples": [
+      {
+        "code": "// Simular Worker con Promise para el sandbox\n// (Worker real requiere archivo separado y browser)\n\nfunction crearWorkerSimulado(fn) {\n  return {\n    postMessage(datos) {\n      // Simula ejecución asíncrona en 'otro hilo'\n      setTimeout(() => {\n        const resultado = fn(datos);\n        this._onmessage?.({ data: resultado });\n      }, 0);\n    },\n    set onmessage(fn) {\n      this._onmessage = fn;\n    },\n    terminate() {\n      this._onmessage = null;\n    },\n  };\n}\n\n// 'Worker' que ordena arrays\nconst sortWorker = crearWorkerSimulado(({ array, orden }) => {\n  const comparador = orden === 'asc' ? (a, b) => a - b : (a, b) => b - a;\n  return { sorted: [...array].sort(comparador) };\n});\n\nsortWorker.onmessage = ({ data }) => {\n  console.log('Array ordenado:', data.sorted);\n};\n\nsortWorker.postMessage({ array: [5, 2, 8, 1, 9, 3], orden: 'asc' });\nconsole.log('Continúa mientras el worker trabaja...');",
+        "explanation": "El patrón postMessage/onmessage es exactamente la API real del Worker. En producción, fn viviría en worker.js — aquí lo simulamos con setTimeout para que sea asíncrono."
+      },
+      {
+        "code": "// Patrón: Worker como pool con Promise\nfunction crearWorkerPool(fn, size = 2) {\n  const queue = [];\n  const workers = Array.from({ length: size }, () => ({\n    ocupado: false,\n    fn,\n  }));\n\n  function procesarCola() {\n    const worker = workers.find(w => !w.ocupado);\n    if (!worker || queue.length === 0) return;\n\n    const { datos, resolve } = queue.shift();\n    worker.ocupado = true;\n\n    // Simula trabajo asíncrono\n    setTimeout(() => {\n      const resultado = worker.fn(datos);\n      resolve(resultado);\n      worker.ocupado = false;\n      procesarCola(); // Procesa siguiente tarea\n    }, 10);\n  }\n\n  return {\n    ejecutar(datos) {\n      return new Promise(resolve => {\n        queue.push({ datos, resolve });\n        procesarCola();\n      });\n    },\n  };\n}\n\nconst pool = crearWorkerPool(n => n * n); // Cuadrado de números\n\nconst resultados = await Promise.all(\n  [1, 2, 3, 4, 5].map(n => pool.ejecutar(n))\n);\nconsole.log('Cuadrados:', resultados); // [1, 4, 9, 16, 25]",
+        "explanation": "Un Worker pool distribuye trabajo entre varios workers. Cuando un worker termina, toma la siguiente tarea de la cola. Promise.all espera a que todas las tareas terminen."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Simular Worker con postMessage",
+      "prompt": "Simula el patrón de comunicación de un Web Worker:\n\nImplementa `crearWorkerSimulado(procesarFn)` donde:\n- `postMessage(dato)`: envía un dato al 'worker' (ejecuta `procesarFn` de forma async con setTimeout)\n- `onmessage`: setter para el handler de respuestas\n- El worker responde con `procesarFn(dato)` envuelto en `{ data: resultado }`\n\nPrueba con un worker que multiplique por 3.",
+      "starterCode": "function crearWorkerSimulado(procesarFn) {\n  let _handler = null;\n\n  return {\n    postMessage(dato) {\n      setTimeout(() => {\n        const resultado = procesarFn(dato);\n        _handler?.({ data: resultado });\n      }, 0);\n    },\n    set onmessage(fn) {\n      _handler = fn;\n    },\n    get onmessage() {\n      return _handler;\n    },\n  };\n}\n\nconst respuestas = [];\nconst worker = crearWorkerSimulado(n => n * 3);\n\nworker.onmessage = ({ data }) => respuestas.push(data);\n\nworker.postMessage(5);\nworker.postMessage(10);\nworker.postMessage(7);\n\n// Esperar a que todos los setTimeout se procesen\nawait new Promise(r => setTimeout(r, 50));\n\nconst total = respuestas.length;\nconst suma = respuestas.reduce((a, b) => a + b, 0); // 15+30+21=66\n\nconsole.log('Respuestas:', respuestas);\nconsole.log('Total:', total, '| Suma:', suma);\n",
+      "tests": [
+        {
+          "description": "total es 3",
+          "expression": "total === 3"
+        },
+        {
+          "description": "respuestas incluye 15 (5*3)",
+          "expression": "respuestas.includes(15)"
+        },
+        {
+          "description": "suma es 66",
+          "expression": "suma === 66"
+        },
+        {
+          "description": "respuestas son asíncronas",
+          "expression": "respuestas.length === 3"
+        }
+      ],
+      "hints": [
+        "`setTimeout(() => { ... }, 0)` simula la asincronía del worker real",
+        "`_handler?.({ data: resultado })` — el `?.` verifica que el handler está definido",
+        "`await new Promise(r => setTimeout(r, 50))` espera a que todos los timeouts corran"
+      ]
+    },
+    {
+      "title": "Práctica: Procesamiento en chunks para evitar bloqueo",
+      "prompt": "Implementa `procesarEnChunks(array, fn, chunkSize, onProgress)` que procese un array grande en chunks usando `setTimeout(fn, 0)` para no bloquear el hilo principal entre cada chunk.\n\n- `fn(item)`: función aplicada a cada elemento\n- `chunkSize`: tamaño de cada chunk\n- `onProgress(completados, total)`: callback llamado después de cada chunk\n- Retorna una Promise que resuelve con el array de resultados cuando termina\n\nEsto es lo que hacen frameworks como React con el scheduler: dividir trabajo en trozos.",
+      "starterCode": "function procesarEnChunks(array, fn, chunkSize, onProgress) {\n  return new Promise(resolve => {\n    const resultados = [];\n    let indice = 0;\n\n    function procesarChunk() {\n      const fin = Math.min(indice + chunkSize, array.length);\n\n      while (indice < fin) {\n        resultados.push(fn(array[indice]));\n        indice++;\n      }\n\n      onProgress?.(indice, array.length);\n\n      if (indice < array.length) {\n        setTimeout(procesarChunk, 0); // Cede el hilo\n      } else {\n        resolve(resultados); // Terminó\n      }\n    }\n\n    procesarChunk();\n  });\n}\n\nconst progreso = [];\nconst datos = Array.from({ length: 10 }, (_, i) => i + 1);\n\nconst resultados = await procesarEnChunks(\n  datos,\n  x => x * x,\n  3,\n  (completados, total) => progreso.push({ completados, total })\n);\n\nconsole.log('Resultados:', resultados);\nconsole.log('Progreso:', progreso);\n",
+      "tests": [
+        {
+          "description": "resultados tiene 10 elementos",
+          "expression": "resultados.length === 10"
+        },
+        {
+          "description": "resultados[0] es 1 (1*1)",
+          "expression": "resultados[0] === 1"
+        },
+        {
+          "description": "resultados[9] es 100 (10*10)",
+          "expression": "resultados[9] === 100"
+        },
+        {
+          "description": "hubo múltiples reportes de progreso",
+          "expression": "progreso.length >= 3"
+        }
+      ],
+      "hints": [
+        "`Math.min(indice + chunkSize, array.length)` evita ir más allá del array",
+        "`setTimeout(procesarChunk, 0)` cede el hilo entre chunks — permite que la UI responda",
+        "10 elementos en chunks de 3: [3, 3, 3, 1] → 4 chunks → 4 reportes de progreso"
+      ]
+    },
+    {
+      "title": "Aplicación: Worker pool con prioridades",
+      "prompt": "Implementa `crearWorkerPool(fn, opciones)` — un pool de workers simulados con soporte de prioridades:\n\n- `opciones.workers`: número de workers concurrentes (defecto: 2)\n- `ejecutar(datos, prioridad = 'normal')`: encola la tarea. Prioridad `'alta'` va al frente de la cola.\n- Retorna una Promise que resuelve con el resultado\n- `pendientes()`: retorna cuántas tareas están en cola\n\nSi hay worker disponible, ejecuta inmediatamente. Si no, encola.",
+      "starterCode": "function crearWorkerPool(fn, { workers: numWorkers = 2 } = {}) {\n  let activos = 0;\n  const cola = []; // [{ datos, prioridad, resolve }]\n\n  function ejecutarTarea() {\n    if (activos >= numWorkers || cola.length === 0) return;\n\n    const tarea = cola.shift();\n    activos++;\n\n    setTimeout(() => {\n      const resultado = fn(tarea.datos);\n      tarea.resolve(resultado);\n      activos--;\n      ejecutarTarea(); // Ejecuta siguiente si hay\n    }, 0);\n  }\n\n  return {\n    ejecutar(datos, prioridad = 'normal') {\n      return new Promise(resolve => {\n        const tarea = { datos, prioridad, resolve };\n        if (prioridad === 'alta') {\n          cola.unshift(tarea); // Al frente\n        } else {\n          cola.push(tarea); // Al final\n        }\n        ejecutarTarea();\n      });\n    },\n    pendientes() {\n      return cola.length;\n    },\n  };\n}\n\nconst orden = [];\nconst pool = crearWorkerPool(n => {\n  orden.push(n);\n  return n * 2;\n}, { workers: 1 }); // 1 worker para forzar cola\n\n// Encolar varias tareas:\nconst p1 = pool.ejecutar('normal-1');\nconst p2 = pool.ejecutar('normal-2');\nconst p3 = pool.ejecutar('alta-1', 'alta');  // Va al frente\nconst p4 = pool.ejecutar('alta-2', 'alta');  // Va al frente\n\nconst resultados = await Promise.all([p1, p2, p3, p4]);\n\nconsole.log('Orden de ejecución:', orden);\nconsole.log('Resultados:', resultados);\n",
+      "tests": [
+        {
+          "description": "se ejecutaron 4 tareas",
+          "expression": "orden.length === 4"
+        },
+        {
+          "description": "resultados tiene 4 elementos",
+          "expression": "resultados.length === 4"
+        },
+        {
+          "description": "las tareas de alta prioridad se ejecutaron antes que normal-2",
+          "expression": "orden.indexOf('alta-1') < orden.indexOf('normal-2') || orden.indexOf('alta-2') < orden.indexOf('normal-2')"
+        }
+      ],
+      "hints": [
+        "`cola.unshift(tarea)` inserta al inicio — la tarea de alta prioridad se ejecuta primero",
+        "`activos >= numWorkers` limita la concurrencia al número de workers",
+        "Con 1 worker, la primera tarea corre inmediatamente, el resto espera en cola"
+      ]
+    }
+  ]
+}

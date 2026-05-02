@@ -1,0 +1,101 @@
+{
+  "id": "js-intermedio-m1-l1",
+  "title": "¿Qué es un closure?",
+  "xpReward": 40,
+  "theory": {
+    "markdown": "## ¿Qué es un closure?\n\nUn **closure** es una función que **recuerda el scope en el que fue creada**, incluso después de que ese scope haya terminado de ejecutarse.\n\nDicho de otro modo: una función interna que accede a variables de su función externa, incluso cuando la externa ya retornó.\n\n---\n\n## El problema que resuelve\n\nEn JavaScript, cuando una función termina, sus variables locales normalmente desaparecen. Pero si devuelves una función interna que usa esas variables, el motor de JS las **mantiene vivas**:\n\n```javascript\nfunction crearSaludo(nombre) {\n  // 'nombre' vive aquí\n  return function () {\n    console.log(`Hola, ${nombre}!`); // La interna recuerda 'nombre'\n  };\n}\n\nconst saludarAna = crearSaludo('Ana');\nconst saludarLuis = crearSaludo('Luis');\n\nsaludarAna();  // 'Hola, Ana!'\nsaludarLuis(); // 'Hola, Luis!'\n```\n\nCada llamada a `crearSaludo` crea un closure **independiente** con su propio `nombre`.\n\n---\n\n## ¿Cómo funciona internamente?\n\nCuando el motor de JS ejecuta `crearSaludo('Ana')`:\n\n1. Crea un scope local con `nombre = 'Ana'`\n2. Crea la función interna\n3. La función interna guarda una **referencia** a ese scope (no una copia)\n4. `crearSaludo` retorna la función interna\n5. El scope de `crearSaludo` **no se destruye** porque la función interna lo referencia\n\nEsto es el closure: la función interna + la referencia a su scope externo.\n\n---\n\n## Closure vs scope normal\n\n```javascript\n// Sin closure: la variable desaparece\nfunction sinClosure() {\n  let x = 10;\n  // x no sale de aquí\n}\n\n// Con closure: la variable persiste gracias a la referencia\nfunction conClosure() {\n  let x = 10;\n  return () => x; // La función interna mantiene x viva\n}\n\nconst getX = conClosure();\nconsole.log(getX()); // 10 — x todavía existe!\n```\n\n---\n\n## Estado privado con closures\n\nUno de los usos más poderosos: **crear variables que nadie puede tocar directamente**:\n\n```javascript\nfunction crearContador() {\n  let count = 0; // Nadie fuera puede tocar 'count'\n\n  return {\n    incrementar: () => ++count,\n    decrementar: () => --count,\n    valor: () => count,\n  };\n}\n\nconst contador = crearContador();\ncontador.incrementar(); // 1\ncontador.incrementar(); // 2\ncontador.decrementar(); // 1\nconsole.log(contador.valor()); // 1\nconsole.log(count); // ❌ ReferenceError: count is not defined\n```\n\n`count` es completamente privada. Solo las funciones del closure pueden modificarla.",
+    "examples": [
+      {
+        "code": "function multiplicadorPor(factor) {\n  return (numero) => numero * factor;\n}\n\nconst doble = multiplicadorPor(2);\nconst triple = multiplicadorPor(3);\n\nconsole.log(doble(5));  // 10\nconsole.log(triple(5)); // 15\nconsole.log(doble(8));  // 16",
+        "explanation": "Cada closure recuerda su propio 'factor'. doble siempre multiplica por 2, triple por 3."
+      },
+      {
+        "code": "function crearAcumulador(valorInicial) {\n  let total = valorInicial;\n\n  return function (cantidad) {\n    total += cantidad;\n    return total;\n  };\n}\n\nconst caja = crearAcumulador(100);\nconsole.log(caja(50));  // 150\nconsole.log(caja(25));  // 175\nconsole.log(caja(-30)); // 145",
+        "explanation": "El closure mantiene 'total' entre llamadas. La caja acumula valores sin exponer la variable."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Tu primer closure",
+      "prompt": "Crea una función `crearMensaje(texto)` que:\n1. Reciba un `texto` como parámetro\n2. Retorne una función que, al llamarse, retorne ese `texto`\n\nLuego:\n- Guarda `crearMensaje('JavaScript mola')` en `obtenerMensaje`\n- Guarda el resultado de llamar `obtenerMensaje()` en `mensaje`",
+      "starterCode": "// Crea crearMensaje\nfunction crearMensaje(texto) {\n  // Retorna una función que retorna texto\n\n}\n\nconst obtenerMensaje = crearMensaje('JavaScript mola');\nconst mensaje = obtenerMensaje();\nconsole.log(mensaje);\n",
+      "tests": [
+        {
+          "description": "crearMensaje retorna una función",
+          "expression": "typeof crearMensaje('hola') === 'function'"
+        },
+        {
+          "description": "mensaje es 'JavaScript mola'",
+          "expression": "mensaje === 'JavaScript mola'"
+        },
+        {
+          "description": "El closure recuerda el texto correctamente",
+          "expression": "crearMensaje('otro texto')() === 'otro texto'"
+        }
+      ],
+      "hints": [
+        "Dentro de `crearMensaje`, usa `return function() { return texto; }`",
+        "O con arrow function: `return () => texto;`",
+        "El closure recuerda `texto` porque la función interna lo referencia"
+      ]
+    },
+    {
+      "title": "Práctica: Multiplicador configurable",
+      "prompt": "Crea una función `crearMultiplicador(factor)` que retorne una función.\nEsa función interna debe recibir un `numero` y retornar `numero * factor`.\n\nLuego crea:\n- `porDos`: multiplicador con factor 2\n- `porCinco`: multiplicador con factor 5\n\nVerifica que `porDos(7)` da `14` y `porCinco(4)` da `20`.",
+      "starterCode": "// Crea crearMultiplicador\nfunction crearMultiplicador(factor) {\n\n}\n\nconst porDos = crearMultiplicador(2);\nconst porCinco = crearMultiplicador(5);\n\nconsole.log(porDos(7));   // 14\nconsole.log(porCinco(4)); // 20\n",
+      "tests": [
+        {
+          "description": "porDos(7) retorna 14",
+          "expression": "porDos(7) === 14"
+        },
+        {
+          "description": "porCinco(4) retorna 20",
+          "expression": "porCinco(4) === 20"
+        },
+        {
+          "description": "porDos y porCinco son funciones independientes",
+          "expression": "porDos(3) === 6 && porCinco(3) === 15"
+        },
+        {
+          "description": "crearMultiplicador retorna una función",
+          "expression": "typeof crearMultiplicador(2) === 'function'"
+        }
+      ],
+      "hints": [
+        "`return (numero) => numero * factor;`",
+        "Cada llamada a `crearMultiplicador` crea un closure con su propio `factor`",
+        "`porDos` recuerda factor=2, `porCinco` recuerda factor=5"
+      ]
+    },
+    {
+      "title": "Aplicación: Contador con estado privado",
+      "prompt": "Crea una función `crearContador()` que retorne un objeto con tres métodos:\n- `incrementar()`: suma 1 al contador interno y retorna el nuevo valor\n- `decrementar()`: resta 1 al contador interno y retorna el nuevo valor\n- `reset()`: pone el contador en 0 y retorna 0\n\nEl contador debe comenzar en `0` y ser completamente privado (no accesible desde fuera).\n\nLuego:\n```\nconst c = crearContador();\nc.incrementar(); // 1\nc.incrementar(); // 2\nc.decrementar(); // 1\nc.reset();       // 0\n```\nGuarda en `resultado` el valor tras llamar `incrementar()` tres veces sobre un nuevo contador.",
+      "starterCode": "function crearContador() {\n  // Variable privada\n  let count = 0;\n\n  return {\n    incrementar() {\n      // suma 1 y retorna\n    },\n    decrementar() {\n      // resta 1 y retorna\n    },\n    reset() {\n      // pone en 0 y retorna\n    },\n  };\n}\n\nconst c = crearContador();\nc.incrementar();\nc.incrementar();\nc.incrementar();\nconst resultado = c.incrementar(); // 4to incremento\nconsole.log(resultado);\n",
+      "tests": [
+        {
+          "description": "incrementar() retorna 1 la primera vez",
+          "expression": "crearContador().incrementar() === 1"
+        },
+        {
+          "description": "resultado es 4 (cuatro incrementos)",
+          "expression": "resultado === 4"
+        },
+        {
+          "description": "decrementar() reduce el valor",
+          "expression": (() => { const c = crearContador(); c.incrementar(); c.incrementar(); return c.decrementar() === 1; })()"
+        },
+        {
+          "description": "reset() devuelve 0",
+          "expression": (() => { const c = crearContador(); c.incrementar(); return c.reset() === 0; })()"
+        }
+      ],
+      "hints": [
+        "`incrementar() { return ++count; }`",
+        "`decrementar() { return --count; }`",
+        "`reset() { count = 0; return count; }`",
+        "Las tres funciones comparten el mismo `count` a través del closure"
+      ]
+    }
+  ]
+}

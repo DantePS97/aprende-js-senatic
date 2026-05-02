@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m9-l3",
+  "title": "Regex avanzado: lookahead, flags y rendimiento",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## Lookahead y lookbehind en detalle\n\nLas aserciones de posición verifican el contexto **sin consumir** caracteres — la coincidencia no incluye lo que verifican:\n\n```javascript\n// ── LOOKAHEAD ─────────────────────────────────────\n// Positivo (?=...): la posición debe ser SEGUIDA por el patrón\n'100px 200em 300px'.match(/\\d+(?=px)/g);\n// ['100', '300'] — los dígitos QUE van antes de 'px', sin incluir 'px'\n\n// Negativo (?!...): la posición NO debe ser seguida por el patrón\n'foo bar foobar'.match(/foo(?!bar)/g);\n// ['foo'] — solo el 'foo' que NO va seguido de 'bar'\n\n// ── LOOKBEHIND ────────────────────────────────────\n// Positivo (?<=...): la posición debe ser PRECEDIDA por el patrón\n'$100 €200 $300'.match(/(?<=\\$)\\d+/g);\n// ['100', '300'] — los dígitos precedidos por '$'\n\n// Negativo (?<!...): la posición NO debe ser precedida por el patrón\n'$100 €200 $300'.match(/(?<!\\$)\\d+/g);\n// ['200'] — dígitos NO precedidos por '$'\n```\n\n---\n\n## Flag `d` — índices de las coincidencias\n\n```javascript\n// Con flag 'd', match incluye los índices de inicio y fin:\nconst texto = 'hola mundo';\nconst match = texto.match(/(?<palabra>\\w+)/d);\n\nconsole.log(match.indices[0]); // [0, 4] — índices del match completo\nconsole.log(match.indices.groups.palabra); // [0, 4]\n```\n\n---\n\n## Cuantificadores greedy vs lazy\n\n```javascript\n// Greedy (por defecto): consume lo más posible\nconst html = '<b>texto</b>';\nhtml.match(/<.+>/);   // '<b>texto</b>' — consume todo hasta el último >\n\n// Lazy (con ?): consume lo mínimo posible\nhtml.match(/<.+?>/);  // '<b>' — se detiene en el primer >\nhtml.match(/<[^>]+>/); // '<b>' — alternativa: no consumir >\n\n// Más ejemplos:\n'\"uno\" \"dos\" \"tres\"'.match(/\".+\"/g);   // ['\"uno\" \"dos\" \"tres\"'] — greedy\n'\"uno\" \"dos\" \"tres\"'.match(/\".+?\"/g);  // ['\"uno\"', '\"dos\"', '\"tres\"'] — lazy\n```\n\n---\n\n## Regex con el objeto RegExp y exec()\n\n```javascript\n// exec() con flag g mantiene el estado (lastIndex):\nconst patron = /\\d+/g;\nconst texto = 'abc 123 def 456 ghi 789';\n\nlet match;\nwhile ((match = patron.exec(texto)) !== null) {\n  console.log(`Encontrado: ${match[0]} en posición ${match.index}`);\n}\n// 123 en posición 4\n// 456 en posición 12\n// 789 en posición 20\n\n// Equivalente moderno con matchAll (preferir):\nfor (const m of texto.matchAll(/\\d+/g)) {\n  console.log(m[0], m.index);\n}\n```\n\n---\n\n## Rendimiento: evitar backtracking catastrófico\n\n```javascript\n// ❌ Patrón peligroso: (a+)+ puede causar backtracking exponencial\n// En el peor caso, O(2^n) para un string de n 'a's que no termina en 'b'\n/(a+)+b/.test('aaaaaaaaaaaaaaaaaaaaaaaac'); // Puede colgar el proceso\n\n// ✅ Solución: ser más específico\n/a+b/.test('aaaaaaaaab');  // Directo, sin ambigüedad\n\n// ✅ Usar caracteres específicos en lugar de . cuando sea posible:\n/<.+?>/   // Lazy, pero aún puede ser lento\n/<[^>]+>/ // Mejor: explícitamente 'no >' — sin backtracking\n\n// Reglas de rendimiento:\n// 1. Prefiere clases de caracteres negadas [^x] sobre lookahead\n// 2. Evita grupos repetidos anidados: (a*)* o (a+)+\n// 3. Ancla con ^ y $ cuando sea posible para cortar el espacio de búsqueda\n// 4. Usa flags correctos — /g solo cuando necesites todas las coincidencias\n```\n\n---\n\n## Patrones útiles consolidados\n\n```javascript\n// Contraseña segura: mín 8 chars, 1 mayúscula, 1 número, 1 especial\n/^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{8,}$/\n\n// URL completa:\n/^https?:\\/\\/[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])?$/\n\n// IPv4:\n/^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$/\n\n// Eliminar comentarios de una línea (// ...):\n/\\/\\/[^\\n]*/g\n\n// Markdown bold (**texto**):\n/\\*\\*([^*]+)\\*\\*/g\n```",
+    "examples": [
+      {
+        "code": "// Validar contraseña con lookahead múltiple\nfunction validarPassword(pass) {\n  const reglas = [\n    { regex: /.{8,}/,         msg: 'mínimo 8 caracteres' },\n    { regex: /[A-Z]/,         msg: 'al menos una mayúscula' },\n    { regex: /[a-z]/,         msg: 'al menos una minúscula' },\n    { regex: /\\d/,            msg: 'al menos un número' },\n    { regex: /[!@#$%^&*]/,   msg: 'al menos un carácter especial' },\n  ];\n\n  const errores = reglas\n    .filter(r => !r.regex.test(pass))\n    .map(r => r.msg);\n\n  return {\n    valida: errores.length === 0,\n    errores,\n  };\n}\n\nconsole.log(validarPassword('Pass1!'));           // inválida: corta\nconsole.log(validarPassword('Contraseña1!'));     // válida\nconsole.log(validarPassword('sinmayuscula1!'));   // falta mayúscula",
+        "explanation": "En lugar de un lookahead complejo /^(?=.*[A-Z]).../, validamos cada regla por separado. Más legible, misma potencia, y da mensajes de error específicos."
+      },
+      {
+        "code": "// Extraer todos los imports de un archivo JS con matchAll\nconst codigoJS = `\nimport React from 'react';\nimport { useState, useEffect } from 'react';\nimport styles from './App.module.css';\nimport type { User } from './types';\n`;\n\nconst importPattern = /^import\\s+(?:type\\s+)?(?:([\\w]+)|\\{([^}]+)\\})\\s+from\\s+'([^']+)'/gm;\n\nconst imports = [];\nfor (const match of codigoJS.matchAll(importPattern)) {\n  const [, defaultImport, namedImports, modulo] = match;\n  imports.push({\n    modulo,\n    default: defaultImport?.trim() || null,\n    named: namedImports?.split(',').map(s => s.trim()) || [],\n  });\n}\n\nconsole.log(imports);\n// [{ modulo: 'react', default: 'React', named: [] }, ...]",
+        "explanation": "matchAll con flag g+m es perfecto para analizar código línea por línea. El flag m hace que ^ coincida con el inicio de cada línea, no solo del string."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Lookahead para extraer precios",
+      "prompt": "Usa lookahead para extraer números de precios según el símbolo de moneda:\n\nDado el texto: `'COP $1500, USD $20.00, EUR €150, GBP £75'`\n\n1. `preciosCOP`: array de strings con precios precedidos por `$`\n2. `preciosEUR`: array de strings con precios precedidos por `€`\n\nUsa lookbehind: `(?<=\\$)` y `(?<=€)`\n\nGuarda:\n- `preciosCOP` → `['1500', '20.00']`\n- `preciosEUR` → `['150']`",
+      "starterCode": "const texto = 'COP $1500, USD $20.00, EUR €150, GBP £75';\n\nconst preciosCOP = texto.match(/(?<=\\$)\\d+\\.?\\d*/g);\nconst preciosEUR = texto.match(/(?<=€)\\d+\\.?\\d*/g);\n\nconsole.log('COP:', preciosCOP);\nconsole.log('EUR:', preciosEUR);\n",
+      "tests": [
+        {
+          "description": "preciosCOP tiene 2 elementos",
+          "expression": "preciosCOP.length === 2"
+        },
+        {
+          "description": "preciosCOP[0] es '1500'",
+          "expression": "preciosCOP[0] === '1500'"
+        },
+        {
+          "description": "preciosEUR[0] es '150'",
+          "expression": "preciosEUR[0] === '150'"
+        },
+        {
+          "description": "£75 no está en preciosCOP",
+          "expression": "!preciosCOP.includes('75')"
+        }
+      ],
+      "hints": [
+        "`(?<=\\$)` — lookbehind positivo: el número debe ser precedido por '$'",
+        "`\\d+\\.?\\d*` — entero o decimal",
+        "El lookbehind NO incluye el símbolo en la coincidencia — solo los dígitos"
+      ]
+    },
+    {
+      "title": "Práctica: Greedy vs lazy",
+      "prompt": "Demuestra la diferencia entre cuantificadores greedy y lazy:\n\nDado el HTML: `'<div>contenido 1</div><div>contenido 2</div>'`\n\n1. `greedy`: usa `/<.+>/` — extrae un solo match (demasiado greedy)\n2. `lazy`: usa `/<.+?>/` — extrae cada etiqueta por separado\n3. `optimizado`: usa `/<[^>]+>/g` — igual que lazy pero sin backtracking\n\nGuarda:\n- `greedyCount = greedy.length` → 1 (todo de una)\n- `lazyCount = lazy.length` → 4 (div, /div, div, /div)\n- `optimizadoCount = optimizado.length` → 4",
+      "starterCode": "const html = '<div>contenido 1</div><div>contenido 2</div>';\n\nconst greedy = html.match(/<.+>/);\nconst lazy = html.match(/<.+?>/g);\nconst optimizado = html.match(/<[^>]+>/g);\n\nconst greedyCount = greedy.length;\nconst lazyCount = lazy.length;\nconst optimizadoCount = optimizado.length;\n\nconsole.log('Greedy:', greedy);\nconsole.log('Lazy:', lazy);\nconsole.log('Optimizado:', optimizado);\n",
+      "tests": [
+        {
+          "description": "greedyCount es 1",
+          "expression": "greedyCount === 1"
+        },
+        {
+          "description": "lazyCount es 4",
+          "expression": "lazyCount === 4"
+        },
+        {
+          "description": "optimizadoCount es 4",
+          "expression": "optimizadoCount === 4"
+        },
+        {
+          "description": "greedy[0] incluye todo el contenido",
+          "expression": "greedy[0].includes('contenido 1') && greedy[0].includes('contenido 2')"
+        }
+      ],
+      "hints": [
+        "Greedy sin /g: toma el match más largo posible — de < hasta el último > del string",
+        "Lazy `+?`: toma el match más corto posible — de < hasta el primer >",
+        "`[^>]+` es como lazy pero sin backtracking: no puede coincidir con >"
+      ]
+    },
+    {
+      "title": "Aplicación: Validador completo de formulario",
+      "prompt": "Implementa `validarFormulario(datos)` que use regex para validar un objeto de formulario.\n\nCampos y reglas:\n- `nombre`: solo letras y espacios, mínimo 2 caracteres\n- `email`: formato válido de email\n- `password`: mínimo 8 caracteres, al menos 1 mayúscula y 1 número\n- `telefono`: 10 dígitos (con o sin guiones como 300-123-4567)\n\nRetorna `{ valido: boolean, errores: { [campo]: string } }`\n\nSi un campo es válido, NO aparece en `errores`. Si es inválido, aparece con el mensaje de error.",
+      "starterCode": "function validarFormulario(datos) {\n  const reglas = {\n    nombre:   { regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{2,}$/, mensaje: 'Solo letras y espacios, mínimo 2 caracteres' },\n    email:    { regex: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/, mensaje: 'Email inválido' },\n    password: { regex: /^(?=.*[A-Z])(?=.*\\d).{8,}$/, mensaje: 'Mínimo 8 caracteres, 1 mayúscula y 1 número' },\n    telefono: { regex: /^\\d{3}-?\\d{3}-?\\d{4}$/, mensaje: 'Debe tener 10 dígitos' },\n  };\n\n  const errores = {};\n\n  for (const [campo, regla] of Object.entries(reglas)) {\n    if (datos[campo] !== undefined && !regla.regex.test(datos[campo])) {\n      errores[campo] = regla.mensaje;\n    }\n  }\n\n  return { valido: Object.keys(errores).length === 0, errores };\n}\n\nconst datosValidos = {\n  nombre: 'Ana García',\n  email: 'ana@test.com',\n  password: 'Segura123',\n  telefono: '300-123-4567',\n};\n\nconst datosInvalidos = {\n  nombre: 'A',\n  email: 'no-email',\n  password: 'corta',\n  telefono: '12345',\n};\n\nconst resultadoValido = validarFormulario(datosValidos);\nconst resultadoInvalido = validarFormulario(datosInvalidos);\n\nconsole.log('Válido:', resultadoValido);\nconsole.log('Inválido:', resultadoInvalido);\n",
+      "tests": [
+        {
+          "description": "datosValidos pasa la validación",
+          "expression": "resultadoValido.valido === true"
+        },
+        {
+          "description": "datosInvalidos falla la validación",
+          "expression": "resultadoInvalido.valido === false"
+        },
+        {
+          "description": "datosInvalidos tiene 4 errores",
+          "expression": "Object.keys(resultadoInvalido.errores).length === 4"
+        },
+        {
+          "description": "password con mayúscula y número es válida",
+          "expression": "validarFormulario({ password: 'MiPass1' }).errores.password !== undefined"
+        }
+      ],
+      "hints": [
+        "`/^(?=.*[A-Z])(?=.*\\d).{8,}$/` — lookahead para verificar que contenga mayúscula Y número",
+        "`Object.entries(reglas)` permite iterar las reglas con su nombre",
+        "Si `datos[campo] === undefined`, el campo no fue enviado — lo saltamos"
+      ]
+    }
+  ]
+}

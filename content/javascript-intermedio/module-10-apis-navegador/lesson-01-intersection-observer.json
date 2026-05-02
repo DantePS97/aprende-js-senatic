@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m10-l1",
+  "title": "Intersection Observer API",
+  "xpReward": 50,
+  "theory": {
+    "markdown": "## El problema con scroll listeners\n\nAntes de Intersection Observer, detectar si un elemento era visible requería escuchar el evento `scroll` y calcular posiciones manualmente — un enfoque costoso:\n\n```javascript\n// ❌ Forma antigua — lento y propenso a bugs:\nwindow.addEventListener('scroll', () => {\n  const rect = elemento.getBoundingClientRect();\n  const esVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;\n  if (esVisible) { /* hacer algo */ }\n});\n// Problema: se ejecuta en CADA pixel de scroll — puede dispararse 60+ veces/segundo\n// Accede al DOM (getBoundingClientRect) lo que puede forzar layout/reflow\n```\n\n---\n\n## Intersection Observer: la solución eficiente\n\n`IntersectionObserver` notifica cuando un elemento entra o sale del viewport (o de otro elemento contenedor) de forma **asíncrona** y eficiente:\n\n```javascript\nconst observer = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      console.log('El elemento entró al viewport:', entry.target);\n    } else {\n      console.log('El elemento salió del viewport:', entry.target);\n    }\n  });\n}, {\n  threshold: 0.5 // Notifica cuando el 50% del elemento es visible\n});\n\nobserver.observe(document.querySelector('#miElemento'));\n```\n\n---\n\n## El objeto `entry`\n\nCada entry en el callback tiene:\n\n```javascript\nentry.isIntersecting  // boolean: ¿está en el viewport?\nentry.intersectionRatio // 0.0 a 1.0: fracción visible\nentry.target          // el elemento observado\nentry.boundingClientRect // rect del elemento\nentry.time            // timestamp del cambio\nentry.rootBounds      // rect del viewport/contenedor\n```\n\n---\n\n## Opciones del Observer\n\n```javascript\nconst options = {\n  root: null,         // null = viewport, o un elemento contenedor\n  rootMargin: '0px',  // Expandir/contraer el área de detección\n                      // '50px 0px' → detecta 50px antes de que entre\n  threshold: 0,       // Porcentaje visible para notificar\n                      // 0 = cualquier pixel, 1 = 100% visible\n                      // [0, 0.25, 0.5, 0.75, 1] = múltiples umbrales\n};\n```\n\n---\n\n## Casos de uso\n\n### 1. Lazy loading de imágenes\n\n```javascript\nconst imageObserver = new IntersectionObserver((entries) => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      const img = entry.target;\n      img.src = img.dataset.src; // Carga la imagen real\n      imageObserver.unobserve(img); // Deja de observar — ya cargó\n    }\n  });\n});\n\ndocument.querySelectorAll('img[data-src]').forEach(img => {\n  imageObserver.observe(img);\n});\n```\n\n### 2. Animaciones al hacer scroll\n\n```javascript\nconst animObserver = new IntersectionObserver((entries) => {\n  entries.forEach(({ isIntersecting, target }) => {\n    target.classList.toggle('visible', isIntersecting);\n  });\n}, { threshold: 0.1 });\n\ndocument.querySelectorAll('.animar').forEach(el => animObserver.observe(el));\n```\n\n### 3. Infinite scroll\n\n```javascript\nconst sentinel = document.querySelector('#sentinel');\n\nconst scrollObserver = new IntersectionObserver(([entry]) => {\n  if (entry.isIntersecting) {\n    cargarMasContenido();\n  }\n});\n\nscrollObserver.observe(sentinel);\n```\n\n---\n\n## API del Observer\n\n```javascript\nconst observer = new IntersectionObserver(callback, options);\n\nobserver.observe(elemento);    // Empieza a observar\nobserver.unobserve(elemento);  // Para de observar este elemento\nobserver.disconnect();          // Para de observar TODOS los elementos\nobserver.takeRecords();         // Retorna entries pendientes\n```",
+    "examples": [
+      {
+        "code": "// Simular Intersection Observer con un objeto mock\n// (en el sandbox no hay DOM real, así que simulamos el comportamiento)\n\nfunction crearIntersectionObserverMock() {\n  const callbacks = new Map();\n  const observados = new Set();\n\n  return {\n    observe(elemento) {\n      observados.add(elemento);\n    },\n    unobserve(elemento) {\n      observados.delete(elemento);\n    },\n    disconnect() {\n      observados.clear();\n    },\n    // Simula que un elemento entra al viewport:\n    _simularEntrada(elemento) {\n      callbacks.forEach(cb => cb([{\n        target: elemento,\n        isIntersecting: true,\n        intersectionRatio: 1,\n      }]));\n    },\n    _registrarCallback(cb) {\n      callbacks.set(Symbol(), cb);\n    },\n  };\n}\n\n// Simula lazy loading\nconst observer = crearIntersectionObserverMock();\nconst imagenesSimuladas = [\n  { id: 'img1', dataSrc: 'foto1.jpg', src: null },\n  { id: 'img2', dataSrc: 'foto2.jpg', src: null },\n];\n\nfunction onIntersect(entries) {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entry.target.src = entry.target.dataSrc;\n      console.log(`Cargando: ${entry.target.id}`);\n      observer.unobserve(entry.target);\n    }\n  });\n}\n\nobserver._registrarCallback(onIntersect);\nimagenesSimuladas.forEach(img => observer.observe(img));\nobserver._simularEntrada(imagenesSimuladas[0]);\nconsole.log('img1.src:', imagenesSimuladas[0].src);\nconsole.log('img2.src:', imagenesSimuladas[1].src);",
+        "explanation": "Simular el Observer permite entender la mecánica: observe() registra elementos, el callback recibe entries cuando la visibilidad cambia, unobserve() elimina el elemento de la lista."
+      },
+      {
+        "code": "// Patrón: usar Intersection Observer con cleanup\nfunction observarConAnimacion(elementos, claseVisible) {\n  const observer = new IntersectionObserver(\n    (entries) => {\n      entries.forEach(entry => {\n        if (entry.isIntersecting) {\n          entry.target.classList.add(claseVisible);\n          // Opcionalmente: deja de observar una vez que animó\n          // observer.unobserve(entry.target);\n        }\n      });\n    },\n    { threshold: 0.15 }\n  );\n\n  elementos.forEach(el => observer.observe(el));\n\n  // Retorna función de cleanup\n  return () => observer.disconnect();\n}\n\n// Uso:\n// const cancelar = observarConAnimacion(\n//   document.querySelectorAll('.card'),\n//   'fade-in'\n// );\n// // Más tarde, para limpiar:\n// cancelar();\n\nconsole.log('Patrón de cleanup listo');",
+        "explanation": "Siempre retorna una función de cleanup. En React sería el return del useEffect, en una SPA sería llamado al desmontar el componente. Sin cleanup, el observer sigue activo aunque el componente no exista."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Entender los entries",
+      "prompt": "Simula el comportamiento de Intersection Observer y analiza los entries:\n\nDada una lista de elementos y un mock observer, simula que:\n1. Se observan 3 elementos\n2. Los elementos 1 y 3 entran al viewport (isIntersecting: true)\n3. El elemento 2 no entra\n\nCrea un callback que filtre los elementos que entran y guarda sus IDs.\n\nGuarda:\n- `entrados`: array de IDs que entraron → `['el-1', 'el-3']`\n- `totalObservados`: cuántos elementos se observaron → 3",
+      "starterCode": "// Mock de IntersectionObserver para el sandbox\nconst elementos = [\n  { id: 'el-1' },\n  { id: 'el-2' },\n  { id: 'el-3' },\n];\n\nconst entrados = [];\nlet totalObservados = 0;\n\n// Simula el callback del observer\nfunction onIntersect(entries) {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entrados.push(entry.target.id);\n    }\n  });\n}\n\n// Simula observe() para cada elemento\nelementos.forEach(el => totalObservados++);\n\n// Simula las notificaciones del observer\nonIntersect([\n  { target: elementos[0], isIntersecting: true,  intersectionRatio: 1 },\n  { target: elementos[1], isIntersecting: false, intersectionRatio: 0 },\n  { target: elementos[2], isIntersecting: true,  intersectionRatio: 0.8 },\n]);\n\nconsole.log('Entrados:', entrados);\nconsole.log('Total observados:', totalObservados);\n",
+      "tests": [
+        {
+          "description": "entrados tiene 2 elementos",
+          "expression": "entrados.length === 2"
+        },
+        {
+          "description": "entrados contiene 'el-1'",
+          "expression": "entrados.includes('el-1')"
+        },
+        {
+          "description": "entrados contiene 'el-3'",
+          "expression": "entrados.includes('el-3')"
+        },
+        {
+          "description": "totalObservados es 3",
+          "expression": "totalObservados === 3"
+        }
+      ],
+      "hints": [
+        "`entry.isIntersecting` — true si el elemento está en el viewport",
+        "`entry.target` — el elemento DOM observado",
+        "El callback recibe un array de entries — todos los cambios desde la última notificación"
+      ]
+    },
+    {
+      "title": "Práctica: Lazy loading simulado",
+      "prompt": "Implementa `crearLazyLoader(onCargar)` que simule lazy loading con este patrón:\n\n- Mantiene un `Set` de elementos 'pendientes' (aún no cargados)\n- `agregar(elemento)`: agrega al Set de pendientes\n- `simularVisibilidad(elemento)`: simula que el elemento entra al viewport. Si está pendiente: llama `onCargar(elemento)` y lo elimina del Set\n- `pendienteCount`: getter que retorna cuántos hay pendientes\n\nVerifica que un elemento no se carga dos veces.",
+      "starterCode": "function crearLazyLoader(onCargar) {\n  const pendientes = new Set();\n\n  return {\n    agregar(elemento) {\n      pendientes.add(elemento);\n    },\n    simularVisibilidad(elemento) {\n      if (pendientes.has(elemento)) {\n        onCargar(elemento);\n        pendientes.delete(elemento);\n      }\n    },\n    get pendienteCount() {\n      return pendientes.size;\n    },\n  };\n}\n\nconst cargados = [];\nconst loader = crearLazyLoader(el => cargados.push(el.id));\n\nconst imgs = [{ id: 'img1' }, { id: 'img2' }, { id: 'img3' }];\nimgs.forEach(img => loader.agregar(img));\n\nconst pendientesAntes = loader.pendienteCount; // 3\n\nloader.simularVisibilidad(imgs[0]); // Carga img1\nloader.simularVisibilidad(imgs[0]); // Segunda vez — no debe cargar de nuevo\nloader.simularVisibilidad(imgs[2]); // Carga img3\n\nconst pendientesDespues = loader.pendienteCount; // 1 (solo img2)\nconst cargadosTotal = cargados.length;           // 2 (img1 y img3)\n\nconsole.log('Antes:', pendientesAntes, '| Después:', pendientesDespues);\nconsole.log('Cargados:', cargados);\n",
+      "tests": [
+        {
+          "description": "pendientesAntes es 3",
+          "expression": "pendientesAntes === 3"
+        },
+        {
+          "description": "pendientesDespues es 1",
+          "expression": "pendientesDespues === 1"
+        },
+        {
+          "description": "cargadosTotal es 2 (no duplicó img1)",
+          "expression": "cargadosTotal === 2"
+        },
+        {
+          "description": "cargados incluye img1 y img3",
+          "expression": "cargados.includes('img1') && cargados.includes('img3')"
+        }
+      ],
+      "hints": [
+        "`pendientes.has(elemento)` verifica si aún no fue cargado",
+        "`pendientes.delete(elemento)` evita que se cargue de nuevo",
+        "El `Set` es ideal: verificación O(1) y sin duplicados"
+      ]
+    },
+    {
+      "title": "Aplicación: Sistema de analytics de visibilidad",
+      "prompt": "Implementa `crearAnalytics()` que simule un sistema de tracking de visibilidad:\n\n- `registrar(id, elemento)`: registra un elemento para tracking\n- `reportarVisibilidad(id, ratio)`: reporta que el elemento con ese id tiene `ratio` de visibilidad (0.0 a 1.0)\n- `getReporte()`: retorna un objeto con:\n  - `vistosUnaVez`: Set de IDs que alguna vez tuvieron ratio > 0\n  - `vistosCompletos`: Set de IDs que alguna vez tuvieron ratio >= 0.9\n  - `tiempoTotal`: número total de reportes recibidos\n  - `promedioRatio(id)`: función que retorna el ratio promedio de un elemento\n\nAlmacena el historial de ratios por elemento para poder calcular promedios.",
+      "starterCode": "function crearAnalytics() {\n  const historial = new Map(); // id → [ratios]\n  const vistosUnaVez = new Set();\n  const vistosCompletos = new Set();\n  let tiempoTotal = 0;\n\n  return {\n    registrar(id) {\n      if (!historial.has(id)) historial.set(id, []);\n    },\n    reportarVisibilidad(id, ratio) {\n      if (!historial.has(id)) historial.set(id, []);\n      historial.get(id).push(ratio);\n      tiempoTotal++;\n\n      if (ratio > 0)   vistosUnaVez.add(id);\n      if (ratio >= 0.9) vistosCompletos.add(id);\n    },\n    getReporte() {\n      return {\n        vistosUnaVez,\n        vistosCompletos,\n        tiempoTotal,\n        promedioRatio(id) {\n          const ratios = historial.get(id) ?? [];\n          if (ratios.length === 0) return 0;\n          return ratios.reduce((a, b) => a + b, 0) / ratios.length;\n        },\n      };\n    },\n  };\n}\n\nconst analytics = crearAnalytics();\n\nanalytics.registrar('banner');\nanalytics.registrar('producto-1');\nanalytics.registrar('footer');\n\n// Simular reportes de visibilidad\nanalytics.reportarVisibilidad('banner', 1.0);\nanalytics.reportarVisibilidad('banner', 0.8);\nanalytics.reportarVisibilidad('banner', 0.6);\nanalytics.reportarVisibilidad('producto-1', 0);\nanalytics.reportarVisibilidad('footer', 0.95);\n\nconst reporte = analytics.getReporte();\nconst promedioBanner = reporte.promedioRatio('banner');\nconst tieneFooterCompleto = reporte.vistosCompletos.has('footer');\nconst noVioProducto1 = !reporte.vistosUnaVez.has('producto-1');\n\nconsole.log('Visto 1 vez:', [...reporte.vistosUnaVez]);\nconsole.log('Visto completo:', [...reporte.vistosCompletos]);\nconsole.log('Promedio banner:', promedioBanner.toFixed(2));\n",
+      "tests": [
+        {
+          "description": "promedioBanner es ~0.8 (1.0+0.8+0.6)/3",
+          "expression": "Math.abs(promedioBanner - 0.8) < 0.01"
+        },
+        {
+          "description": "footer está en vistosCompletos",
+          "expression": "tieneFooterCompleto === true"
+        },
+        {
+          "description": "producto-1 no está en vistosUnaVez (ratio=0)",
+          "expression": "noVioProducto1 === true"
+        },
+        {
+          "description": "tiempoTotal es 5",
+          "expression": "reporte.tiempoTotal === 5"
+        }
+      ],
+      "hints": [
+        "`historial.get(id).push(ratio)` acumula el historial de ratios",
+        "`ratio > 0` para 'visto una vez' — ratio=0 significa completamente fuera del viewport",
+        "`ratios.reduce((a, b) => a + b, 0) / ratios.length` calcula el promedio"
+      ]
+    }
+  ]
+}

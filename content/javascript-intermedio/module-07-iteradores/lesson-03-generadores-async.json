@@ -1,0 +1,100 @@
+{
+  "id": "js-intermedio-m7-l3",
+  "title": "Generadores asíncronos y for await...of",
+  "xpReward": 60,
+  "theory": {
+    "markdown": "## Del generador síncrono al asíncrono\n\nLos generadores síncronos producen valores inmediatamente. Los **generadores asíncronos** (`async function*`) producen Promises — cada `yield` puede pausar esperando una operación asíncrona:\n\n```javascript\n// Generador SÍNCRONO:\nfunction* contador() {\n  yield 1;\n  yield 2;\n  yield 3;\n}\n\n// Generador ASÍNCRONO:\nasync function* contadorAsync() {\n  yield 1;                           // Retorna Promise.resolve(1)\n  await new Promise(r => setTimeout(r, 100)); // Espera 100ms\n  yield 2;\n  await new Promise(r => setTimeout(r, 100));\n  yield 3;\n}\n```\n\n---\n\n## for await...of\n\nPara consumir generadores asíncronos, usas `for await...of` dentro de una función `async`:\n\n```javascript\nasync function demo() {\n  for await (const valor of contadorAsync()) {\n    console.log(valor); // 1 (espera 100ms) 2 (espera 100ms) 3\n  }\n}\n\n// for await...of funciona con cualquier async iterable,\n// no solo con generadores asíncronos\n```\n\n---\n\n## Caso de uso: paginación de API\n\nEl caso más común es consumir datos paginados sin cargar todo a la vez:\n\n```javascript\nasync function* obtenerPaginas(baseUrl) {\n  let pagina = 1;\n  let hayMas = true;\n\n  while (hayMas) {\n    const response = await fetch(`${baseUrl}?page=${pagina}`);\n    const data = await response.json();\n\n    yield data.items; // Retorna la página actual\n\n    hayMas = data.hasNextPage;\n    pagina++;\n  }\n}\n\n// Consumir:\nasync function procesarTodos() {\n  for await (const pagina of obtenerPaginas('/api/productos')) {\n    for (const producto of pagina) {\n      await procesarProducto(producto); // Procesa uno a uno\n    }\n  }\n}\n```\n\n---\n\n## Simular un async iterable sin API real\n\nEn el sandbox simulamos operaciones async con `setTimeout`:\n\n```javascript\nasync function* simularStream(items, delayMs = 50) {\n  for (const item of items) {\n    await new Promise(r => setTimeout(r, delayMs)); // Simula latencia\n    yield item;\n  }\n}\n\n// Consumir:\nconst resultados = [];\nfor await (const item of simularStream([1, 2, 3], 10)) {\n  resultados.push(item);\n}\nconsole.log(resultados); // [1, 2, 3]\n```\n\n---\n\n## El protocolo de async iteration\n\nIgual que los iteradores síncronos tienen `[Symbol.iterator]`, los asíncronos tienen `[Symbol.asyncIterator]`:\n\n```javascript\n// Un async iterable debe implementar [Symbol.asyncIterator]\n// que retorna un objeto con next() que retorna Promise<{value, done}>\n\nconst asyncIterable = {\n  async *[Symbol.asyncIterator]() {\n    yield 'a';\n    yield 'b';\n    yield 'c';\n  }\n};\n\nfor await (const letra of asyncIterable) {\n  console.log(letra); // 'a', 'b', 'c'\n}\n```\n\n---\n\n## Comparativa: síncrono vs asíncrono\n\n```javascript\n// Síncrono — todo disponible ya:\nfunction* sync() {\n  yield 1; yield 2;\n}\nconst iter = sync();\niter.next(); // { value: 1, done: false } — inmediato\n\n// Asíncrono — los valores llegan en el futuro:\nasync function* async_gen() {\n  yield 1; yield 2;\n}\nconst aiter = async_gen();\nawait aiter.next(); // Promise<{ value: 1, done: false }> — hay que esperar\n\n// Regla: si el iterable es async, necesitas for await...of\n// Si es síncrono, for...of es suficiente (aunque for await...of también funciona)\n```\n\n---\n\n## Errores y cleanup en generadores asíncronos\n\n```javascript\nasync function* conError() {\n  yield 1;\n  throw new Error('Falló la fuente de datos');\n  yield 2; // Nunca se ejecuta\n}\n\ntry {\n  for await (const val of conError()) {\n    console.log(val); // Imprime 1, luego lanza el error\n  }\n} catch (err) {\n  console.error('Error capturado:', err.message);\n}\n\n// break dentro de for await llama al método return() del generador\n// (útil para limpiar conexiones abiertas)\n```",
+    "examples": [
+      {
+        "code": "// Simular stream de eventos con async generator\nasync function* eventosCada(eventos, intervaloMs) {\n  for (const evento of eventos) {\n    await new Promise(r => setTimeout(r, intervaloMs));\n    yield { tipo: evento, timestamp: Date.now() };\n  }\n}\n\nconst tiempos = [];\nconst inicio = Date.now();\n\nfor await (const evento of eventosCada(['click', 'hover', 'blur'], 20)) {\n  tiempos.push(evento.tipo);\n}\n\nconsole.log('Eventos recibidos:', tiempos);\n// ['click', 'hover', 'blur']",
+        "explanation": "Los generadores asíncronos son perfectos para modelar streams de eventos o datos que llegan con retraso. Cada yield emite el siguiente elemento cuando está disponible."
+      },
+      {
+        "code": "// Leer en 'chunks' — útil para procesar datos grandes\nasync function* leerEnChunks(datos, tamanoChunk) {\n  for (let i = 0; i < datos.length; i += tamanoChunk) {\n    // Simula lectura asíncrona (ej: leer disco)\n    await new Promise(r => setTimeout(r, 5));\n    yield datos.slice(i, i + tamanoChunk);\n  }\n}\n\nconst datosBrutos = Array.from({ length: 10 }, (_, i) => i + 1);\nconst chunks = [];\n\nfor await (const chunk of leerEnChunks(datosBrutos, 3)) {\n  chunks.push(chunk);\n}\n\nconsole.log(chunks);\n// [[1,2,3], [4,5,6], [7,8,9], [10]]",
+        "explanation": "Leer en chunks evita cargar todos los datos en memoria. El generador produce un chunk a la vez, permitiendo procesarlo antes de leer el siguiente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: for await...of con generador asíncrono",
+      "prompt": "Implementa `async function* conDelay(items, ms)` que produzca cada elemento de `items` con un delay de `ms` milisegundos entre cada uno.\n\nLuego consúmelo con `for await...of` y acumula los valores en un array.\n\nGuarda:\n- `resultados`: array con todos los valores recibidos\n- `esArray = Array.isArray(resultados)` → true\n- `total = resultados.length` → debe ser igual a la cantidad de items",
+      "starterCode": "async function* conDelay(items, ms) {\n  for (const item of items) {\n    await new Promise(r => setTimeout(r, ms));\n    yield item;\n  }\n}\n\nconst resultados = [];\n\nfor await (const valor of conDelay([10, 20, 30], 10)) {\n  resultados.push(valor);\n}\n\nconst esArray = Array.isArray(resultados);\nconst total = resultados.length;\n\nconsole.log('Resultados:', resultados);\nconsole.log('Es array:', esArray, '| Total:', total);\n",
+      "tests": [
+        {
+          "description": "resultados tiene 3 elementos",
+          "expression": "total === 3"
+        },
+        {
+          "description": "esArray es true",
+          "expression": "esArray === true"
+        },
+        {
+          "description": "resultados contiene [10,20,30]",
+          "expression": "JSON.stringify(resultados) === '[10,20,30]'"
+        },
+        {
+          "description": "conDelay retorna un async iterable",
+          "expression": "typeof conDelay([1], 0)[Symbol.asyncIterator] === 'function'"
+        }
+      ],
+      "hints": [
+        "`async function*` crea un generador asíncrono",
+        "`await new Promise(r => setTimeout(r, ms))` pausa por `ms` milisegundos",
+        "`for await (const valor of ...) { }` consume valores de un async iterable"
+      ]
+    },
+    {
+      "title": "Práctica: Paginación simulada",
+      "prompt": "Simula un sistema de paginación con un generador asíncrono:\n\n```javascript\nconst DB = [\n  { id: 1, nombre: 'Ana' }, { id: 2, nombre: 'Bob' },\n  { id: 3, nombre: 'Carl' }, { id: 4, nombre: 'Diana' },\n  { id: 5, nombre: 'Eve' },\n];\n```\n\nImplementa `async function* paginar(datos, tamano)` que:\n1. Divide los datos en páginas de `tamano` elementos\n2. Simula una consulta asíncrona con delay de 10ms por página\n3. Hace `yield` de cada página como array\n\nConsume el generador para:\n- Acumular todas las páginas en `paginas`\n- Aplanar todos los elementos en `todos`",
+      "starterCode": "const DB = [\n  { id: 1, nombre: 'Ana' },\n  { id: 2, nombre: 'Bob' },\n  { id: 3, nombre: 'Carl' },\n  { id: 4, nombre: 'Diana' },\n  { id: 5, nombre: 'Eve' },\n];\n\nasync function* paginar(datos, tamano) {\n  for (let i = 0; i < datos.length; i += tamano) {\n    await new Promise(r => setTimeout(r, 10)); // Simula query\n    yield datos.slice(i, i + tamano);\n  }\n}\n\nconst paginas = [];\nconst todos = [];\n\nfor await (const pagina of paginar(DB, 2)) {\n  paginas.push(pagina);\n  todos.push(...pagina);\n}\n\nconsole.log('Páginas:', paginas.length);\nconsole.log('Total elementos:', todos.length);\nconsole.log('Primera página:', paginas[0]);\n",
+      "tests": [
+        {
+          "description": "hay 3 páginas (5 elementos en páginas de 2)",
+          "expression": "paginas.length === 3"
+        },
+        {
+          "description": "total de elementos es 5",
+          "expression": "todos.length === 5"
+        },
+        {
+          "description": "primera página tiene 2 elementos",
+          "expression": "paginas[0].length === 2"
+        },
+        {
+          "description": "última página tiene 1 elemento",
+          "expression": "paginas[2].length === 1"
+        }
+      ],
+      "hints": [
+        "`datos.slice(i, i + tamano)` extrae la página i-ésima",
+        "`todos.push(...pagina)` aplana la página en el array",
+        "5 elementos en páginas de 2: [2, 2, 1] → 3 páginas"
+      ]
+    },
+    {
+      "title": "Aplicación: Stream con transformaciones",
+      "prompt": "Implementa un pipeline completo con generadores asíncronos:\n\n1. `async function* fuente(items, ms)`: produce items con delay `ms`\n2. `async function* transformar(stream, fn)`: aplica `fn` a cada valor del stream\n3. `async function* filtrarAsync(stream, pred)`: filtra elementos donde `pred(x)` es true\n\nUsa el pipeline para:\n- Fuente: `[1, 2, 3, 4, 5, 6]` con delay 5ms\n- Transformar: multiplicar por 3\n- Filtrar: solo los divisibles por 6\n\nResultado esperado: `[6, 12, 18]`",
+      "starterCode": "async function* fuente(items, ms) {\n  for (const item of items) {\n    await new Promise(r => setTimeout(r, ms));\n    yield item;\n  }\n}\n\nasync function* transformar(stream, fn) {\n  for await (const valor of stream) {\n    yield fn(valor);\n  }\n}\n\nasync function* filtrarAsync(stream, pred) {\n  for await (const valor of stream) {\n    if (pred(valor)) yield valor;\n  }\n}\n\n// Pipeline\nconst stream = fuente([1, 2, 3, 4, 5, 6], 5);\nconst multiplicado = transformar(stream, x => x * 3);\nconst filtrado = filtrarAsync(multiplicado, x => x % 6 === 0);\n\nconst resultado = [];\nfor await (const val of filtrado) {\n  resultado.push(val);\n}\n\nconsole.log('Resultado:', resultado);\n",
+      "tests": [
+        {
+          "description": "resultado es [6, 12, 18]",
+          "expression": "JSON.stringify(resultado) === '[6,12,18]'"
+        },
+        {
+          "description": "resultado tiene 3 elementos",
+          "expression": "resultado.length === 3"
+        },
+        {
+          "description": "todos los elementos son divisibles por 6",
+          "expression": "resultado.every(x => x % 6 === 0)"
+        }
+      ],
+      "hints": [
+        "`for await (const valor of stream)` consume un async iterable en un async generator",
+        "El pipeline se construye pasando el generador anterior como argumento al siguiente",
+        "1*3=3 (no div 6), 2*3=6 (sí), 3*3=9 (no), 4*3=12 (sí), 5*3=15 (no), 6*3=18 (sí)"
+      ]
+    }
+  ]
+}

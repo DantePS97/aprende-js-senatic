@@ -67,6 +67,8 @@ export interface Course {
   iconEmoji: string;
   totalLessons: number;
   modules: Module[];
+  prerequisiteSlug?: string;
+  isLocked?: boolean;
 }
 
 export interface Module {

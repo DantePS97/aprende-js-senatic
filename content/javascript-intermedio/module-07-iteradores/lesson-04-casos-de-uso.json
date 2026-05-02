@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m7-l4",
+  "title": "Casos de uso reales de generadores",
+  "xpReward": 55,
+  "theory": {
+    "markdown": "## ¿Cuándo realmente conviene usar generadores?\n\nLos generadores no son solo un mecanismo académico. Tienen casos de uso concretos donde son la mejor solución. Esta lección consolida esos patrones.\n\n---\n\n## 1. IDs únicos y secuencias\n\nUno de los usos más simples y frecuentes:\n\n```javascript\nfunction* generarId(prefijo = 'id') {\n  let n = 1;\n  while (true) {\n    yield `${prefijo}-${n++}`;\n  }\n}\n\nconst ids = generarId('user');\nconsole.log(ids.next().value); // 'user-1'\nconsole.log(ids.next().value); // 'user-2'\nconsole.log(ids.next().value); // 'user-3'\n\n// En vez de un contador global mutable:\n// let globalId = 0; // ← estado global, problemático\n// El generador encapsula el estado\n```\n\n---\n\n## 2. State machines (máquinas de estado)\n\nLos generadores representan estados de forma natural — el estado actual es literalmente **dónde está pausado** el generador:\n\n```javascript\nfunction* semaforo() {\n  while (true) {\n    yield 'ROJO';    // Estado: esperando\n    yield 'VERDE';   // Estado: avanzar\n    yield 'AMARILLO'; // Estado: precaución\n  }\n}\n\nconst luz = semaforo();\nconsole.log(luz.next().value); // 'ROJO'\nconsole.log(luz.next().value); // 'VERDE'\nconsole.log(luz.next().value); // 'AMARILLO'\nconsole.log(luz.next().value); // 'ROJO' — ciclo\n```\n\n---\n\n## 3. Traversal de árboles (DFS sin recursión explícita)\n\nRecorrer estructuras de árbol o grafos:\n\n```javascript\nconst arbol = {\n  valor: 1,\n  hijos: [\n    { valor: 2, hijos: [\n      { valor: 4, hijos: [] },\n      { valor: 5, hijos: [] },\n    ]},\n    { valor: 3, hijos: [\n      { valor: 6, hijos: [] },\n    ]},\n  ]\n};\n\nfunction* dfs(nodo) {\n  yield nodo.valor;\n  for (const hijo of nodo.hijos) {\n    yield* dfs(hijo); // Recursión con yield*\n  }\n}\n\nconsole.log([...dfs(arbol)]); // [1, 2, 4, 5, 3, 6]\n```\n\n---\n\n## 4. Aplanar estructuras anidadas\n\n```javascript\n// Aplanar arrays anidados a cualquier profundidad:\nfunction* aplanar(array) {\n  for (const item of array) {\n    if (Array.isArray(item)) {\n      yield* aplanar(item); // Recursivo con yield*\n    } else {\n      yield item;\n    }\n  }\n}\n\nconst anidado = [1, [2, [3, [4, 5]]], 6];\nconsole.log([...aplanar(anidado)]); // [1, 2, 3, 4, 5, 6]\n\n// Equivale a arr.flat(Infinity) pero más general\n// (funciona con cualquier iterable, no solo arrays)\n```\n\n---\n\n## 5. Lazy evaluation — calcular solo lo necesario\n\n```javascript\n// Sin generador: calcula TODOS los resultados aunque solo necesites 3\nconst primeros3 = [1,2,3,4,5,6,7,8,9,10]\n  .map(n => n * n)           // Crea array de 10 cuadrados\n  .filter(n => n % 2 === 0)  // Crea array de 4 pares\n  .slice(0, 3);               // Toma 3\n\n// Con generadores: solo calcula lo necesario\nfunction* cuadradosPares() {\n  let n = 1;\n  while (true) {\n    const sq = n * n;\n    if (sq % 2 === 0) yield sq;\n    n++;\n  }\n}\n\nfunction take(gen, n) {\n  const r = [];\n  for (const v of gen) { r.push(v); if (r.length >= n) break; }\n  return r;\n}\n\ntake(cuadradosPares(), 3); // [4, 16, 36] — calculó solo 6 valores\n```\n\n---\n\n## 6. Memoización de secuencias\n\n```javascript\n// Caché de generador: si calcular valores es costoso,\n// guarda lo ya calculado\nfunction* conCache(generador) {\n  const cache = [];\n  for (const valor of generador) {\n    cache.push(valor);\n    yield valor;\n  }\n  // Retorna el cache al final:\n  return cache;\n}\n\n// Uso:\nconst gen = conCache(function* () {\n  for (let i = 1; i <= 5; i++) yield i * 100;\n}());\n\nconsole.log(gen.next()); // {value: 100, done: false}\nconsole.log(gen.next()); // {value: 200, done: false}\n```",
+    "examples": [
+      {
+        "code": "// Round-robin scheduler — distribuir trabajo entre workers\nfunction* roundRobin(workers) {\n  let i = 0;\n  while (true) {\n    yield workers[i % workers.length];\n    i++;\n  }\n}\n\nconst workers = ['worker-1', 'worker-2', 'worker-3'];\nconst scheduler = roundRobin(workers);\n\nconst tareas = ['tarea-A', 'tarea-B', 'tarea-C', 'tarea-D', 'tarea-E'];\n\nconst asignaciones = tareas.map(tarea => ({\n  tarea,\n  worker: scheduler.next().value,\n}));\n\nconsole.log(asignaciones);\n// A→worker-1, B→worker-2, C→worker-3, D→worker-1, E→worker-2",
+        "explanation": "Round-robin con generador: el estado del índice está encapsulado en el generador. Cada llamada a next() avanza automáticamente al siguiente worker sin lógica externa."
+      },
+      {
+        "code": "// Generador como acumulador (yield recibe valores)\n// next(valor) envía un valor al generador\nfunction* acumulador(valorInicial = 0) {\n  let total = valorInicial;\n  while (true) {\n    const entrada = yield total; // yield retorna el total Y recibe la siguiente entrada\n    if (entrada === null) break;\n    total += entrada;\n  }\n  return total;\n}\n\nconst acc = acumulador(100);\nacc.next();       // Inicializa: { value: 100, done: false }\nacc.next(50);     // Total: 150\nacc.next(30);     // Total: 180\nacc.next(20);     // Total: 200\n\nconsole.log(acc.next(null)); // { value: 200, done: true } — termina",
+        "explanation": "Los generadores pueden RECIBIR valores además de enviarlos. next(valor) envía 'valor' al punto donde el generador pausó con yield. Este patrón es la base de cómo funcionan internamente async/await."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Generador de IDs únicos",
+      "prompt": "Crea un generador `function* generarId(prefijo)` que produzca IDs únicos en formato `'{prefijo}-{numero}'` empezando desde 1.\n\nCrea también una función `crearGeneradorId(prefijo)` que retorne un objeto `{ siguiente() }` que use el generador internamente.\n\nGuarda:\n- `gen = crearGeneradorId('item')`\n- `id1 = gen.siguiente()` → `'item-1'`\n- `id2 = gen.siguiente()` → `'item-2'`\n- `id3 = gen.siguiente()` → `'item-3'`",
+      "starterCode": "function* generarId(prefijo) {\n  let n = 1;\n  while (true) {\n    yield `${prefijo}-${n++}`;\n  }\n}\n\nfunction crearGeneradorId(prefijo) {\n  const gen = generarId(prefijo);\n  return {\n    siguiente() {\n      return gen.next().value;\n    }\n  };\n}\n\nconst gen = crearGeneradorId('item');\nconst id1 = gen.siguiente();\nconst id2 = gen.siguiente();\nconst id3 = gen.siguiente();\n\nconsole.log(id1, id2, id3);\n",
+      "tests": [
+        {
+          "description": "id1 es 'item-1'",
+          "expression": "id1 === 'item-1'"
+        },
+        {
+          "description": "id2 es 'item-2'",
+          "expression": "id2 === 'item-2'"
+        },
+        {
+          "description": "id3 es 'item-3'",
+          "expression": "id3 === 'item-3'"
+        },
+        {
+          "description": "generadores diferentes son independientes",
+          "expression": "crearGeneradorId('x').siguiente() === 'x-1'"
+        }
+      ],
+      "hints": [
+        "`while (true)` + `yield` crea un generador infinito",
+        "`gen.next().value` consume el siguiente valor del generador",
+        "Cada instancia de `crearGeneradorId` tiene su propio generador — el estado no se comparte"
+      ]
+    },
+    {
+      "title": "Práctica: Aplanar árbol con generador",
+      "prompt": "Implementa `function* aplanarArbol(nodo)` que recorra un árbol en profundidad (DFS) y produzca los valores de todos los nodos.\n\nEstructura de nodo: `{ valor, hijos: [...] }`\n\nUsa `yield*` para delegar la recursión.\n\nGuarda:\n- El árbol es:\n```\n        1\n       / \\\n      2   3\n     / \\   \\\n    4   5   6\n```\n- `recorrido = [...aplanarArbol(arbol)]` → `[1, 2, 4, 5, 3, 6]` (preorder DFS)",
+      "starterCode": "function* aplanarArbol(nodo) {\n  yield nodo.valor;\n  for (const hijo of nodo.hijos) {\n    yield* aplanarArbol(hijo);\n  }\n}\n\nconst arbol = {\n  valor: 1,\n  hijos: [\n    {\n      valor: 2,\n      hijos: [\n        { valor: 4, hijos: [] },\n        { valor: 5, hijos: [] },\n      ]\n    },\n    {\n      valor: 3,\n      hijos: [\n        { valor: 6, hijos: [] },\n      ]\n    },\n  ]\n};\n\nconst recorrido = [...aplanarArbol(arbol)];\nconsole.log(recorrido);\n",
+      "tests": [
+        {
+          "description": "recorrido es [1,2,4,5,3,6]",
+          "expression": "JSON.stringify(recorrido) === '[1,2,4,5,3,6]'"
+        },
+        {
+          "description": "recorrido tiene 6 elementos",
+          "expression": "recorrido.length === 6"
+        },
+        {
+          "description": "el primero es la raíz (1)",
+          "expression": "recorrido[0] === 1"
+        },
+        {
+          "description": "árbol de un solo nodo",
+          "expression": "JSON.stringify([...aplanarArbol({valor: 42, hijos: []})]) === '[42]'"
+        }
+      ],
+      "hints": [
+        "`yield nodo.valor` primero — esto es preorder (raíz antes que hijos)",
+        "`yield* aplanarArbol(hijo)` delega la recursión al generador hijo",
+        "`for (const hijo of nodo.hijos)` itera el array de hijos"
+      ]
+    },
+    {
+      "title": "Aplicación: Máquina de estados con generador",
+      "prompt": "Implementa una máquina de estados para un semáforo peatonal usando un generador:\n\nEstados: `'ESPERA'` → `'CAMINANDO'` → `'PRECAUCION'` → `'ESPERA'` → ...\n\nCada estado tiene:\n- `color`: color del semáforo\n- `duracion`: segundos en ese estado\n- `mensaje`: texto para el peatón\n\nCrea `function* semaforo()` que cicle infinitamente por estos estados.\n\nCrea también `function tomarEstados(gen, n)` que retorne los primeros `n` estados como array.\n\nGuarda:\n- `estados6 = tomarEstados(semaforo(), 6)` → 6 estados (2 ciclos completos)\n- `primerEstado = estados6[0].color` → `'rojo'`\n- `tercerEstado = estados6[2].color` → `'verde parpadeante'`",
+      "starterCode": "function* semaforo() {\n  const ciclo = [\n    { color: 'rojo',               duracion: 30, mensaje: 'Espere' },\n    { color: 'verde',              duracion: 20, mensaje: 'Camine' },\n    { color: 'verde parpadeante', duracion: 5,  mensaje: 'Precaución' },\n  ];\n\n  while (true) {\n    for (const estado of ciclo) {\n      yield estado;\n    }\n  }\n}\n\nfunction tomarEstados(gen, n) {\n  const estados = [];\n  for (const estado of gen) {\n    estados.push(estado);\n    if (estados.length >= n) break;\n  }\n  return estados;\n}\n\nconst estados6 = tomarEstados(semaforo(), 6);\nconst primerEstado = estados6[0].color;\nconst tercerEstado = estados6[2].color;\n\nconsole.log('6 estados:', estados6.map(e => e.color));\n",
+      "tests": [
+        {
+          "description": "estados6 tiene 6 elementos",
+          "expression": "estados6.length === 6"
+        },
+        {
+          "description": "primerEstado es 'rojo'",
+          "expression": "primerEstado === 'rojo'"
+        },
+        {
+          "description": "tercerEstado es 'verde parpadeante'",
+          "expression": "tercerEstado === 'verde parpadeante'"
+        },
+        {
+          "description": "el ciclo se repite (estado 4 === estado 1)",
+          "expression": "estados6[3].color === estados6[0].color"
+        }
+      ],
+      "hints": [
+        "`yield* ciclo` itería el array de estados — pero aquí usamos `for...of` + `yield` dentro del `while(true)`",
+        "`break` en `for...of` termina la iteración limpiamente",
+        "El ciclo se repite porque el `while(true)` externo reinicia el `for...of` del ciclo interno"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "js-intermedio-m1-l2",
+  "title": "Casos de uso de closures",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Casos de uso reales de closures\n\nAhora que entiendes qué es un closure, veamos los patrones donde aparecen constantemente en código real.\n\n---\n\n## 1. Memorización (memoization)\n\nGuardar resultados de cálculos costosos para no repetirlos:\n\n```javascript\nfunction crearMemoize(fn) {\n  const cache = {}; // El closure guarda este objeto entre llamadas\n\n  return function (n) {\n    if (cache[n] !== undefined) {\n      console.log('desde cache');\n      return cache[n];\n    }\n    cache[n] = fn(n);\n    return cache[n];\n  };\n}\n\nfunction factorial(n) {\n  return n <= 1 ? 1 : n * factorial(n - 1);\n}\n\nconst factorialMemo = crearMemoize(factorial);\nfactorialMemo(5); // Calcula: 120\nfactorialMemo(5); // Desde cache: 120\n```\n\n---\n\n## 2. Funciones con configuración previa\n\nEvitar repetir parámetros que siempre son los mismos:\n\n```javascript\nfunction crearLogger(prefijo) {\n  return function (mensaje) {\n    console.log(`[${prefijo}] ${mensaje}`);\n  };\n}\n\nconst logError = crearLogger('ERROR');\nconst logInfo = crearLogger('INFO');\n\nlogError('Conexión fallida'); // [ERROR] Conexión fallida\nlogInfo('Usuario conectado'); // [INFO] Usuario conectado\n```\n\n---\n\n## 3. Callbacks con contexto atrapado\n\nUn patrón muy común con eventos del DOM:\n\n```javascript\nfunction agregarBoton(texto, accion) {\n  const boton = document.createElement('button');\n  boton.textContent = texto;\n\n  // El closure captura 'accion' y 'texto'\n  boton.addEventListener('click', function () {\n    console.log(`Botón '${texto}' ejecutó: ${accion}`);\n  });\n\n  document.body.appendChild(boton);\n}\n\nagregarBoton('Guardar', 'guardar-datos');\nagregarBoton('Cancelar', 'limpiar-form');\n```\n\nCada botón recuerda su propio `texto` y `accion`.\n\n---\n\n## 4. El problema clásico con bucles\n\nUno de los bugs más famosos de JavaScript:\n\n```javascript\n// ❌ BUG: todos los botones imprimen 3\nfor (var i = 0; i < 3; i++) {\n  setTimeout(function () {\n    console.log(i); // Imprime 3, 3, 3\n  }, 1000);\n}\n\n// ✅ SOLUCIÓN con let (crea un nuevo scope por iteración)\nfor (let i = 0; i < 3; i++) {\n  setTimeout(function () {\n    console.log(i); // Imprime 0, 1, 2\n  }, 1000);\n}\n```\n\n`let` crea un nuevo binding de `i` en cada iteración — un closure por vuelta.\n\n---\n\n## 5. Módulo con API pública controlada\n\n```javascript\nconst carrito = (function () {\n  const items = []; // Privado\n\n  return {\n    agregar(producto) {\n      items.push(producto);\n    },\n    total() {\n      return items.reduce((sum, p) => sum + p.precio, 0);\n    },\n    cantidad() {\n      return items.length;\n    },\n  };\n})();\n\ncarrito.agregar({ nombre: 'Libro', precio: 25000 });\ncarrito.agregar({ nombre: 'Curso', precio: 50000 });\nconsole.log(carrito.total());    // 75000\nconsole.log(carrito.cantidad()); // 2\nconsole.log(carrito.items);      // undefined — privado!\n```",
+    "examples": [
+      {
+        "code": "function crearValidador(minLength, maxLength) {\n  return function (texto) {\n    if (texto.length < minLength) return `Mínimo ${minLength} caracteres`;\n    if (texto.length > maxLength) return `Máximo ${maxLength} caracteres`;\n    return 'válido';\n  };\n}\n\nconst validarNombre = crearValidador(2, 50);\nconst validarPin = crearValidador(4, 4);\n\nconsole.log(validarNombre('Al'));    // válido\nconsole.log(validarNombre('A'));     // Mínimo 2 caracteres\nconsole.log(validarPin('1234'));     // válido\nconsole.log(validarPin('12345'));    // Máximo 4 caracteres",
+        "explanation": "El closure captura minLength y maxLength. Cada validador tiene sus propias reglas sin repetir código."
+      },
+      {
+        "code": "function crearContadorEventos(elemento) {\n  let clicks = 0; // Privado al closure\n\n  elemento.addEventListener('click', () => {\n    clicks++;\n    console.log(`Clicks: ${clicks}`);\n  });\n\n  return () => clicks; // Getter público\n}\n\n// Uso:\n// const btn = document.querySelector('#miBoton');\n// const getClicks = crearContadorEventos(btn);\n// getClicks(); // Retorna el número actual de clicks",
+        "explanation": "El event listener mantiene vivo el scope con 'clicks'. Patrón real para tracking de interacciones."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Logger con prefijo",
+      "prompt": "Crea una función `crearLogger(prefijo)` que retorne una función.\nCuando se llame esa función con un `mensaje`, debe retornar el string `[prefijo] mensaje`.\n\nLuego crea:\n- `logError`: logger con prefijo `'ERROR'`\n- `logOK`: logger con prefijo `'OK'`\n\nGuarda en `mensajeError` el resultado de `logError('archivo no encontrado')`.\nGuarda en `mensajeOK` el resultado de `logOK('guardado correctamente')`.",
+      "starterCode": "function crearLogger(prefijo) {\n  return function (mensaje) {\n    // Retorna `[prefijo] mensaje`\n\n  };\n}\n\nconst logError = crearLogger('ERROR');\nconst logOK = crearLogger('OK');\n\nconst mensajeError = logError('archivo no encontrado');\nconst mensajeOK = logOK('guardado correctamente');\n\nconsole.log(mensajeError);\nconsole.log(mensajeOK);\n",
+      "tests": [
+        {
+          "description": "mensajeError es '[ERROR] archivo no encontrado'",
+          "expression": "mensajeError === '[ERROR] archivo no encontrado'"
+        },
+        {
+          "description": "mensajeOK es '[OK] guardado correctamente'",
+          "expression": "mensajeOK === '[OK] guardado correctamente'"
+        },
+        {
+          "description": "logError y logOK son funciones independientes",
+          "expression": "logError('x') !== logOK('x')"
+        }
+      ],
+      "hints": [
+        "Usa template literal: `return \\`[${prefijo}] ${mensaje}\\`;`",
+        "Cada closure recuerda su propio `prefijo`",
+        "El formato exacto es: corchetes alrededor del prefijo, espacio, luego el mensaje"
+      ]
+    },
+    {
+      "title": "Práctica: Memoización simple",
+      "prompt": "Crea una función `memoize(fn)` que:\n1. Crea un objeto `cache = {}` interno\n2. Retorna una función que recibe un argumento `x`\n3. Si `cache[x]` ya existe, lo retorna directamente\n4. Si no, calcula `fn(x)`, lo guarda en `cache[x]` y lo retorna\n\nLuego crea `cuadradoMemo = memoize(x => x * x)`.\nGuarda en `r1` el resultado de `cuadradoMemo(4)` y en `r2` el de `cuadradoMemo(4)` (segunda llamada, desde cache).",
+      "starterCode": "function memoize(fn) {\n  const cache = {};\n\n  return function (x) {\n    // Si está en cache, retórnalo\n    // Si no, calcula, guarda y retorna\n\n  };\n}\n\nconst cuadradoMemo = memoize(x => x * x);\n\nconst r1 = cuadradoMemo(4);\nconst r2 = cuadradoMemo(4); // Desde cache\n\nconsole.log(r1, r2);\n",
+      "tests": [
+        {
+          "description": "r1 es 16",
+          "expression": "r1 === 16"
+        },
+        {
+          "description": "r2 es 16 (desde cache)",
+          "expression": "r2 === 16"
+        },
+        {
+          "description": "memoize funciona con otro argumento",
+          "expression": "cuadradoMemo(5) === 25"
+        },
+        {
+          "description": "memoize retorna una función",
+          "expression": "typeof memoize(x => x) === 'function'"
+        }
+      ],
+      "hints": [
+        "`if (cache[x] !== undefined) return cache[x];`",
+        "`cache[x] = fn(x); return cache[x];`",
+        "El closure mantiene `cache` vivo entre llamadas"
+      ]
+    },
+    {
+      "title": "Aplicación: Validador configurable",
+      "prompt": "Crea `crearValidador(min, max)` que retorne una función.\nEsa función recibe un `valor` (número) y retorna:\n- `'bajo'` si `valor < min`\n- `'alto'` si `valor > max`\n- `'ok'` si está dentro del rango\n\nCrea dos validadores:\n- `validarEdad = crearValidador(0, 120)`\n- `validarNota = crearValidador(0, 10)`\n\nGuarda los resultados:\n- `edadValida = validarEdad(25)` → `'ok'`\n- `edadAlta = validarEdad(150)` → `'alto'`\n- `notaBaja = validarNota(-1)` → `'bajo'`",
+      "starterCode": "function crearValidador(min, max) {\n  return function (valor) {\n    // Retorna 'bajo', 'alto' o 'ok'\n\n  };\n}\n\nconst validarEdad = crearValidador(0, 120);\nconst validarNota = crearValidador(0, 10);\n\nconst edadValida = validarEdad(25);\nconst edadAlta = validarEdad(150);\nconst notaBaja = validarNota(-1);\n\nconsole.log(edadValida, edadAlta, notaBaja);\n",
+      "tests": [
+        {
+          "description": "edadValida es 'ok'",
+          "expression": "edadValida === 'ok'"
+        },
+        {
+          "description": "edadAlta es 'alto'",
+          "expression": "edadAlta === 'alto'"
+        },
+        {
+          "description": "notaBaja es 'bajo'",
+          "expression": "notaBaja === 'bajo'"
+        },
+        {
+          "description": "validarNota(5) es 'ok'",
+          "expression": "validarNota(5) === 'ok'"
+        }
+      ],
+      "hints": [
+        "`if (valor < min) return 'bajo';`",
+        "`if (valor > max) return 'alto';`",
+        "`return 'ok';`",
+        "Cada validador recuerda su propio `min` y `max`"
+      ]
+    }
+  ]
+}

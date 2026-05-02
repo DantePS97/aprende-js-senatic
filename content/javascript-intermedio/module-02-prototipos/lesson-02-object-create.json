@@ -1,0 +1,108 @@
+{
+  "id": "js-intermedio-m2-l2",
+  "title": "Object.create()",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Object.create()\n\n`Object.create(proto)` crea un nuevo objeto vacío cuyo `[[Prototype]]` apunta directamente a `proto`. Es la forma más explícita y limpia de establecer herencia prototípica.\n\n```javascript\nconst proto = { saludar() { return `Hola, soy ${this.nombre}`; } };\n\nconst obj = Object.create(proto);\nobj.nombre = 'Ana';\n\nconsole.log(obj.saludar()); // 'Hola, soy Ana'\nconsole.log(Object.getPrototypeOf(obj) === proto); // true\n```\n\n---\n\n## Object.create(null) — objeto sin prototipo\n\nPasando `null` se crea un objeto completamente limpio, sin herencia de `Object.prototype`:\n\n```javascript\nconst mapa = Object.create(null);\nmapa.clave = 'valor';\n\n// No tiene toString, hasOwnProperty, etc.\nconsole.log(mapa.toString); // undefined\nconsole.log(Object.getPrototypeOf(mapa)); // null\n\n// Ideal para diccionarios seguros (sin colisión con métodos heredados)\nconst config = Object.create(null);\nconfig.constructor = 'mi valor'; // Sin problema — no pisa nada\n```\n\n---\n\n## Segundo argumento: descriptores de propiedad\n\n`Object.create(proto, descriptores)` permite definir propiedades con control total:\n\n```javascript\nconst persona = Object.create(\n  { saludar() { return `Hola, ${this.nombre}`; } }, // proto\n  {\n    nombre: {\n      value: 'Carlos',\n      writable: true,     // ¿Se puede modificar?\n      enumerable: true,   // ¿Aparece en for...in?\n      configurable: true, // ¿Se puede redefinir/eliminar?\n    },\n    edad: {\n      value: 30,\n      writable: false,    // Solo lectura\n      enumerable: true,\n      configurable: false,\n    },\n  }\n);\n\nconsole.log(persona.saludar()); // 'Hola, Carlos'\npersona.edad = 99;  // Silencioso en modo normal, error en strict mode\nconsole.log(persona.edad); // 30 — no cambió (writable: false)\n```\n\n---\n\n## Comparación con otras formas de crear objetos\n\n```javascript\n// 1. Literal — prototipo es Object.prototype\nconst a = { x: 1 };\n\n// 2. new Object() — igual que literal\nconst b = new Object();\nb.x = 1;\n\n// 3. Object.create(proto) — prototipo explícito\nconst proto = { metodo() {} };\nconst c = Object.create(proto);\nc.x = 1;\n\n// 4. Object.create(null) — sin prototipo\nconst d = Object.create(null);\nd.x = 1;\n\nconsole.log(Object.getPrototypeOf(a) === Object.prototype); // true\nconsole.log(Object.getPrototypeOf(c) === proto);            // true\nconsole.log(Object.getPrototypeOf(d));                      // null\n```\n\n---\n\n## Patrón: función fábrica con Object.create\n\n```javascript\nconst vehiculoProto = {\n  arrancar() {\n    return `${this.marca} arrancando...`;\n  },\n  info() {\n    return `${this.marca} ${this.modelo} (${this.anio})`;\n  },\n};\n\nfunction crearVehiculo(marca, modelo, anio) {\n  const v = Object.create(vehiculoProto);\n  v.marca = marca;\n  v.modelo = modelo;\n  v.anio = anio;\n  return v;\n}\n\nconst moto = crearVehiculo('Honda', 'CB500', 2023);\nconst coche = crearVehiculo('Toyota', 'Corolla', 2022);\n\nconsole.log(moto.arrancar()); // 'Honda arrancando...'\nconsole.log(coche.info());    // 'Toyota Corolla (2022)'\n\n// Los métodos son compartidos — solo existe UNA copia\nconsole.log(moto.arrancar === coche.arrancar); // true\n```\n\nEste es el patrón más eficiente: los métodos viven en el prototipo (una sola copia), los datos en cada objeto.",
+    "examples": [
+      {
+        "code": "// Herencia de múltiples niveles con Object.create\nconst entidad = {\n  tipo: 'entidad',\n  toString() { return `[${this.tipo}: ${this.nombre}]`; },\n};\n\nconst usuario = Object.create(entidad);\nusuario.tipo = 'usuario';\nusuario.iniciarSesion = function () {\n  return `${this.nombre} ha iniciado sesión`;\n};\n\nconst admin = Object.create(usuario);\nadmin.tipo = 'admin';\nadmin.borrarTodo = function () {\n  return `${this.nombre} borró todo`;\n};\n\nconst superAdmin = Object.create(admin);\nsuperAdmin.nombre = 'root';\n\nconsole.log(superAdmin.toString());       // '[admin: root]'\nconsole.log(superAdmin.iniciarSesion());  // 'root ha iniciado sesión'\nconsole.log(superAdmin.borrarTodo());     // 'root borró todo'",
+        "explanation": "Cadena entidad → usuario → admin → superAdmin. Cada nivel agrega métodos. this siempre apunta al objeto que inició la llamada."
+      },
+      {
+        "code": "// Clonar con prototipo preservado\nfunction clonarObjeto(obj) {\n  const proto = Object.getPrototypeOf(obj);\n  const clon = Object.create(proto);\n  return Object.assign(clon, obj);\n}\n\nconst proto = { metodo() { return this.valor * 2; } };\nconst original = Object.create(proto);\noriginal.valor = 21;\n\nconst clon = clonarObjeto(original);\nclon.valor = 5;\n\nconsole.log(original.metodo()); // 42\nconsole.log(clon.metodo());     // 10\nconsole.log(Object.getPrototypeOf(clon) === proto); // true",
+        "explanation": "Object.create(proto) + Object.assign copia tanto las propiedades como la relación con el prototipo. El clon hereda los mismos métodos."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Crear con prototipo",
+      "prompt": "Dado el objeto `animalProto` con el método `describir()` que retorna `this.nombre + ' es un ' + this.tipo`, crea un objeto `perro` usando `Object.create(animalProto)` y asígnale:\n- `nombre: 'Rex'`\n- `tipo: 'perro'`\n\nGuarda en `descripcion` el resultado de `perro.describir()`.",
+      "starterCode": "const animalProto = {\n  describir() {\n    return this.nombre + ' es un ' + this.tipo;\n  },\n};\n\n// Crea perro con Object.create\nconst perro = Object.create(animalProto);\n// Asigna nombre y tipo\n\n\nconst descripcion = perro.describir();\nconsole.log(descripcion); // 'Rex es un perro'\n",
+      "tests": [
+        {
+          "description": "descripcion es 'Rex es un perro'",
+          "expression": "descripcion === 'Rex es un perro'"
+        },
+        {
+          "description": "perro tiene a animalProto como prototipo",
+          "expression": "Object.getPrototypeOf(perro) === animalProto"
+        },
+        {
+          "description": "nombre y tipo son propiedades propias de perro",
+          "expression": "perro.hasOwnProperty('nombre') && perro.hasOwnProperty('tipo')"
+        },
+        {
+          "description": "describir NO es propiedad propia de perro",
+          "expression": "!perro.hasOwnProperty('describir')"
+        }
+      ],
+      "hints": [
+        "`const perro = Object.create(animalProto);`",
+        "Luego: `perro.nombre = 'Rex'; perro.tipo = 'perro';`",
+        "`this` en `describir()` apunta a `perro` cuando lo llamas como `perro.describir()`"
+      ]
+    },
+    {
+      "title": "Práctica: Función fábrica",
+      "prompt": "Crea un sistema de figuras geométricas:\n\n1. Define `figuraProto` con un método `area()` que retorne `0` (base) y `toString()` que retorne `'Figura: ' + this.tipo`\n2. Crea una función `crearRectangulo(base, altura)` que:\n   - Cree un objeto con `Object.create(figuraProto)`\n   - Le asigne `tipo: 'rectangulo'`, `base` y `altura`\n   - Sobreescriba `area()` para retornar `this.base * this.altura`\n   - Retorne el objeto\n\nCrea `r = crearRectangulo(5, 3)` y guarda en `areaR` el resultado de `r.area()` y en `toStringR` el de `r.toString()`.",
+      "starterCode": "const figuraProto = {\n  area() { return 0; },\n  toString() { return 'Figura: ' + this.tipo; },\n};\n\nfunction crearRectangulo(base, altura) {\n  const r = Object.create(figuraProto);\n  // Asigna tipo, base, altura\n  // Sobreescribe area()\n\n  return r;\n}\n\nconst r = crearRectangulo(5, 3);\nconst areaR = r.area();\nconst toStringR = r.toString();\n\nconsole.log(areaR, toStringR);\n",
+      "tests": [
+        {
+          "description": "areaR es 15 (5 * 3)",
+          "expression": "areaR === 15"
+        },
+        {
+          "description": "toStringR es 'Figura: rectangulo'",
+          "expression": "toStringR === 'Figura: rectangulo'"
+        },
+        {
+          "description": "r tiene a figuraProto como prototipo",
+          "expression": "Object.getPrototypeOf(r) === figuraProto"
+        },
+        {
+          "description": "area es propiedad propia de r (shadowing)",
+          "expression": "r.hasOwnProperty('area')"
+        }
+      ],
+      "hints": [
+        "`r.tipo = 'rectangulo'; r.base = base; r.altura = altura;`",
+        "`r.area = function() { return this.base * this.altura; };`",
+        "`toString()` no necesitas sobreescribirla — la hereda de `figuraProto`"
+      ]
+    },
+    {
+      "title": "Aplicación: Diccionario seguro con Object.create(null)",
+      "prompt": "Crea una función `crearDiccionario()` que retorne un objeto creado con `Object.create(null)` — sin prototipo.\n\nEl diccionario devuelto debe tener tres métodos PROPIOS:\n- `guardar(clave, valor)`: guarda el par clave-valor internamente\n- `obtener(clave)`: retorna el valor de esa clave (o `undefined` si no existe)\n- `tiene(clave)`: retorna `true` si la clave existe, `false` si no\n\nOJO: como el objeto es `Object.create(null)`, no puedes usar `hasOwnProperty`. Usa el operador `in` o compara con `undefined`.\n\nCrea `dict = crearDiccionario()` y prueba guardar y obtener.",
+      "starterCode": "function crearDiccionario() {\n  const almacen = Object.create(null); // Sin prototipo — seguro para claves arbitrarias\n\n  return {\n    guardar(clave, valor) {\n      almacen[clave] = valor;\n    },\n    obtener(clave) {\n      // Retorna el valor o undefined\n\n    },\n    tiene(clave) {\n      // Retorna true o false\n\n    },\n  };\n}\n\nconst dict = crearDiccionario();\ndict.guardar('nombre', 'Ana');\ndict.guardar('edad', 30);\n\nconsole.log(dict.obtener('nombre')); // 'Ana'\nconsole.log(dict.obtener('edad'));   // 30\nconsole.log(dict.tiene('nombre'));   // true\nconsole.log(dict.tiene('altura'));   // false\n",
+      "tests": [
+        {
+          "description": "obtener retorna el valor guardado",
+          "expression": "dict.obtener('nombre') === 'Ana'"
+        },
+        {
+          "description": "obtener retorna undefined para clave inexistente",
+          "expression": "dict.obtener('xyz') === undefined"
+        },
+        {
+          "description": "tiene retorna true para clave existente",
+          "expression": "dict.tiene('nombre') === true"
+        },
+        {
+          "description": "tiene retorna false para clave inexistente",
+          "expression": "dict.tiene('altura') === false"
+        },
+        {
+          "description": "guardar múltiples claves funciona correctamente",
+          "expression": "dict.obtener('edad') === 30"
+        }
+      ],
+      "hints": [
+        "`obtener`: `return almacen[clave];`",
+        "`tiene`: `return almacen[clave] !== undefined;`  — o `return clave in almacen;`",
+        "No puedes usar `almacen.hasOwnProperty` porque `almacen` no tiene prototipo. Usa `clave in almacen`"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "id": "js-intermedio-m1-l4",
+  "title": "Funciones de orden superior",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## Funciones de orden superior\n\nUna **función de orden superior** (Higher-Order Function, HOF) es una función que:\n- **Recibe** otra función como argumento, o\n- **Retorna** una función como resultado (o ambas cosas)\n\nYa las usaste en el básico: `map`, `filter` y `reduce` son funciones de orden superior. Ahora vamos a entender el concepto y crear las nuestras.\n\n---\n\n## ¿Por qué existen?\n\nPermiten **abstraer comportamiento** — separar el \"qué hacer\" del \"cómo hacerlo\":\n\n```javascript\n// Sin HOF: código repetido\nconst numeros = [1, 2, 3, 4, 5];\n\nconst dobles = [];\nfor (const n of numeros) {\n  dobles.push(n * 2);\n}\n\nconst triples = [];\nfor (const n of numeros) {\n  triples.push(n * 3);\n}\n\n// Con HOF: comportamiento abstraído\nconst transformar = (arr, fn) => arr.map(fn);\n\nconst dobles2 = transformar(numeros, n => n * 2);\nconst triples2 = transformar(numeros, n => n * 3);\n```\n\n---\n\n## Recibir funciones como argumento\n\n```javascript\nfunction ejecutarDosVeces(fn) {\n  fn();\n  fn();\n}\n\nejecutarDosVeces(() => console.log('Hola')); // Hola\\nHola\n\n// Más útil:\nfunction aplicarATodos(array, transformacion) {\n  const resultado = [];\n  for (const item of array) {\n    resultado.push(transformacion(item));\n  }\n  return resultado;\n}\n\nconst precios = [100, 250, 80, 320];\nconst conIva = aplicarATodos(precios, p => p * 1.19);\nconsole.log(conIva); // [119, 297.5, 95.2, 380.8]\n```\n\n---\n\n## Retornar funciones\n\n```javascript\n// Crea comparadores dinámicamente\nfunction crearComparador(propiedad) {\n  return (a, b) => {\n    if (a[propiedad] < b[propiedad]) return -1;\n    if (a[propiedad] > b[propiedad]) return 1;\n    return 0;\n  };\n}\n\nconst personas = [\n  { nombre: 'Carlos', edad: 30 },\n  { nombre: 'Ana', edad: 25 },\n  { nombre: 'Luis', edad: 35 },\n];\n\nconst porEdad = crearComparador('edad');\nconst porNombre = crearComparador('nombre');\n\nconsole.log(personas.sort(porEdad).map(p => p.nombre));\n// ['Ana', 'Carlos', 'Luis']\n\nconsole.log(personas.sort(porNombre).map(p => p.nombre));\n// ['Ana', 'Carlos', 'Luis']\n```\n\n---\n\n## Composición básica\n\n```javascript\n// pipe: aplica funciones de izquierda a derecha\nfunction pipe(...fns) {\n  return (valor) => fns.reduce((acc, fn) => fn(acc), valor);\n}\n\nconst procesar = pipe(\n  x => x * 2,       // 10 * 2 = 20\n  x => x + 5,       // 20 + 5 = 25\n  x => x.toString() // '25'\n);\n\nconsole.log(procesar(10)); // '25'\n```\n\n---\n\n## HOFs estándar que ya conoces\n\n```javascript\nconst productos = [\n  { nombre: 'Libro', precio: 25000, stock: true },\n  { nombre: 'Curso', precio: 50000, stock: false },\n  { nombre: 'Plugin', precio: 15000, stock: true },\n];\n\n// filter: HOF que recibe predicado\nconst disponibles = productos.filter(p => p.stock);\n\n// map: HOF que recibe transformador\nconst nombres = productos.map(p => p.nombre);\n\n// reduce: HOF que recibe acumulador\nconst total = productos.reduce((sum, p) => sum + p.precio, 0);\n\n// Encadenamiento\nconst totalDisponible = productos\n  .filter(p => p.stock)\n  .reduce((sum, p) => sum + p.precio, 0);\n// 40000\n```",
+    "examples": [
+      {
+        "code": "// HOF para reintentar una operación\nfunction conReintentos(fn, maxIntentos) {\n  return function (...args) {\n    let intentos = 0;\n    while (intentos < maxIntentos) {\n      try {\n        return fn(...args);\n      } catch (e) {\n        intentos++;\n        if (intentos === maxIntentos) throw e;\n        console.log(`Intento ${intentos} fallido, reintentando...`);\n      }\n    }\n  };\n}\n\nlet contador = 0;\nconst operacionInestable = () => {\n  contador++;\n  if (contador < 3) throw new Error('Fallo temporal');\n  return 'Éxito!';\n};\n\nconst operacionSegura = conReintentos(operacionInestable, 3);\nconsole.log(operacionSegura()); // 'Éxito!' (tras 2 reintentos)",
+        "explanation": "HOF de orden superior que envuelve cualquier función con lógica de reintento. El comportamiento de reintento está separado de la lógica de negocio."
+      },
+      {
+        "code": "// HOF para medir rendimiento\nfunction medirTiempo(fn, nombre) {\n  return function (...args) {\n    const inicio = Date.now();\n    const resultado = fn(...args);\n    const fin = Date.now();\n    console.log(`${nombre} tardó ${fin - inicio}ms`);\n    return resultado;\n  };\n}\n\nconst buscarLento = (arr, target) => {\n  // Simulación de búsqueda lenta\n  return arr.find(x => x === target);\n};\n\nconst buscarConMetrica = medirTiempo(buscarLento, 'buscarLento');\nconst datos = Array.from({ length: 1000 }, (_, i) => i);\nbuscarConMetrica(datos, 999);\n// 'buscarLento tardó Xms'",
+        "explanation": "Patrón decorador: la HOF agrega comportamiento (medición) sin modificar la función original."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: Aplicar a todos",
+      "prompt": "Crea una función `aplicarATodos(array, fn)` que:\n1. Reciba un array y una función\n2. Retorne un nuevo array donde cada elemento es el resultado de aplicar `fn` al elemento original\n\n(Es como implementar `map` a mano)\n\nLuego guarda en `cuadrados` el resultado de `aplicarATodos([1, 2, 3, 4, 5], n => n ** 2)`.",
+      "starterCode": "function aplicarATodos(array, fn) {\n  const resultado = [];\n  // Itera, aplica fn a cada elemento y guarda en resultado\n\n  return resultado;\n}\n\nconst cuadrados = aplicarATodos([1, 2, 3, 4, 5], n => n ** 2);\nconsole.log(cuadrados); // [1, 4, 9, 16, 25]\n",
+      "tests": [
+        {
+          "description": "cuadrados es [1, 4, 9, 16, 25]",
+          "expression": "JSON.stringify(cuadrados) === '[1,4,9,16,25]'"
+        },
+        {
+          "description": "aplicarATodos funciona con otra función",
+          "expression": "JSON.stringify(aplicarATodos([1,2,3], x => x + 10)) === '[11,12,13]'"
+        },
+        {
+          "description": "No modifica el array original",
+          "expression": "(() => { const orig = [1,2,3]; aplicarATodos(orig, x=>x*2); return JSON.stringify(orig) === '[1,2,3]'; })()"
+        }
+      ],
+      "hints": [
+        "Usa `for...of` para iterar: `for (const item of array)`",
+        "`resultado.push(fn(item));`",
+        "La función `fn` recibe cada elemento y retorna el transformado"
+      ]
+    },
+    {
+      "title": "Práctica: Filtrar con predicado",
+      "prompt": "Crea una función `filtrar(array, predicado)` que retorne un nuevo array con solo los elementos para los que `predicado(elemento)` devuelve `true`.\n\n(Es como implementar `filter` a mano)\n\nLuego crea:\n- `pares`: `filtrar([1,2,3,4,5,6], n => n % 2 === 0)` → [2, 4, 6]\n- `largos`: `filtrar(['js', 'python', 'go', 'typescript'], s => s.length > 3)` → ['python', 'typescript']",
+      "starterCode": "function filtrar(array, predicado) {\n  const resultado = [];\n  // Agrega al resultado solo los que pasen el predicado\n\n  return resultado;\n}\n\nconst pares = filtrar([1, 2, 3, 4, 5, 6], n => n % 2 === 0);\nconst largos = filtrar(['js', 'python', 'go', 'typescript'], s => s.length > 3);\n\nconsole.log(pares);\nconsole.log(largos);\n",
+      "tests": [
+        {
+          "description": "pares es [2, 4, 6]",
+          "expression": "JSON.stringify(pares) === '[2,4,6]'"
+        },
+        {
+          "description": "largos es ['python', 'typescript']",
+          "expression": "JSON.stringify(largos) === '[\"python\",\"typescript\"]'"
+        },
+        {
+          "description": "filtrar con predicado siempre true retorna todo",
+          "expression": "filtrar([1,2,3], () => true).length === 3"
+        }
+      ],
+      "hints": [
+        "`if (predicado(item)) resultado.push(item);`",
+        "`n % 2 === 0` es true para números pares",
+        "`s.length > 3` es true para strings con más de 3 caracteres"
+      ]
+    },
+    {
+      "title": "Aplicación: Decorador de logging",
+      "prompt": "Crea una HOF `conLog(fn, nombre)` que:\n1. Retorne una nueva función que, al llamarse:\n   - Imprima con `console.log` el string `'Llamando: nombre'`\n   - Ejecute `fn` con los mismos argumentos\n   - Imprima `'Resultado: X'` donde X es el resultado\n   - Retorne el resultado\n\nLuego:\n```\nconst sumarLog = conLog((a, b) => a + b, 'sumar');\nconst resultado = sumarLog(3, 4);\n// Imprime: 'Llamando: sumar'\n// Imprime: 'Resultado: 7'\n// resultado === 7\n```\n\nGuarda en `resultado` el valor retornado por `sumarLog(3, 4)`.",
+      "starterCode": "function conLog(fn, nombre) {\n  return function (...args) {\n    console.log(`Llamando: ${nombre}`);\n    // Ejecuta fn con los args\n    // Guarda el resultado\n    // Imprime el resultado\n    // Retorna el resultado\n\n  };\n}\n\nconst sumarLog = conLog((a, b) => a + b, 'sumar');\nconst resultado = sumarLog(3, 4);\nconsole.log(resultado);\n",
+      "tests": [
+        {
+          "description": "resultado es 7",
+          "expression": "resultado === 7"
+        },
+        {
+          "description": "conLog retorna una función",
+          "expression": "typeof conLog(() => {}, 'test') === 'function'"
+        },
+        {
+          "description": "La función decorada pasa los argumentos correctamente",
+          "expression": "conLog((a, b, c) => a + b + c, 'suma')(1, 2, 3) === 6"
+        }
+      ],
+      "hints": [
+        "`const r = fn(...args);`",
+        "`console.log(\\`Resultado: ${r}\\`);`",
+        "`return r;`",
+        "`...args` captura todos los argumentos y `fn(...args)` los pasa todos"
+      ]
+    }
+  ]
+}

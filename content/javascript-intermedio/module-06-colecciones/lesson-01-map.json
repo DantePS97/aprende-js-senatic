@@ -1,0 +1,104 @@
+{
+  "id": "js-intermedio-m6-l1",
+  "title": "Map: el diccionario que Object nunca fue",
+  "xpReward": 45,
+  "theory": {
+    "markdown": "## El problema con Object como diccionario\n\nAntes de `Map`, se usaban objetos como diccionarios clave-valor. Pero los objetos tienen limitaciones serias:\n\n```javascript\n// Problemas con Object como diccionario:\nconst visitas = {};\n\n// Las claves solo pueden ser strings o symbols:\nconst usuario = { id: 1, nombre: 'Ana' };\nvisitas[usuario] = 5; // ← clave es '[object Object]', no el objeto\nconsole.log(visitas); // { '[object Object]': 5 } — ¡¿qué?!\n\n// Contaminación con propiedades heredadas:\nconst config = {};\nconsole.log('toString' in config);    // true — heredado de Object.prototype\nconsole.log('constructor' in config); // true — ¡peligroso!\n\n// No hay tamaño directo:\nconst size = Object.keys(config).length; // Verbose y lento\n```\n\n---\n\n## Map: la solución correcta\n\n```javascript\n// Map acepta CUALQUIER tipo como clave:\nconst visitas = new Map();\n\nconst usuario = { id: 1, nombre: 'Ana' };\nvisitas.set(usuario, 5);           // Clave: el objeto mismo\nvisitas.set('sesiones-totales', 100); // Clave: string\nvisitas.set(42, 'respuesta');      // Clave: número\nvisitas.set(true, 'activo');       // Clave: boolean\n\nconsole.log(visitas.get(usuario)); // 5 ← usa la referencia del objeto\nconsole.log(visitas.size);         // 4 — propiedad directa\n```\n\n---\n\n## API completa de Map\n\n```javascript\nconst m = new Map();\n\n// Escribir / leer / borrar:\nm.set('clave', 'valor');      // Retorna el Map (chainable)\nm.get('clave');               // 'valor'\nm.has('clave');               // true\nm.delete('clave');            // true si existía\nm.clear();                    // vacía el Map\n\n// Información:\nm.size;                       // número de entradas\n\n// Inicialización con array de pares:\nconst roles = new Map([\n  ['ana', 'admin'],\n  ['bob', 'user'],\n  ['carl', 'moderator'],\n]);\n```\n\n---\n\n## Iteración sobre Map\n\nMap mantiene el **orden de inserción** — garantía que Object no tiene en todos los casos:\n\n```javascript\nconst precios = new Map([\n  ['manzana', 1200],\n  ['pera', 1500],\n  ['uva', 2000],\n]);\n\n// Iterar pares [clave, valor]:\nfor (const [fruta, precio] of precios) {\n  console.log(`${fruta}: $${precio}`);\n}\n\n// Solo claves:\nfor (const fruta of precios.keys()) {}\n\n// Solo valores:\nfor (const precio of precios.values()) {}\n\n// forEach:\nprecios.forEach((precio, fruta) => { // ¡Ojo: valor primero, luego clave!\n  console.log(fruta, precio);\n});\n\n// Convertir a array:\nconst array = [...precios.entries()]; // [[clave, valor], ...]\nconst claves = [...precios.keys()];\nconst valores = [...precios.values()];\n```\n\n---\n\n## Map vs Object: cuándo usar cada uno\n\n```javascript\n// ✅ Usa Map cuando:\n// 1. Las claves no son strings/symbols\nconst nodos = new Map();\nnodos.set(document.querySelector('#btn'), { clicks: 0 });\n\n// 2. El tamaño importa y cambia frecuentemente\nconst cache = new Map();\nconsole.log(cache.size); // Directo, O(1)\n\n// 3. Necesitas iterar en orden de inserción garantizado\n// 4. Las claves pueden colisionar con propiedades de Object.prototype\n\n// ✅ Usa Object cuando:\n// 1. Representas una entidad con propiedades conocidas:\nconst usuario = { nombre: 'Ana', edad: 30 };\n\n// 2. Usas JSON (Map no serializa a JSON directamente)\nJSON.stringify(new Map([['a', 1]])); // '{}' — no funciona como esperas\n\n// 3. Las claves son siempre strings y la estructura es fija\n```\n\n---\n\n## Patrón: Map como caché\n\n```javascript\nfunction crearCache(calcular) {\n  const cache = new Map();\n\n  return function(clave) {\n    if (cache.has(clave)) return cache.get(clave);\n    const resultado = calcular(clave);\n    cache.set(clave, resultado);\n    return resultado;\n  };\n}\n\nconst fibCache = crearCache(function fib(n) {\n  if (n <= 1) return n;\n  return fibCache(n - 1) + fibCache(n - 2); // Usa la versión cacheada\n});\n\nconsole.log(fibCache(10)); // 55\nconsole.log(fibCache(10)); // 55 — desde caché\n```",
+    "examples": [
+      {
+        "code": "// Map con objetos como claves — caso real: metadata de elementos DOM\n// (Simulamos sin DOM usando objetos como 'elementos')\nconst metadata = new Map();\n\nconst btn1 = { id: 'btn-submit', tipo: 'button' };\nconst btn2 = { id: 'btn-cancel', tipo: 'button' };\nconst input = { id: 'input-email', tipo: 'input' };\n\nmetadata.set(btn1, { clicks: 0, ultimoClick: null });\nmetadata.set(btn2, { clicks: 0, ultimoClick: null });\nmetadata.set(input, { cambios: 0, valorActual: '' });\n\n// Simula clicks\nconst datosBtn1 = metadata.get(btn1);\ndatosBtn1.clicks++;\ndatosBtn1.ultimoClick = Date.now();\n\nconsole.log('Clicks en btn1:', metadata.get(btn1).clicks); // 1\nconsole.log('Clicks en btn2:', metadata.get(btn2).clicks); // 0\nconsole.log('Total elementos rastreados:', metadata.size);  // 3",
+        "explanation": "Este es el patrón que los frameworks usan internamente para asociar metadata a elementos DOM sin modificar el elemento. Las claves son referencias a objetos, no strings."
+      },
+      {
+        "code": "// Agrupar elementos con Map (como un groupBy)\nfunction agrupar(array, obtenerClave) {\n  const grupos = new Map();\n  for (const item of array) {\n    const clave = obtenerClave(item);\n    if (!grupos.has(clave)) grupos.set(clave, []);\n    grupos.get(clave).push(item);\n  }\n  return grupos;\n}\n\nconst productos = [\n  { nombre: 'Manzana', categoria: 'frutas', precio: 1200 },\n  { nombre: 'Pera', categoria: 'frutas', precio: 1500 },\n  { nombre: 'Zanahoria', categoria: 'verduras', precio: 800 },\n  { nombre: 'Brócoli', categoria: 'verduras', precio: 1000 },\n  { nombre: 'Naranja', categoria: 'frutas', precio: 1300 },\n];\n\nconst porCategoria = agrupar(productos, p => p.categoria);\n\nconsole.log('Frutas:', porCategoria.get('frutas').map(p => p.nombre));\nconsole.log('Verduras:', porCategoria.get('verduras').map(p => p.nombre));\nconsole.log('Categorías:', [...porCategoria.keys()]);",
+        "explanation": "Map es ideal para agrupar: las claves se crean dinámicamente y el orden de inserción (primera aparición de cada categoría) se preserva."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Básico: CRUD con Map",
+      "prompt": "Crea un `Map` llamado `inventario` con los siguientes productos iniciales:\n- `'manzana'` → `{ stock: 100, precio: 1200 }`\n- `'pera'` → `{ stock: 50, precio: 1500 }`\n- `'uva'` → `{ stock: 75, precio: 2000 }`\n\nLuego:\n1. Agrega `'naranja'` → `{ stock: 60, precio: 1300 }`\n2. Actualiza el stock de `'manzana'` a `80`\n3. Elimina `'pera'`\n\nGuarda:\n- `total = inventario.size` → 3\n- `stockManzana = inventario.get('manzana').stock` → 80\n- `tienePera = inventario.has('pera')` → false\n- `tieneNaranja = inventario.has('naranja')` → true",
+      "starterCode": "const inventario = new Map([\n  ['manzana', { stock: 100, precio: 1200 }],\n  ['pera',    { stock: 50,  precio: 1500 }],\n  ['uva',     { stock: 75,  precio: 2000 }],\n]);\n\n// Agrega naranja\ninventario.set('naranja', { stock: 60, precio: 1300 });\n\n// Actualiza stock de manzana\ninventario.get('manzana').stock = 80;\n\n// Elimina pera\ninventario.delete('pera');\n\nconst total = inventario.size;\nconst stockManzana = inventario.get('manzana').stock;\nconst tienePera = inventario.has('pera');\nconst tieneNaranja = inventario.has('naranja');\n\nconsole.log(total, stockManzana, tienePera, tieneNaranja);\n",
+      "tests": [
+        {
+          "description": "total es 3",
+          "expression": "total === 3"
+        },
+        {
+          "description": "stockManzana es 80",
+          "expression": "stockManzana === 80"
+        },
+        {
+          "description": "tienePera es false",
+          "expression": "tienePera === false"
+        },
+        {
+          "description": "tieneNaranja es true",
+          "expression": "tieneNaranja === true"
+        }
+      ],
+      "hints": [
+        "`inventario.get('manzana').stock = 80` modifica el objeto directamente",
+        "`inventario.delete('pera')` retorna true si la clave existía",
+        "`inventario.size` es una propiedad, no un método — sin paréntesis"
+      ]
+    },
+    {
+      "title": "Práctica: Frecuencia de palabras",
+      "prompt": "Crea una función `contarPalabras(texto)` que use un `Map` para contar la frecuencia de cada palabra en el texto.\n\n- Convierte el texto a minúsculas\n- Divide por espacios\n- Para cada palabra: si ya existe en el Map, incrementa el contador; si no, inicializa en 1\n- Retorna el Map\n\nGuarda:\n- `frecuencias = contarPalabras('el gato y el perro y el gato')` \n- `veces_el = frecuencias.get('el')` → 3\n- `veces_gato = frecuencias.get('gato')` → 2\n- `veces_y = frecuencias.get('y')` → 2\n- `totalPalabrasUnicas = frecuencias.size` → 4",
+      "starterCode": "function contarPalabras(texto) {\n  const frecuencias = new Map();\n  const palabras = texto.toLowerCase().split(' ');\n\n  for (const palabra of palabras) {\n    if (frecuencias.has(palabra)) {\n      frecuencias.set(palabra, frecuencias.get(palabra) + 1);\n    } else {\n      frecuencias.set(palabra, 1);\n    }\n  }\n\n  return frecuencias;\n}\n\nconst frecuencias = contarPalabras('el gato y el perro y el gato');\nconst veces_el = frecuencias.get('el');\nconst veces_gato = frecuencias.get('gato');\nconst veces_y = frecuencias.get('y');\nconst totalPalabrasUnicas = frecuencias.size;\n\nconsole.log('el:', veces_el, '| gato:', veces_gato, '| y:', veces_y);\nconsole.log('Palabras únicas:', totalPalabrasUnicas);\n",
+      "tests": [
+        {
+          "description": "veces_el es 3",
+          "expression": "veces_el === 3"
+        },
+        {
+          "description": "veces_gato es 2",
+          "expression": "veces_gato === 2"
+        },
+        {
+          "description": "veces_y es 2",
+          "expression": "veces_y === 2"
+        },
+        {
+          "description": "totalPalabrasUnicas es 4",
+          "expression": "totalPalabrasUnicas === 4"
+        }
+      ],
+      "hints": [
+        "`frecuencias.get(palabra) + 1` incrementa el valor actual",
+        "`texto.toLowerCase().split(' ')` da un array de palabras en minúsculas",
+        "El patrón `has → get+1` vs `set(1)` es el patrón estándar de conteo con Map"
+      ]
+    },
+    {
+      "title": "Aplicación: Sistema de caché LRU simplificado",
+      "prompt": "Implementa un caché de tamaño limitado. Cuando el caché está lleno y se agrega un nuevo elemento, elimina el elemento más antiguo (el primero insertado).\n\nCrea la clase `CacheLimitado`:\n- Constructor recibe `capacidad` (número máximo de entradas)\n- `get(clave)`: retorna el valor o `undefined` si no existe\n- `set(clave, valor)`: agrega la entrada. Si ya existe, actualiza el valor. Si la capacidad se supera, elimina la entrada más antigua usando `map.keys().next().value`.\n- `size`: getter que retorna `map.size`\n\nPrueba con capacidad 3.",
+      "starterCode": "class CacheLimitado {\n  #mapa;\n  #capacidad;\n\n  constructor(capacidad) {\n    this.#capacidad = capacidad;\n    this.#mapa = new Map();\n  }\n\n  get(clave) {\n    return this.#mapa.get(clave);\n  }\n\n  set(clave, valor) {\n    if (this.#mapa.has(clave)) {\n      this.#mapa.delete(clave); // Eliminar y re-insertar actualiza el orden\n    }\n    this.#mapa.set(clave, valor);\n\n    if (this.#mapa.size > this.#capacidad) {\n      // Elimina el primero (más antiguo)\n      const masAntiguo = this.#mapa.keys().next().value;\n      this.#mapa.delete(masAntiguo);\n    }\n  }\n\n  get size() {\n    return this.#mapa.size;\n  }\n}\n\nconst cache = new CacheLimitado(3);\ncache.set('a', 1);\ncache.set('b', 2);\ncache.set('c', 3);\n\nconst tamano1 = cache.size; // 3\ncache.set('d', 4); // Supera capacidad → elimina 'a'\n\nconst tieneA = cache.get('a') !== undefined; // false — fue eliminado\nconst tieneD = cache.get('d') !== undefined; // true\nconst tamano2 = cache.size;                  // 3\n\nconsole.log('Tamaño:', tamano1, tamano2);\nconsole.log('Tiene a:', tieneA, '| Tiene d:', tieneD);\n",
+      "tests": [
+        {
+          "description": "tamano1 es 3",
+          "expression": "tamano1 === 3"
+        },
+        {
+          "description": "tieneA es false (fue desalojado)",
+          "expression": "tieneA === false"
+        },
+        {
+          "description": "tieneD es true",
+          "expression": "tieneD === true"
+        },
+        {
+          "description": "tamano2 es 3 (no supera capacidad)",
+          "expression": "tamano2 === 3"
+        }
+      ],
+      "hints": [
+        "`this.#mapa.keys().next().value` accede al primer elemento (más antiguo) del Map",
+        "Map mantiene orden de inserción — el primer `set()` es el primero en `keys()`",
+        "Re-insertar una clave con `delete` + `set` la mueve al final (más reciente)"
+      ]
+    }
+  ]
+}
