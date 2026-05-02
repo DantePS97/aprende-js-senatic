@@ -1,0 +1,58 @@
+{
+  "theory": {
+    "markdown": "## @keyframes y animation\n\nLas transiciones animan entre dos estados (normal y hover). Las **animaciones** con `@keyframes` pueden tener múltiples etapas y correr sin interacción del usuario.\n\n### Definir @keyframes\n\n```css\n/* Con from/to (inicio y fin): */\n@keyframes aparecer {\n  from { opacity: 0; transform: translateY(20px); }\n  to   { opacity: 1; transform: translateY(0); }\n}\n\n/* Con porcentajes (múltiples etapas): */\n@keyframes rebotar {\n  0%   { transform: translateY(0); }\n  40%  { transform: translateY(-30px); }\n  60%  { transform: translateY(-15px); }\n  80%  { transform: translateY(-8px); }\n  100% { transform: translateY(0); }\n}\n```\n\n---\n\n### Propiedades de animation\n\n```css\n.elemento {\n  animation-name: aparecer;           /* nombre del @keyframes */\n  animation-duration: 0.5s;          /* duración */\n  animation-timing-function: ease;   /* curva de velocidad */\n  animation-delay: 0.2s;             /* esperar antes de empezar */\n  animation-iteration-count: 1;      /* veces (infinite para bucle) */\n  animation-direction: normal;       /* normal | reverse | alternate */\n  animation-fill-mode: forwards;     /* qué estado queda al terminar */\n  animation-play-state: running;     /* running | paused */\n}\n\n/* Shorthand: nombre duración timing delay iteraciones dirección fill-mode */\n.elemento {\n  animation: aparecer 0.5s ease 0.2s 1 normal forwards;\n}\n```\n\n---\n\n### animation-fill-mode\n\nControla qué estilos aplica **antes y después** de la animación:\n\n```css\n.caja { animation: aparecer 0.5s ease forwards; }\n/* forwards: el elemento mantiene el estado final (opacity: 1) */\n/* backwards: aplica el estado inicial durante el delay */\n/* both: aplica backwards + forwards */\n/* none (defecto): vuelve al estado original */\n```\n\n---\n\n### animation-iteration-count e infinite\n\n```css\n/* Bucle infinito — típico para spinners y loaders: */\n.spinner {\n  animation: girar 1s linear infinite;\n}\n\n/* Número exacto de veces: */\n.pulso {\n  animation: pulsar 0.3s ease 3; /* 3 veces */\n}\n```\n\n---\n\n### animation-direction: alternate\n\n```css\n/* alternate: va y vuelve (1→2, 2→1, 1→2...) */\n.latido {\n  animation: escalar 0.8s ease-in-out infinite alternate;\n}\n\n@keyframes escalar {\n  from { transform: scale(1); }\n  to   { transform: scale(1.1); }\n}\n```\n\n---\n\n### Múltiples animaciones\n\n```css\n/* Separadas por coma: */\n.elemento {\n  animation:\n    aparecer 0.5s ease forwards,\n    flotar 3s ease-in-out infinite 0.5s;\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  @keyframes girar {\n    from { transform: rotate(0deg); }\n    to   { transform: rotate(360deg); }\n  }\n\n  @keyframes pulsar {\n    0%   { transform: scale(1); }\n    50%  { transform: scale(1.15); }\n    100% { transform: scale(1); }\n  }\n\n  .spinner {\n    width: 48px;\n    height: 48px;\n    border: 4px solid #E2E8F0;\n    border-top-color: #3B82F6;\n    border-radius: 50%;\n    animation: girar 1s linear infinite;\n  }\n\n  .badge {\n    display: inline-block;\n    width: 14px;\n    height: 14px;\n    background: #EF4444;\n    border-radius: 50%;\n    animation: pulsar 1.5s ease-in-out infinite;\n  }\n</style>\n\n<div class=\"spinner\"></div>\n<span class=\"badge\"></span>",
+        "explanation": "El spinner usa girar con iteración infinita y timing lineal para una velocidad constante. El badge usa pulsar con alternate implícito vía los porcentajes 0→50→100."
+      },
+      {
+        "code": "<style>\n  @keyframes entrar {\n    from {\n      opacity: 0;\n      transform: translateY(24px);\n    }\n    to {\n      opacity: 1;\n      transform: translateY(0);\n    }\n  }\n\n  .tarjeta {\n    background: white;\n    border: 1px solid #E2E8F0;\n    border-radius: 12px;\n    padding: 20px;\n    margin-bottom: 12px;\n    animation: entrar 0.4s ease forwards;\n    opacity: 0; /* estado inicial antes de animar */\n  }\n\n  .tarjeta:nth-child(2) { animation-delay: 0.1s; }\n  .tarjeta:nth-child(3) { animation-delay: 0.2s; }\n</style>\n\n<div class=\"tarjeta\">Primera tarjeta</div>\n<div class=\"tarjeta\">Segunda tarjeta</div>\n<div class=\"tarjeta\">Tercera tarjeta</div>",
+        "explanation": "animation-fill-mode: forwards mantiene el estado final (opacity: 1) al terminar. El opacity: 0 inicial evita el flash antes del delay. Los delays escalonados crean un efecto de cascada."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Spinner y badge animados",
+      "prompt": "Crea dos animaciones con `@keyframes`:\n\n1. `@keyframes girar`: de `rotate(0deg)` a `rotate(360deg)`.\n2. `@keyframes pulsar`: `0%` scale(1), `50%` scale(1.2), `100%` scale(1).\n\nAplica:\n- `.spinner` (width/height 48px, border 4px solid #E2E8F0, border-top-color #3B82F6, border-radius 50%): `animation: girar 1s linear infinite`\n- `.badge-pulso` (width/height 12px, background #EF4444, border-radius 50%): `animation: pulsar 1.5s ease-in-out infinite`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Keyframes</title>\n    <style>\n      /* Define @keyframes girar y pulsar */\n      /* Aplica animaciones a .spinner y .badge-pulso */\n    </style>\n  </head>\n  <body>\n    <div class=\"spinner\"></div>\n    <span class=\"badge-pulso\"></span>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "@keyframes girar está definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.type === 7 && r.name === 'girar'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "@keyframes pulsar está definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.type === 7 && r.name === 'pulsar'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".spinner tiene animation con 'girar'",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.spinner' && (r.style.animationName === 'girar' || r.style.animation.includes('girar'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".badge-pulso tiene animation con 'pulsar'",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.badge-pulso' && (r.style.animationName === 'pulsar' || r.style.animation.includes('pulsar'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".spinner existe en el DOM",
+          "expression": "!!doc.querySelector('.spinner')"
+        },
+        {
+          "description": ".badge-pulso existe en el DOM",
+          "expression": "!!doc.querySelector('.badge-pulso')"
+        },
+        {
+          "description": ".spinner tiene border-radius 50%",
+          "expression": "win.getComputedStyle(doc.querySelector('.spinner')).borderRadius === '50%'"
+        }
+      ],
+      "hints": [
+        "Define los @keyframes ANTES de usarlos, aunque CSS no lo requiere estrictamente.",
+        "`animation: girar 1s linear infinite` es el shorthand de name + duration + timing + iteration.",
+        "El tipo de CSSRule para @keyframes es 7 (CSSRule.KEYFRAMES_RULE)."
+      ]
+    }
+  ]
+}

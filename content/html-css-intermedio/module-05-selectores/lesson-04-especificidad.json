@@ -1,0 +1,58 @@
+{
+  "theory": {
+    "markdown": "## Especificidad y la Cascada CSS\n\nCuando dos reglas apuntan al mismo elemento con la misma propiedad, ¿cuál gana? La respuesta está en la **especificidad**.\n\n### El sistema de puntos\n\nCada selector tiene un peso calculado en tres columnas: **(A, B, C)**\n\n| Selector | A (IDs) | B (clases/attr/pseudo-class) | C (elementos/pseudo-elem) |\n|----------|---------|------------------------------|---------------------------|\n| `p` | 0 | 0 | 1 |\n| `.clase` | 0 | 1 | 0 |\n| `#id` | 1 | 0 | 0 |\n| `a:hover` | 0 | 1 | 1 |\n| `.nav a.link` | 0 | 2 | 1 |\n| `#hero .titulo` | 1 | 1 | 0 |\n\nSe compara columna por columna de izquierda a derecha:\n\n```css\np              { color: blue; }   /* (0,0,1) */\np.destacado    { color: green; }  /* (0,1,1) → más específico, gana */\n#especial      { color: red; }    /* (1,0,0) → el ID siempre gana */\n```\n\n---\n\n### Orden cuando hay empate\n\nSi dos selectores tienen **exactamente la misma especificidad**, gana el que aparece **último** en el CSS:\n\n```css\n.boton { color: blue; }  /* mismo peso (0,1,0) */\n.btn   { color: red; }   /* gana — viene después */\n\n/* Ambas clases en el mismo elemento: <button class=\"boton btn\"> → red */\n```\n\n---\n\n### !important — la opción nuclear\n\n```css\n.texto { color: blue !important; } /* sobrescribe todo */\n#id    { color: red; }              /* pierde contra !important */\n```\n\n**Reglas de oro**:\n- Nunca uses `!important` para resolver conflictos de especificidad.\n- Úsalo solo para utility classes de accesibilidad (`.sr-only`) o resets.\n- Si necesitas `!important`, es señal de que la arquitectura CSS tiene problemas.\n\n---\n\n### :where() — especificidad cero\n\n`:where()` es idéntico a `:is()` en comportamiento, pero su especificidad es **siempre 0**:\n\n```css\n/* Especificidad (0,1,0) — puede ser sobreescrita fácilmente */\n:where(.card, .panel, .box) {\n  border-radius: 8px;\n  border: 1px solid #E2E8F0;\n}\n```\n\nIdeal para estilos base que quieres que cualquier regla pueda sobrescribir.\n\n---\n\n### all: unset — borrar todo\n\n```css\n/* Elimina TODOS los estilos heredados y del navegador: */\nbutton.minimal {\n  all: unset;\n  /* Ahora empiezas desde cero */\n  padding: 10px 20px;\n  background: #3B82F6;\n  color: white;\n  cursor: pointer;\n  border-radius: 6px;\n}\n```\n\n---\n\n### @layer — control total de la cascada\n\nCSS Cascade Layers (2022) permite organizar el CSS en capas con orden de prioridad explícito:\n\n```css\n@layer base, components, utilities;\n\n@layer base {\n  a { color: blue; }\n}\n\n@layer utilities {\n  .text-red { color: red; } /* utilities gana sobre base */\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  /* Demostración de especificidad */\n  p               { color: blue; }   /* (0,0,1) */\n  p.verde         { color: green; }  /* (0,1,1) */\n  #rojo           { color: red; }    /* (1,0,0) */\n\n  .demo { padding: 16px; background: #F8FAFC; border-radius: 8px; }\n  .demo p { margin: 8px 0; font-family: monospace; }\n</style>\n\n<div class=\"demo\">\n  <p>Este párrafo es azul → selector (0,0,1)</p>\n  <p class=\"verde\">Este es verde → (0,1,1) gana sobre (0,0,1)</p>\n  <p class=\"verde\" id=\"rojo\">Este es ROJO → (1,0,0) gana sobre todo</p>\n</div>",
+        "explanation": "El color final de cada párrafo está determinado por la especificidad más alta. El ID siempre vence. Cuando hay empate de especificidad, gana la regla que aparece al final en el CSS."
+      },
+      {
+        "code": "<style>\n  /* all: unset para limpiar un botón */\n  button {\n    /* estilos del navegador: border, background, padding... */\n  }\n\n  button.minimal {\n    all: unset;         /* borra TODO — incluyendo display */\n    display: inline-block;\n    padding: 10px 20px;\n    background: #3B82F6;\n    color: white;\n    border-radius: 6px;\n    cursor: pointer;\n    font-size: 1rem;\n    transition: background 0.2s;\n  }\n\n  button.minimal:hover { background: #2563EB; }\n\n  /* :where() para estilos base sin especificidad */\n  :where(.tarjeta, .panel, .caja) {\n    border-radius: 8px;\n    border: 1px solid #E2E8F0;\n    padding: 16px;\n  }\n</style>\n\n<button class=\"minimal\">Botón limpio</button>\n\n<div class=\"tarjeta\">Tarjeta con estilos base</div>",
+        "explanation": "all: unset es la forma moderna de resetear un elemento. Ten en cuenta que también resetea display, por eso hay que redefinirlo. :where() permite base styles sin pelear contra la especificidad del código de los componentes."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Demostración de especificidad y reset",
+      "prompt": "Crea una sección `.demo-especificidad` que demuestre cómo funciona la especificidad:\n\n1. `p` → color: blue (especificidad 0,0,1)\n2. `.destacado` → color: green (0,1,1 con `p.destacado` o 0,1,0 con solo `.destacado`)\n3. `#parrafo-especial` → color: red (gana a todo por el ID)\n4. `p.texto-base` → alguna regla con selector compuesto\n\nAdemás, crea un `button.reset` con `all: unset` y estilos propios (padding, background, color, border-radius, cursor).\n\nUsa `:where(.tarjeta, .panel)` para aplicar estilos base a ambas clases con especificidad cero.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Especificidad</title>\n    <style>\n      body { padding: 24px; font-family: sans-serif; }\n\n      /* 1. p → color blue */\n\n      /* 2. .destacado → color green */\n\n      /* 3. #parrafo-especial → color red */\n\n      /* 4. p.texto-base → algún estilo */\n\n      /* 5. button.reset con all: unset */\n\n      /* 6. :where(.tarjeta, .panel) con border y padding */\n    </style>\n  </head>\n  <body>\n    <div class=\"demo-especificidad\">\n      <p>Párrafo normal → azul</p>\n      <p class=\"destacado\">Con clase → verde</p>\n      <p class=\"destacado\" id=\"parrafo-especial\">Con ID → rojo</p>\n      <p class=\"texto-base\">Base styles</p>\n    </div>\n\n    <div class=\"reset-demo\" style=\"margin-top: 24px;\">\n      <button class=\"reset\">Botón con all: unset</button>\n    </div>\n\n    <div style=\"margin-top: 24px; display: flex; gap: 16px;\">\n      <div class=\"tarjeta\">Soy una tarjeta</div>\n      <div class=\"panel\">Soy un panel</div>\n    </div>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "CSS tiene regla #parrafo-especial con color",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '#parrafo-especial' && !!r.style.color); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para .destacado con color",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('destacado') && !!r.style.color); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para p con color",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'p' && !!r.style.color); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene all: unset en alguna regla",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.all === 'unset'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "#parrafo-especial existe en el DOM",
+          "expression": "!!doc.querySelector('#parrafo-especial')"
+        },
+        {
+          "description": "button.reset existe en el DOM",
+          "expression": "!!doc.querySelector('button.reset')"
+        },
+        {
+          "description": "CSS tiene regla :where() con .tarjeta o .panel",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':where(')); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "El selector `p.destacado` tiene especificidad (0,1,1) — más que `p` (0,0,1) y más que `.destacado` (0,1,0).",
+        "`#parrafo-especial` gana a `p.destacado` porque el ID tiene columna A = 1.",
+        "`all: unset` también elimina `display` — recuerda agregarlo de vuelta."
+      ]
+    }
+  ]
+}

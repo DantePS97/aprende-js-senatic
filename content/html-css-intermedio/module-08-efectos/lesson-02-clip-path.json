@@ -1,0 +1,61 @@
+{
+  "theory": {
+    "markdown": "## Clip-path en CSS\n\n`clip-path` es una de las propiedades más creativas de CSS moderno. Te permite **recortar** un elemento a cualquier forma geométrica, creando siluetas, máscaras y efectos visuales imposibles con border-radius.\n\n### ¿Qué hace `clip-path`?\n\nPiensa en `clip-path` como una plantilla de tijera: defines una forma, y todo lo que esté **fuera** de esa forma se vuelve invisible. El elemento sigue ocupando su espacio en el layout, pero solo se muestra la región recortada.\n\n```css\n.recortado {\n  clip-path: circle(50%); /* Solo visible el círculo central */\n}\n```\n\n### `polygon()` — polígonos libres\n\nEs la función más poderosa. Defines una lista de puntos `(x y)` en porcentajes o píxeles:\n\n```css\n/* Triángulo (arriba-centro, abajo-derecha, abajo-izquierda) */\n.triangulo {\n  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);\n}\n\n/* Hexágono */\n.hexagono {\n  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);\n}\n\n/* Rombo */\n.rombo {\n  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);\n}\n\n/* Flecha derecha */\n.flecha {\n  clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%);\n}\n```\n\n### `circle()` — círculo\n\n```css\n/* Círculo del 50% centrado */\n.circulo {\n  clip-path: circle(50% at 50% 50%);\n}\n\n/* Círculo pequeño en la esquina */\n.burbuja {\n  clip-path: circle(30% at 80% 80%);\n}\n```\n\n### `ellipse()` — elipse\n\n```css\n/* radio-x radio-y at posición-x posición-y */\n.elipse {\n  clip-path: ellipse(60% 40% at 50% 50%);\n}\n```\n\n### `inset()` — recorte rectangular\n\nRecorta el elemento dejando solo el rectángulo interior definido por los márgenes:\n\n```css\n/* inset(top right bottom left) */\n.recorte-rect {\n  clip-path: inset(10% 20% 10% 20%);\n}\n\n/* Con bordes redondeados */\n.recorte-redondeado {\n  clip-path: inset(10px 20px round 8px);\n}\n```\n\n### Caso práctico: secciones diagonales\n\nUna de las aplicaciones más populares es crear secciones con bordes inclinados en lugar de horizontales:\n\n```css\n.seccion-diagonal {\n  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);\n  /* El borde inferior izquierdo baja al 100%, el derecho a 85% */\n}\n\n.seccion-diagonal-inversa {\n  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%);\n}\n```\n\n### Animando `clip-path` con `transition`\n\n`clip-path` es animable si ambos valores tienen el **mismo número de puntos**:\n\n```css\n.forma {\n  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);\n  transition: clip-path 0.4s ease-in-out;\n}\n\n.forma:hover {\n  clip-path: polygon(50% 10%, 90% 90%, 10% 90%);\n  /* Mismo número de puntos = animación suave */\n}\n```\n\nSi los valores tienen diferente número de puntos, el navegador no puede interpolar y el cambio es abrupto.\n\n### `path()` para formas complejas\n\nPara formas arbitrarias como las de SVG, puedes usar `path()` con sintaxis de SVG:\n\n```css\n.forma-svg {\n  clip-path: path('M 10 80 Q 95 10 180 80');\n}\n```\n\n### Herramientas útiles\n\n- **Clippy** (bennettfeely.com/clippy) — generador visual de clip-path\n- **CSS clip-path maker** — herramientas online para dibujar polígonos con drag & drop\n\n### Rendimiento\n\n`clip-path` es eficiente en GPU. Animar con `transition` sobre clip-path es fluido porque el navegador puede compositar en la capa gráfica sin repintar el layout.",
+    "examples": [
+      {
+        "code": "<style>\n  .formas-basicas {\n    display: flex;\n    gap: 20px;\n    flex-wrap: wrap;\n    padding: 24px;\n    background: #F3F4F6;\n    border-radius: 12px;\n    align-items: center;\n  }\n  .forma-base {\n    width: 100px;\n    height: 100px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-family: sans-serif;\n    font-size: 11px;\n    color: white;\n    font-weight: 600;\n  }\n  .tri  { background: #3B82F6; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }\n  .hex  { background: #10B981; clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%); }\n  .rom  { background: #F59E0B; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }\n  .circ { background: #EF4444; clip-path: circle(50% at 50% 50%); }\n  .fle  { background: #6366F1; clip-path: polygon(0% 20%, 65% 20%, 65% 0%, 100% 50%, 65% 100%, 65% 80%, 0% 80%); }\n</style>\n<div class=\"formas-basicas\">\n  <div class=\"forma-base tri\"></div>\n  <div class=\"forma-base hex\"></div>\n  <div class=\"forma-base rom\"></div>\n  <div class=\"forma-base circ\"></div>\n  <div class=\"forma-base fle\"></div>\n</div>",
+        "explanation": "Cinco formas creadas solo con `clip-path`: triángulo, hexágono, rombo, círculo y flecha. Todas son divs cuadrados con fondo de color — `clip-path` recorta la forma visible. El resto del div existe pero es invisible. Ninguna imagen, ningún SVG: puro CSS."
+      },
+      {
+        "code": "<style>\n  .seccion-demo {\n    font-family: sans-serif;\n    overflow: hidden;\n  }\n  .hero-demo {\n    background: linear-gradient(135deg, #667eea, #764ba2);\n    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);\n    padding: 40px 24px 80px;\n    color: white;\n    text-align: center;\n  }\n  .hero-demo h2 { margin: 0 0 8px; font-size: 22px; }\n  .hero-demo p  { margin: 0; opacity: 0.85; font-size: 14px; }\n  .contenido-demo {\n    padding: 20px 24px;\n    background: white;\n    font-size: 14px;\n    color: #374151;\n  }\n  .animada-demo {\n    width: 120px;\n    height: 120px;\n    background: #3B82F6;\n    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);\n    transition: clip-path 0.4s ease-in-out;\n    margin: 16px auto;\n  }\n  .animada-demo:hover {\n    clip-path: polygon(50% 10%, 95% 50%, 50% 90%, 5% 50%);\n  }\n</style>\n<div class=\"seccion-demo\">\n  <div class=\"hero-demo\">\n    <h2>Sección Diagonal</h2>\n    <p>clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%)</p>\n  </div>\n  <div class=\"contenido-demo\">\n    <p>El borde superior de esta sección es diagonal gracias a clip-path en la sección anterior.</p>\n    <div class=\"animada-demo\"></div>\n  </div>\n</div>",
+        "explanation": "Dos usos prácticos: sección con borde diagonal usando `polygon` en el hero, y un rombo animado que cambia de forma al hacer hover. Nota que la transición funciona porque ambos estados del polígono tienen exactamente 4 puntos. El borde diagonal del hero crea la ilusión de que la sección siguiente se superpone de forma inclinada."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería de formas con clip-path",
+      "prompt": "Crea un conjunto de formas usando `clip-path`. Estructura:\n\n- `.formas` — contenedor (display flex, gap 24px, flex-wrap wrap, padding 32px, background #F3F4F6)\n- `.poligono` — 150x150px, background #3B82F6, `clip-path: polygon(50% 0%, 100% 100%, 0% 100%)` (triángulo)\n- `.circulo` — 150x150px, background #10B981, `clip-path: circle(50% at 50% 50%)`\n- `.hexagono` — 150x150px, background #F59E0B, `clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)`\n- `.diagonal` — width 100%, height 80px, background #6366F1, `clip-path: polygon(0 0, 100% 0, 100% 60%, 0 100%)`\n\nAnimación en `.poligono`:\n- `transition: clip-path 0.3s ease`\n- Al hover: `clip-path: polygon(50% 10%, 90% 90%, 10% 90%)`",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Clip Path</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el elemento .poligono",
+          "test": "!!doc.querySelector('.poligono')"
+        },
+        {
+          "description": "CSS de .poligono tiene clip-path con polygon",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS de .circulo tiene clip-path con circle",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.circulo' && r.style.clipPath && r.style.clipPath.includes('circle')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS de .hexagono tiene clip-path con polygon",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.hexagono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe el elemento .diagonal con clip-path",
+          "test": "(function() { var el = doc.querySelector('.diagonal'); if (!el) return false; return Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.diagonal' && !!r.style.clipPath); } catch(e) { return false; } }); })()"
+        },
+        {
+          "description": "CSS tiene regla .poligono:hover con clip-path",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono:hover' && !!r.style.clipPath); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe el contenedor .formas",
+          "test": "!!doc.querySelector('.formas')"
+        }
+      ],
+      "hints": [
+        "Para el triángulo, los 3 puntos del polygon son: punto superior centrado (50% 0%), esquina inferior derecha (100% 100%), esquina inferior izquierda (0% 100%).",
+        "El hexágono tiene 6 puntos. Un truco para recordarlos: empieza en el borde superior izquierdo (30% 0%) y ve en sentido horario.",
+        "Para que `.diagonal` ocupe todo el ancho, asegúrate de que esté dentro de un contenedor con ancho definido, o ponle `width: 100%` con el elemento fuera del flex.",
+        "La animación del hover solo funciona suavemente si ambos estados del polygon tienen el MISMO número de puntos (3 en este caso).",
+        "Si `.poligono` no muestra el triángulo, verifica que el div tenga `width` y `height` definidos — sin dimensiones no hay forma visible.",
+        "El hexágono también puede hacerse con 6 puntos redondeados a mano: la clave es que los puntos de los lados estén al 0% y 100% en X, y los vértices superior/inferior al 30%/70%."
+      ]
+    }
+  ]
+}

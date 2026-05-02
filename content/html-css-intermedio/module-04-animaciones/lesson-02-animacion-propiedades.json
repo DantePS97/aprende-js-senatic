@@ -1,0 +1,58 @@
+{
+  "theory": {
+    "markdown": "## Propiedades avanzadas de animation\n\n### animation-fill-mode\n\nControla qué estilos aplica el elemento **fuera** del período de animación:\n\n```css\n@keyframes aparecer {\n  from { opacity: 0; transform: translateY(20px); }\n  to   { opacity: 1; transform: translateY(0); }\n}\n\n/* none (defecto): el elemento vuelve a su estado original al terminar */\n.a { animation: aparecer 0.5s ease; }\n\n/* forwards: mantiene el estado final — el más usado */\n.b { animation: aparecer 0.5s ease forwards; }\n\n/* backwards: aplica el primer keyframe durante el animation-delay */\n.c { animation: aparecer 0.5s ease 1s backwards; }\n\n/* both: backwards + forwards */\n.d { animation: aparecer 0.5s ease 1s both; }\n```\n\n---\n\n### animation-play-state: paused\n\nPermite pausar y reanudar animaciones, muy útil con `:hover`:\n\n```css\n.rotando {\n  animation: girar 3s linear infinite;\n}\n\n.rotando:hover {\n  animation-play-state: paused; /* se pausa al pasar el mouse */\n}\n```\n\n---\n\n### animation-direction\n\n```css\n/* normal (defecto): siempre de 0% a 100% */\n/* reverse: de 100% a 0% */\n/* alternate: 0→100, 100→0, 0→100... */\n/* alternate-reverse: 100→0, 0→100... */\n\n.latido {\n  animation: escalar 0.7s ease-in-out infinite alternate;\n}\n/* alternate es más eficiente que definir ida y vuelta en el keyframe */\n```\n\n---\n\n### Animaciones escalonadas con animation-delay\n\nEl truco para listas animadas: dar a cada elemento un delay diferente.\n\n```css\n.item { animation: entrar 0.4s ease both; }\n\n.item:nth-child(1) { animation-delay: 0.0s; }\n.item:nth-child(2) { animation-delay: 0.1s; }\n.item:nth-child(3) { animation-delay: 0.2s; }\n.item:nth-child(4) { animation-delay: 0.3s; }\n```\n\n---\n\n### Múltiples animaciones en un elemento\n\n```css\n.hero-titulo {\n  animation:\n    entrar 0.6s ease both,           /* aparece desde abajo */\n    brillar 2s ease-in-out infinite 0.6s; /* brilla después */\n}\n```\n\n---\n\n### animation-iteration-count con número\n\n```css\n/* Exactamente 3 veces luego se detiene: */\n.alerta {\n  animation: sacudir 0.3s ease 3;\n}\n\n/* Número fraccionario — termina a mitad del ciclo: */\n.media-vuelta {\n  animation: girar 1s linear 0.5; /* se detiene en 180deg */\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  @keyframes entrar {\n    from { opacity: 0; transform: translateY(24px); }\n    to   { opacity: 1; transform: translateY(0); }\n  }\n\n  .lista-animada { list-style: none; padding: 16px; }\n\n  .lista-animada li {\n    background: white;\n    border: 1px solid #E2E8F0;\n    border-radius: 8px;\n    padding: 12px 16px;\n    margin-bottom: 8px;\n    opacity: 0;\n    animation: entrar 0.4s ease forwards;\n  }\n\n  .lista-animada li:nth-child(1) { animation-delay: 0.0s; }\n  .lista-animada li:nth-child(2) { animation-delay: 0.1s; }\n  .lista-animada li:nth-child(3) { animation-delay: 0.2s; }\n  .lista-animada li:nth-child(4) { animation-delay: 0.3s; }\n</style>\n\n<ul class=\"lista-animada\">\n  <li>Elemento uno</li>\n  <li>Elemento dos</li>\n  <li>Elemento tres</li>\n  <li>Elemento cuatro</li>\n</ul>",
+        "explanation": "El opacity: 0 en el elemento base evita el flash inicial. fill-mode: forwards mantiene el estado final. Los delays escalonados crean la sensación de que la lista 'entra' secuencialmente."
+      },
+      {
+        "code": "<style>\n  @keyframes girar {\n    to { transform: rotate(360deg); }\n  }\n\n  @keyframes brillar {\n    0%, 100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }\n    50%       { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }\n  }\n\n  .icono-rotante {\n    width: 60px;\n    height: 60px;\n    background: #3B82F6;\n    border-radius: 12px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: white;\n    font-size: 1.5rem;\n    cursor: pointer;\n    animation: girar 3s linear infinite, brillar 2s ease-in-out infinite;\n  }\n\n  .icono-rotante:hover {\n    animation-play-state: paused;\n  }\n</style>\n\n<div class=\"icono-rotante\">⚙️</div>",
+        "explanation": "Dos animaciones simultáneas: girar de forma continua y brillar con el efecto de pulso. Al hacer hover se pausan ambas a la vez, porque animation-play-state afecta todas las animaciones del elemento."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tarjetas con animación de entrada escalonada",
+      "prompt": "Crea una serie de tarjetas con animación de entrada y efecto de brillo.\n\n1. Define `@keyframes entrar`: from (opacity 0, translateY 30px) → to (opacity 1, translateY 0).\n2. Define `@keyframes brillar`: 0%/100% box-shadow rgba(59,130,246,0), 50% box-shadow 0 0 20px rgba(59,130,246,0.5).\n3. `.tarjeta-anim`: animation entrar 0.5s ease **forwards**, opacity inicial 0.\n4. `.tarjeta-anim:nth-child(2)`: animation-delay 0.1s.\n5. `.tarjeta-anim:nth-child(3)`: animation-delay 0.2s.\n6. `.tarjeta-destacada`: animation entrar 0.5s ease forwards, brillar 2s ease-in-out infinite 0.5s.\n7. `.tarjeta-anim:hover`: animation-play-state paused.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Animaciones</title>\n    <style>\n      body { padding: 24px; background: #F8FAFC; }\n\n      /* Define @keyframes entrar y brillar */\n\n      .tarjetas-animadas {\n        display: flex;\n        gap: 16px;\n        flex-wrap: wrap;\n      }\n\n      .tarjeta-anim {\n        padding: 20px;\n        background: white;\n        border-radius: 12px;\n        border: 1px solid #E2E8F0;\n        width: 200px;\n        /* Aplica animación entrar con fill-mode forwards */\n      }\n\n      /* Delays para la 2ª y 3ª tarjeta */\n\n      /* .tarjeta-destacada con doble animación */\n\n      /* Pausar en hover */\n    </style>\n  </head>\n  <body>\n    <div class=\"tarjetas-animadas\">\n      <div class=\"tarjeta-anim\">Tarjeta 1</div>\n      <div class=\"tarjeta-anim\">Tarjeta 2</div>\n      <div class=\"tarjeta-anim tarjeta-destacada\">Destacada</div>\n    </div>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "@keyframes entrar está definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.type === 7 && r.name === 'entrar'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "@keyframes brillar está definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.type === 7 && r.name === 'brillar'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".tarjeta-anim tiene animation-fill-mode forwards (o shorthand con 'forwards')",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-anim' && (r.style.animationFillMode === 'forwards' || r.style.animation.includes('forwards'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".tarjeta-destacada tiene animación brillar",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-destacada' && (r.style.animation && r.style.animation.includes('brillar'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Hay 3 elementos .tarjeta-anim en el DOM",
+          "expression": "doc.querySelectorAll('.tarjeta-anim').length === 3"
+        },
+        {
+          "description": ".tarjeta-destacada existe en el DOM",
+          "expression": "!!doc.querySelector('.tarjeta-destacada')"
+        },
+        {
+          "description": "CSS tiene regla de pausa en hover",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':hover') && r.style.animationPlayState === 'paused'); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "`animation: entrar 0.5s ease forwards` — el shorthand incluye fill-mode como cuarto valor.",
+        "Para múltiple animación: `animation: entrar 0.5s ease forwards, brillar 2s ease-in-out infinite 0.5s`.",
+        "`animation-play-state: paused` en el `:hover` pausa TODAS las animaciones activas del elemento."
+      ]
+    }
+  ]
+}

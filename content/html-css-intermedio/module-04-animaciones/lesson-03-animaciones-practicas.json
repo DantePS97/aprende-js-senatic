@@ -1,0 +1,58 @@
+{
+  "theory": {
+    "markdown": "## Animaciones prácticas\n\n### Skeleton loading\n\nEl patrón skeleton reemplaza el contenido con placeholders animados mientras carga:\n\n```css\n@keyframes esqueleto {\n  0%   { background-position: -200px 0; }\n  100% { background-position: calc(200px + 100%) 0; }\n}\n\n.skeleton {\n  background: linear-gradient(\n    90deg,\n    #F0F0F0 25%,\n    #E8E8E8 50%,\n    #F0F0F0 75%\n  );\n  background-size: 200px 100%;\n  animation: esqueleto 1.5s linear infinite;\n  border-radius: 4px;\n}\n```\n\n---\n\n### Typing cursor\n\n```css\n@keyframes parpadeo {\n  0%, 100% { border-right-color: transparent; }\n  50%       { border-right-color: currentColor; }\n}\n\n.cursor-texto {\n  border-right: 2px solid;\n  animation: parpadeo 1s step-end infinite;\n  padding-right: 2px;\n}\n```\n\n---\n\n### Loading dots\n\n```css\n@keyframes subir {\n  0%, 80%, 100% { transform: scale(0); }\n  40%           { transform: scale(1); }\n}\n\n.dot { animation: subir 1.4s ease-in-out infinite both; }\n.dot:nth-child(1) { animation-delay: -0.32s; }\n.dot:nth-child(2) { animation-delay: -0.16s; }\n.dot:nth-child(3) { animation-delay: 0s; }\n```\n\n---\n\n### Progress bar animada\n\n```css\n@keyframes llenar {\n  from { width: 0; }\n  to   { width: var(--progress, 100%); }\n}\n\n.barra-progreso {\n  height: 8px;\n  background: #E2E8F0;\n  border-radius: 4px;\n  overflow: hidden;\n}\n\n.barra-relleno {\n  height: 100%;\n  background: #3B82F6;\n  --progress: 75%;\n  animation: llenar 1.5s ease-out forwards;\n}\n```\n\n---\n\n### prefers-reduced-motion — accesibilidad obligatoria\n\nAlgunos usuarios tienen vestibular disorders o fotosensibilidad. SIEMPRE incluye este media query:\n\n```css\n@media (prefers-reduced-motion: reduce) {\n  *,\n  *::before,\n  *::after {\n    animation-duration: 0.01ms !important;\n    animation-iteration-count: 1 !important;\n    transition-duration: 0.01ms !important;\n  }\n}\n```\n\nEsto no elimina las animaciones, solo las hace instantáneas — el contenido final sigue siendo accesible.",
+    "examples": [
+      {
+        "code": "<style>\n  @keyframes esqueleto {\n    0%   { background-position: -200px 0; }\n    100% { background-position: calc(200px + 100%) 0; }\n  }\n\n  .sk {\n    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);\n    background-size: 200px 100%;\n    animation: esqueleto 1.5s linear infinite;\n    border-radius: 4px;\n  }\n\n  .tarjeta-sk {\n    width: 280px;\n    background: white;\n    border-radius: 12px;\n    padding: 16px;\n    border: 1px solid #E2E8F0;\n  }\n\n  .sk-cabecera {\n    display: flex;\n    gap: 12px;\n    align-items: center;\n    margin-bottom: 16px;\n  }\n\n  .sk-avatar {\n    width: 48px;\n    height: 48px;\n    border-radius: 50%;\n  }\n\n  .sk-linea { height: 12px; margin-bottom: 8px; }\n  .sk-linea-corta { width: 60%; }\n</style>\n\n<div class=\"tarjeta-sk\">\n  <div class=\"sk-cabecera\">\n    <div class=\"sk sk-avatar\"></div>\n    <div style=\"flex: 1\">\n      <div class=\"sk sk-linea\"></div>\n      <div class=\"sk sk-linea sk-linea-corta\"></div>\n    </div>\n  </div>\n  <div class=\"sk sk-linea\"></div>\n  <div class=\"sk sk-linea\"></div>\n  <div class=\"sk sk-linea sk-linea-corta\"></div>\n</div>",
+        "explanation": "El skeleton shimmer se logra moviendo un gradiente con background-position. El truco es usar background-size: 200px para que el gradiente sea más pequeño que el contenedor, y animarlo de izquierda a derecha."
+      },
+      {
+        "code": "<style>\n  @keyframes subir {\n    0%, 80%, 100% { transform: scale(0); opacity: 0.5; }\n    40%           { transform: scale(1); opacity: 1; }\n  }\n\n  .loader-dots {\n    display: flex;\n    gap: 6px;\n    align-items: center;\n    padding: 16px;\n  }\n\n  .dot {\n    width: 10px;\n    height: 10px;\n    background: #3B82F6;\n    border-radius: 50%;\n    animation: subir 1.4s ease-in-out infinite both;\n  }\n\n  .dot:nth-child(1) { animation-delay: -0.32s; }\n  .dot:nth-child(2) { animation-delay: -0.16s; }\n  .dot:nth-child(3) { animation-delay: 0s; }\n\n  @media (prefers-reduced-motion: reduce) {\n    .dot { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }\n  }\n</style>\n\n<div class=\"loader-dots\">\n  <div class=\"dot\"></div>\n  <div class=\"dot\"></div>\n  <div class=\"dot\"></div>\n</div>",
+        "explanation": "El delay negativo hace que los puntos empiecen en diferentes fases del ciclo — efecto ola. animation-fill-mode: both asegura que el estado inicial (scale: 0) se aplique antes de empezar."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Skeleton loading con prefers-reduced-motion",
+      "prompt": "Construye una tarjeta skeleton loading:\n\n1. Define `@keyframes esqueleto`: `0%` background-position -200px 0, `100%` background-position calc(200px + 100%) 0.\n2. Clase base `.sk`: background gradient de shimmer, background-size 200px 100%, `animation: esqueleto 1.5s linear infinite`.\n3. `.tarjeta-skeleton` (width 300px, background white, border-radius 12px, padding 20px, border 1px solid #E2E8F0).\n4. `.sk-avatar` (width 48px, height 48px, border-radius 50% + clase .sk).\n5. Al menos 2 `.sk-linea` (height 14px + clase .sk, margin-bottom 8px).\n6. Añade `@media (prefers-reduced-motion: reduce)` que deshabilite las animaciones.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Skeleton</title>\n    <style>\n      body { padding: 32px; background: #F8FAFC; }\n\n      /* 1. @keyframes esqueleto */\n\n      /* 2. .sk — clase base de shimmer */\n\n      /* 3. .tarjeta-skeleton */\n\n      /* 4. .sk-avatar */\n\n      /* 5. .sk-linea */\n\n      /* 6. prefers-reduced-motion */\n    </style>\n  </head>\n  <body>\n    <div class=\"tarjeta-skeleton\">\n      <div style=\"display: flex; gap: 12px; align-items: center; margin-bottom: 16px;\">\n        <div class=\"sk sk-avatar\"></div>\n        <div style=\"flex: 1;\">\n          <div class=\"sk sk-linea\"></div>\n          <div class=\"sk sk-linea\" style=\"width: 60%;\"></div>\n        </div>\n      </div>\n      <div class=\"sk sk-linea\"></div>\n      <div class=\"sk sk-linea\"></div>\n      <div class=\"sk sk-linea\" style=\"width: 70%;\"></div>\n    </div>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "@keyframes esqueleto está definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.type === 7 && r.name === 'esqueleto'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".sk-avatar existe en el DOM",
+          "expression": "!!doc.querySelector('.sk-avatar')"
+        },
+        {
+          "description": "Hay al menos 2 elementos .sk-linea",
+          "expression": "doc.querySelectorAll('.sk-linea').length >= 2"
+        },
+        {
+          "description": ".sk-avatar tiene border-radius 50%",
+          "expression": "win.getComputedStyle(doc.querySelector('.sk-avatar')).borderRadius === '50%'"
+        },
+        {
+          "description": ".sk tiene animation con 'esqueleto'",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.sk' && r.style.animation && r.style.animation.includes('esqueleto')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe media query de prefers-reduced-motion",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.media && r.media.mediaText && r.media.mediaText.includes('prefers-reduced-motion')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".tarjeta-skeleton existe en el DOM",
+          "expression": "!!doc.querySelector('.tarjeta-skeleton')"
+        }
+      ],
+      "hints": [
+        "El gradiente de shimmer necesita `background-size: 200px 100%` para ser más angosto que el contenedor.",
+        "`calc(200px + 100%)` mueve el gradiente completamente fuera del elemento por la derecha.",
+        "Recuerda agregar `!important` en el media query para sobrescribir los valores inline."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "theory": {
+    "markdown": "## Validación de formularios con HTML5\n\nAntes de HTML5, validar un formulario requería JavaScript obligatoriamente. Hoy, el navegador puede hacer gran parte de ese trabajo por ti gracias a los **atributos de validación nativa**. Esto mejora la experiencia del usuario, reduce código y es más accesible.\n\n### El atributo `required`\n\nEl más básico: impide el envío si el campo está vacío.\n\n```html\n<input type=\"text\" required>\n```\n\n### Tipos de `input` con validación automática\n\nEl atributo `type` no solo cambia el teclado en móvil — también valida el formato:\n\n```html\n<!-- Solo acepta emails válidos (contiene @) -->\n<input type=\"email\" required>\n\n<!-- Solo acepta URLs válidas (https://...) -->\n<input type=\"url\">\n\n<!-- Solo acepta números -->\n<input type=\"number\">\n\n<!-- Selector de fecha nativo -->\n<input type=\"date\">\n\n<!-- Teléfono (formato libre, pero hint al móvil) -->\n<input type=\"tel\">\n```\n\n### Longitud: `minlength` y `maxlength`\n\nControlan la longitud mínima y máxima de texto:\n\n```html\n<!-- Mínimo 3, máximo 50 caracteres -->\n<input type=\"text\" minlength=\"3\" maxlength=\"50\">\n\n<!-- Contraseña de al menos 8 caracteres -->\n<input type=\"password\" minlength=\"8\">\n```\n\n### Rango numérico: `min`, `max` y `step`\n\nPara `type=\"number\"` y `type=\"date\"`:\n\n```html\n<!-- Edad entre 18 y 99 -->\n<input type=\"number\" min=\"18\" max=\"99\">\n\n<!-- Solo números pares -->\n<input type=\"number\" min=\"0\" step=\"2\">\n\n<!-- Fecha entre enero y diciembre de 2024 -->\n<input type=\"date\" min=\"2024-01-01\" max=\"2024-12-31\">\n```\n\n### El atributo `pattern` (expresiones regulares)\n\n`pattern` acepta una **expresión regular** que el valor debe cumplir. Es el más poderoso para validaciones personalizadas:\n\n```html\n<!-- Solo letras mayúsculas, mínimo 2 -->\n<input type=\"text\" pattern=\"[A-Z]{2,}\">\n\n<!-- Código postal España: 5 dígitos -->\n<input type=\"text\" pattern=\"[0-9]{5}\" title=\"Código postal de 5 dígitos\">\n\n<!-- Contraseña fuerte: mayúscula, número, min 8 chars -->\n<input type=\"password\" pattern=\"(?=.*[A-Z])(?=.*[0-9]).{8,}\">\n```\n\nEl atributo `title` muestra un mensaje descriptivo cuando el patrón no se cumple.\n\n### El atributo `novalidate`\n\nA veces necesitas desactivar la validación nativa (por ejemplo, para manejarla completamente con JavaScript):\n\n```html\n<form novalidate>\n  <!-- La validación nativa está desactivada -->\n</form>\n```\n\n### Mensajes de validación personalizados con JS\n\nPuedes personalizar el mensaje del navegador con `setCustomValidity()`:\n\n```javascript\nconst email = document.querySelector('#email');\nemail.addEventListener('invalid', () => {\n  if (email.validity.valueMissing) {\n    email.setCustomValidity('Por favor ingresa tu correo electrónico');\n  } else if (email.validity.typeMismatch) {\n    email.setCustomValidity('El formato del correo no es válido');\n  }\n});\nemail.addEventListener('input', () => {\n  email.setCustomValidity(''); // Resetea al escribir\n});\n```\n\n### El objeto `validity`\n\nCada input tiene una propiedad `validity` con flags booleanos:\n\n```javascript\ninput.validity.valueMissing    // required y está vacío\ninput.validity.typeMismatch    // tipo incorrecto (email, url)\ninput.validity.patternMismatch // no cumple pattern\ninput.validity.tooShort        // menor que minlength\ninput.validity.tooLong         // mayor que maxlength\ninput.validity.rangeUnderflow  // menor que min\ninput.validity.rangeOverflow   // mayor que max\ninput.validity.valid           // true si todo es correcto\n```\n\n### Combinando atributos\n\nLos atributos de validación se pueden combinar para crear reglas complejas:\n\n```html\n<input\n  type=\"password\"\n  required\n  minlength=\"8\"\n  pattern=\"(?=.*[A-Z])(?=.*[0-9]).{8,}\"\n  title=\"Mínimo 8 caracteres, una mayúscula y un número\"\n  placeholder=\"Contraseña segura\"\n>\n```\n\nEl navegador valida todos los criterios — si alguno falla, el campo es inválido.",
+    "examples": [
+      {
+        "code": "<style>\n  .form-ejemplo {\n    display: flex;\n    flex-direction: column;\n    gap: 10px;\n    max-width: 320px;\n    padding: 16px;\n    font-family: sans-serif;\n    font-size: 14px;\n  }\n  .form-ejemplo input {\n    padding: 8px 10px;\n    border: 2px solid #D1D5DB;\n    border-radius: 6px;\n    font-size: 14px;\n  }\n  .form-ejemplo button {\n    padding: 10px;\n    background: #3B82F6;\n    color: white;\n    border: none;\n    border-radius: 6px;\n    cursor: pointer;\n    font-size: 14px;\n  }\n</style>\n<form class=\"form-ejemplo\">\n  <input type=\"text\" required minlength=\"3\" placeholder=\"Nombre (min. 3 chars)\">\n  <input type=\"email\" required placeholder=\"correo@ejemplo.com\">\n  <input type=\"number\" min=\"0\" max=\"120\" placeholder=\"Edad (0-120)\">\n  <button type=\"submit\">Enviar</button>\n</form>",
+        "explanation": "Formulario con validación nativa. El campo de nombre requiere al menos 3 caracteres, el email valida formato automáticamente y el número restringe el rango. Al hacer clic en Enviar, el navegador muestra mensajes de error sin una sola línea de JavaScript."
+      },
+      {
+        "code": "<style>\n  .pattern-demo {\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n    max-width: 320px;\n    padding: 16px;\n    font-family: sans-serif;\n    font-size: 13px;\n  }\n  .pattern-demo input {\n    padding: 8px 10px;\n    border: 2px solid #D1D5DB;\n    border-radius: 6px;\n    font-size: 14px;\n  }\n  .pattern-demo label {\n    font-size: 12px;\n    color: #6B7280;\n  }\n</style>\n<div class=\"pattern-demo\">\n  <label>Código postal (5 dígitos):</label>\n  <input type=\"text\" pattern=\"[0-9]{5}\" title=\"Exactamente 5 dígitos\" placeholder=\"28001\">\n  <label>Solo letras (mín. 2):</label>\n  <input type=\"text\" pattern=\"[A-Za-záéíóúÁÉÍÓÚ]{2,}\" title=\"Solo letras\" placeholder=\"Madrid\">\n  <label>Contraseña segura:</label>\n  <input type=\"password\" pattern=\"(?=.*[A-Z])(?=.*[0-9]).{8,}\" title=\"Mínimo 8 chars, 1 mayúscula, 1 número\" placeholder=\"Clave123\">\n</div>",
+        "explanation": "Ejemplos de `pattern` con expresiones regulares. El código postal acepta exactamente 5 dígitos. El campo de texto solo acepta letras incluyendo tildes. La contraseña requiere al menos 8 caracteres con una mayúscula y un número (lookaheads de regex `(?=...)`). El atributo `title` describe el patrón al usuario."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Formulario de registro con validación HTML5",
+      "prompt": "Crea un formulario de registro completo con validación HTML5. El formulario debe tener la clase `.formulario` y contener:\n\n- **Nombre**: `type=\"text\"`, `required`, `minlength=\"3\"`, placeholder \"Tu nombre\"\n- **Email**: `type=\"email\"`, `required`, placeholder \"tu@email.com\"\n- **Edad**: `type=\"number\"`, `min=\"18\"`, `max=\"99\"`, `required`, placeholder \"Edad\"\n- **Sitio web**: `type=\"url\"`, placeholder \"https://tuwebsite.com\"\n- **Contraseña**: `type=\"password\"`, `required`, `minlength=\"8\"`, `pattern=\"(?=.*[A-Z])(?=.*[0-9]).{8,}\"`\n- **Botón de envío**: `<input type=\"submit\">` o `<button type=\"submit\">` con texto \"Registrarse\"\n\nEstilo del `.formulario`: max-width 400px, centrado con `margin: 0 auto`, padding 24px, display flex, flex-direction column, gap 12px.\n\nEstilo de `input`: padding 10px, border `2px solid #D1D5DB`, border-radius 6px, font-size 14px, width 100%.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Registro</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el formulario aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe un formulario con clase .formulario",
+          "test": "!!doc.querySelector('form.formulario')"
+        },
+        {
+          "description": "Existe un input con type=\"email\"",
+          "test": "!!doc.querySelector('input[type=\"email\"]')"
+        },
+        {
+          "description": "El input de email tiene el atributo required",
+          "test": "!!doc.querySelector('input[type=\"email\"][required]')"
+        },
+        {
+          "description": "El input de número tiene min=\"18\"",
+          "test": "!!doc.querySelector('input[type=\"number\"][min=\"18\"]')"
+        },
+        {
+          "description": "El input de contraseña tiene el atributo pattern",
+          "test": "!!doc.querySelector('input[type=\"password\"][pattern]')"
+        },
+        {
+          "description": "Existe un input con minlength=\"8\"",
+          "test": "!!doc.querySelector('input[minlength=\"8\"]')"
+        },
+        {
+          "description": "Existe un botón o input de tipo submit",
+          "test": "!!doc.querySelector('input[type=\"submit\"], button[type=\"submit\"], button:not([type])')"
+        }
+      ],
+      "hints": [
+        "El atributo `required` se escribe solo, sin valor: `<input type=\"text\" required>`.",
+        "Para el email: `<input type=\"email\" required placeholder=\"tu@email.com\">`.",
+        "El `pattern` para contraseña usa lookaheads: `(?=.*[A-Z])` exige al menos una mayúscula y `(?=.*[0-9])` exige al menos un número.",
+        "Para centrar el formulario con max-width, usa `margin: 0 auto` en `.formulario`.",
+        "Recuerda poner `width: 100%` en los inputs para que ocupen todo el ancho del formulario.",
+        "El atributo `type=\"url\"` valida automáticamente que la URL comience con http:// o https://."
+      ]
+    }
+  ]
+}

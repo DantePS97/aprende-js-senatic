@@ -1,0 +1,66 @@
+{
+  "theory": {
+    "markdown": "## Layout fluido con clamp(), min() y max()\n\nEl diseño responsive moderno va más allá de los media queries. Las funciones CSS matemáticas permiten valores que se adaptan **continuamente** al viewport.\n\n### clamp() — el valor que no se sale de rango\n\n```css\n/* clamp(mínimo, ideal, máximo) */\n.titulo {\n  font-size: clamp(1.5rem, 4vw, 3rem);\n  /*         ↑ min  ↑ fluido  ↑ max */\n}\n```\n\nEn una pantalla de 400px: `4vw = 16px` → usa `1.5rem` (mínimo).\nEn una pantalla de 1200px: `4vw = 48px` → usa `3rem` (máximo).\nEn 800px: `4vw = 32px` → usa ese valor exacto.\n\n---\n\n### min() y max() — valores condicionales\n\n```css\n/* min(): usa el valor más PEQUEÑO */\n.contenedor {\n  width: min(90%, 1200px);  /* 90% del viewport O 1200px, el menor */\n}\n\n/* max(): usa el valor más GRANDE */\n.sidebar {\n  width: max(200px, 25%);  /* nunca más angosto que 200px */\n}\n```\n\n---\n\n### Unidades de viewport\n\n| Unidad | Significa |\n|--------|----------|\n| `vw` | 1% del ancho del viewport |\n| `vh` | 1% del alto del viewport |\n| `svh` | Small viewport height (excluye barras del móvil) |\n| `dvh` | Dynamic viewport height (se actualiza en tiempo real) |\n| `cqi` | 1% del ancho del contenedor (container queries) |\n\n```css\n.hero {\n  min-height: 100svh; /* mejor que vh en móvil */\n  padding-block: clamp(2rem, 10vh, 6rem);\n}\n```\n\n---\n\n### Tipografía fluida con clamp()\n\nEl patrón más usado para escalado continuo sin media queries:\n\n```css\n:root {\n  --text-sm:   clamp(0.875rem, 1.5vw, 1rem);\n  --text-base: clamp(1rem,     2vw,   1.25rem);\n  --text-lg:   clamp(1.25rem,  3vw,   2rem);\n  --text-xl:   clamp(1.75rem,  5vw,   3.5rem);\n}\n```\n\n---\n\n### Espaciado fluido\n\n```css\n.section {\n  padding-inline: clamp(1rem, 5vw, 3rem);\n  padding-block:  clamp(2rem, 8vh, 5rem);\n  gap: clamp(1rem, 3vw, 2rem);\n}\n```\n\n---\n\n### Grid fluido sin media queries\n\n```css\n.grid-fluido {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));\n  gap: clamp(1rem, 3vw, 2rem);\n}\n```\n\n`minmax(min(100%, 300px), 1fr)` → cada columna tiene mínimo 300px (o 100% si el contenedor es más pequeño), máximo 1fr.",
+    "examples": [
+      {
+        "code": "<style>\n  :root {\n    --text-base: clamp(1rem, 2vw, 1.25rem);\n    --text-xl:   clamp(1.75rem, 5vw, 3.5rem);\n    --space-md:  clamp(1rem, 4vw, 2.5rem);\n  }\n\n  .hero {\n    min-height: 50vh;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    padding: var(--space-md);\n    background: linear-gradient(135deg, #1E40AF, #7C3AED);\n    color: white;\n    border-radius: 12px;\n  }\n\n  .hero h1 {\n    font-size: var(--text-xl);\n    font-weight: 700;\n    margin: 0 0 0.5em;\n    line-height: 1.1;\n  }\n\n  .hero p {\n    font-size: var(--text-base);\n    opacity: 0.85;\n    max-width: min(60ch, 100%);\n    margin: 0;\n    line-height: 1.6;\n  }\n</style>\n\n<section class=\"hero\">\n  <h1>Tipografía 100% fluida</h1>\n  <p>Este texto escala suavemente entre un mínimo y un máximo\n  usando clamp() — sin un solo media query.</p>\n</section>",
+        "explanation": "Las variables CSS con clamp() como sistema de tipografía fluida. max-width: min(60ch, 100%) garantiza que el texto no supere 60 caracteres de ancho pero tampoco desborde en pantallas pequeñas."
+      },
+      {
+        "code": "<style>\n  .grid-fluido {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));\n    gap: clamp(1rem, 3vw, 2rem);\n    padding: clamp(1rem, 4vw, 2rem);\n  }\n\n  .card {\n    background: white;\n    border: 1px solid #E2E8F0;\n    border-radius: 12px;\n    padding: clamp(1rem, 3vw, 1.5rem);\n  }\n\n  .card h3 {\n    font-size: clamp(1rem, 2.5vw, 1.25rem);\n    margin: 0 0 0.5em;\n    color: #1E293B;\n  }\n\n  .card p {\n    font-size: clamp(0.875rem, 1.5vw, 1rem);\n    color: #64748B;\n    margin: 0;\n    line-height: 1.5;\n  }\n</style>\n\n<div class=\"grid-fluido\">\n  <div class=\"card\">\n    <h3>Tarjeta uno</h3>\n    <p>Este grid se reorganiza solo según el espacio disponible.</p>\n  </div>\n  <div class=\"card\">\n    <h3>Tarjeta dos</h3>\n    <p>Ningún media query fue utilizado en este diseño.</p>\n  </div>\n  <div class=\"card\">\n    <h3>Tarjeta tres</h3>\n    <p>clamp() y auto-fit hacen todo el trabajo.</p>\n  </div>\n</div>",
+        "explanation": "Grid completamente fluido: auto-fit con minmax() crea tantas columnas como quepan. El gap y el padding también escalan con clamp(). Cero media queries."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Hero section completamente fluida",
+      "prompt": "Construye una hero section con layout 100% fluido usando funciones CSS matemáticas:\n\n1. Define variables CSS en `:root`:\n   - `--font-hero`: `clamp(2rem, 6vw, 4rem)`\n   - `--font-body`: `clamp(1rem, 2vw, 1.25rem)`\n   - `--space-section`: `clamp(2rem, 8vw, 5rem)`\n\n2. `.hero-fluid`: `min-height: 60vh`, `padding: var(--space-section)`, fondo a tu elección.\n\n3. `.hero-fluid h1`: `font-size: var(--font-hero)`, `max-width: min(20ch, 100%)`.\n\n4. `.hero-fluid p`: `font-size: var(--font-body)`, `max-width: min(55ch, 100%)`.\n\n5. `.hero-contenedor`: `width: min(90%, 1100px)`, `margin-inline: auto`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Fluid Layout</title>\n    <style>\n      body { margin: 0; font-family: sans-serif; }\n\n      /* 1. Variables CSS con clamp() */\n      :root {\n\n      }\n\n      /* 2. .hero-fluid */\n\n      /* 3. h1 con max-width usando min() */\n\n      /* 4. p con font-size fluido */\n\n      /* 5. .hero-contenedor centrado con min() */\n    </style>\n  </head>\n  <body>\n    <section class=\"hero-fluid\">\n      <div class=\"hero-contenedor\">\n        <h1>Diseño fluido sin media queries</h1>\n        <p>Este layout escala perfectamente entre móvil y escritorio\n        usando clamp(), min() y unidades de viewport.</p>\n      </div>\n    </section>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ":root define --font-hero con clamp()",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.style.getPropertyValue('--font-hero').includes('clamp(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ":root define --font-body con clamp()",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.style.getPropertyValue('--font-body').includes('clamp(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ":root define --space-section con clamp()",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.style.getPropertyValue('--space-section').includes('clamp(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".hero-fluid tiene min-height: 60vh",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.hero-fluid' && r.style.minHeight === '60vh'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".hero-fluid h1 usa font-size con var(--font-hero)",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('h1') && r.style.fontSize && r.style.fontSize.includes('--font-hero')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Alguna regla usa max-width con min()",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.maxWidth && r.style.maxWidth.includes('min(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".hero-contenedor usa width con min()",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.hero-contenedor' && r.style.width && r.style.width.includes('min(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".hero-fluid existe en el DOM",
+          "expression": "!!doc.querySelector('.hero-fluid')"
+        },
+        {
+          "description": ".hero-contenedor existe en el DOM",
+          "expression": "!!doc.querySelector('.hero-contenedor')"
+        }
+      ],
+      "hints": [
+        "`clamp(min, ideal, max)` — el valor ideal suele ser en `vw` para que escale con el viewport.",
+        "`min(90%, 1100px)` — el contenedor nunca supera 1100px pero deja márgenes en pantallas pequeñas.",
+        "`max-width: min(20ch, 100%)` — limita el ancho a 20 caracteres pero nunca desborda."
+      ]
+    }
+  ]
+}

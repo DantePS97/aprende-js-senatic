@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "# Transiciones CSS\n\nLas transiciones CSS permiten que los cambios en las propiedades de un elemento ocurran de forma suave y gradual en lugar de instantáneamente. Son la herramienta más simple para añadir movimiento y vida a una interfaz.\n\n## ¿Qué es una transición?\n\nCuando un elemento cambia de estado (por ejemplo, al hacer hover), CSS normalmente aplica el cambio de forma abrupta. Con `transition`, le decimos al navegador: *\"tarda X tiempo en llegar al nuevo valor\"*.\n\n## Las 4 propiedades de transición\n\n### 1. `transition-property`\nEspecifica qué propiedad CSS se va a animar. Puede ser:\n- Una propiedad específica: `background-color`, `transform`, `opacity`\n- `all` — anima todas las propiedades que cambien\n- `none` — desactiva transiciones\n\n```css\n/* Solo anima el color de fondo */\ntransition-property: background-color;\n\n/* Anima todas las propiedades que cambien */\ntransition-property: all;\n```\n\n### 2. `transition-duration`\nCuánto tiempo dura la transición. Se expresa en segundos (`s`) o milisegundos (`ms`).\n\n```css\ntransition-duration: 0.3s;   /* 300 milisegundos */\ntransition-duration: 500ms;  /* también 500 milisegundos */\n```\n\n### 3. `transition-timing-function`\nControla la **aceleración** de la transición — cómo evoluciona la velocidad a lo largo del tiempo.\n\n| Valor | Comportamiento |\n|-------|----------------|\n| `ease` | Empieza lento, acelera, termina lento (por defecto) |\n| `linear` | Velocidad constante de inicio a fin |\n| `ease-in` | Empieza lento, termina rápido |\n| `ease-out` | Empieza rápido, termina lento |\n| `ease-in-out` | Empieza y termina lento, rápido en el medio |\n| `cubic-bezier(x1,y1,x2,y2)` | Curva completamente personalizada |\n\nLa función `cubic-bezier` es la más poderosa: define una curva de Bézier cúbica con 4 puntos de control. Herramientas como [cubic-bezier.com](https://cubic-bezier.com) te permiten diseñarla visualmente.\n\n```css\n/* Efecto \"rebote\" — va más allá del valor final y vuelve */\ntransition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);\n```\n\n### 4. `transition-delay`\nCuánto tiempo esperar antes de iniciar la transición.\n\n```css\ntransition-delay: 0.2s;  /* espera 200ms antes de comenzar */\n```\n\n## Shorthand: `transition`\n\nEn la práctica siempre usamos la forma abreviada:\n\n```css\n/* transition: propiedad duración timing-function delay */\ntransition: background-color 0.3s ease;\ntransition: all 0.5s ease-in-out 0.1s;\n```\n\n## Múltiples transiciones\n\nPuedes animar diferentes propiedades con distintos parámetros separándolas con coma:\n\n```css\ntransition: background 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;\n```\n\n## Propiedades que se pueden transicionar\n\nSolo las propiedades con **valores numéricos interpolables** pueden animarse:\n- Colores: `color`, `background-color`, `border-color`\n- Dimensiones: `width`, `height`, `padding`, `margin`\n- Posición: `top`, `left`, `right`, `bottom`\n- Transformaciones: `transform`\n- Visibilidad: `opacity`\n- Sombras: `box-shadow`, `text-shadow`\n\nPropiedades como `display` NO se pueden transicionar directamente (usa `opacity` + `visibility` como alternativa).\n\n## Performance: `transform` y `opacity`\n\nPor razones de rendimiento, las propiedades más eficientes para animar son `transform` y `opacity`. El navegador puede optimizarlas usando la GPU, evitando costosos recálculos del layout. Cuando sea posible, prefiere estas propiedades sobre `width`, `height`, `top`, `left`, etc.",
+    "examples": [
+      {
+        "code": "/* Transición básica en un botón */\n.btn {\n  background-color: #3B82F6;\n  color: white;\n  padding: 12px 24px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  font-size: 16px;\n\n  /* Shorthand: propiedad duración timing delay */\n  transition: background-color 0.3s ease;\n}\n\n.btn:hover {\n  background-color: #1D4ED8; /* El cambio se aplica suavemente */\n}\n\n/* Transicionando múltiples propiedades */\n.btn-multi {\n  transition: background-color 0.3s ease,\n              transform 0.2s ease-out,\n              box-shadow 0.3s ease;\n}\n\n.btn-multi:hover {\n  background-color: #1D4ED8;\n  transform: translateY(-2px);\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);\n}",
+        "explanation": "La propiedad `transition` se define en el estado BASE del elemento, no en el :hover. Esto asegura que la transición funcione en ambas direcciones: al entrar y al salir del estado hover. Si la defines solo en :hover, la salida será abrupta."
+      },
+      {
+        "code": "/* Comparando timing functions */\n.caja { width: 50px; height: 50px; background: #3B82F6; }\n\n/* Velocidad constante — predecible, a veces mecánico */\n.linear    { transition: transform 1s linear; }\n\n/* Natural — como un objeto real moviéndose */\n.ease      { transition: transform 1s ease; }\n\n/* Efecto de frenada — como algo deslizándose */\n.ease-out  { transition: transform 1s ease-out; }\n\n/* Efecto de arranque — como algo que toma impulso */\n.ease-in   { transition: transform 1s ease-in; }\n\n/* Rebote elástico — valor Y > 1 supera el límite */\n.bounce {\n  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);\n}\n\n/* Transición con delay — útil para efectos escalonados */\n.delay {\n  transition: background 0.3s ease 0.1s,\n              transform  0.3s ease 0.2s;\n}\n\n.caja:hover { transform: translateX(200px); }",
+        "explanation": "La elección del timing function cambia completamente la personalidad de la animación. `ease-out` se percibe como natural y fluido (objetos físicos pierden velocidad al detenerse). `cubic-bezier` con Y > 1 crea un efecto de \"overshoot\" elástico muy popular en interfaces modernas."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería de botones con transiciones",
+      "prompt": "Crea una colección de 5 botones que demuestren diferentes técnicas de transición CSS. Cada botón debe tener un comportamiento visual distinto al hacer hover.\n\n**Requisitos:**\n1. Un contenedor `.botones` con display flex, gap 16px, padding 24px y flex-wrap wrap.\n2. Cinco botones con clase `.btn` como base.\n3. Estilos base `.btn`: padding 12px 24px, sin borde, border-radius 8px, fondo #3B82F6, texto blanco, cursor pointer, font-size 16px, y `transition: all 0.3s ease`.\n4. `.btn:hover`: fondo #1D4ED8, `transform: translateY(-2px)`, box-shadow con desplazamiento.\n5. `.btn-slow`: `transition: all 0.8s ease-in-out` (transición lenta).\n6. `.btn-bounce`: `transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)` con hover `scale(1.1)`.\n7. `.btn-delay`: `transition: background 0.3s ease 0.1s, transform 0.3s ease 0.2s` (con delay escalonado).\n\nAsegúrate de que los textos de los botones sean descriptivos: \"Normal\", \"Lento\", \"Rebote\", \"Con Delay\", \"Combinado\".",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Transiciones CSS</title>\n  <style>\n    body {\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: #F8FAFC;\n      font-family: system-ui, sans-serif;\n      margin: 0;\n    }\n\n    /* Tu código aquí */\n\n  </style>\n</head>\n<body>\n\n  <!-- Crea el contenedor .botones con 5 botones .btn -->\n\n</body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe al menos un elemento con clase .btn",
+          "test": "doc.querySelector('.btn') !== null"
+        },
+        {
+          "description": "La regla CSS de .btn tiene la propiedad transition con 0.3s",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn' && r.style.transition && r.style.transition.includes('0.3s')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .btn:hover tiene la propiedad transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.transform); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .btn:hover cambia el color de fondo",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.backgroundColor); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe la clase .btn-bounce con cubic-bezier en su transition",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-bounce' && r.style.transition && r.style.transition.includes('cubic-bezier')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe la clase .btn-delay con transición que incluye delay (múltiples valores)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-delay' && r.style.transition && r.style.transition.includes(',')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Hay al menos 2 elementos con clase .btn en el DOM",
+          "test": "doc.querySelectorAll('.btn').length >= 2"
+        }
+      ],
+      "hints": [
+        "Recuerda: la propiedad `transition` va en el elemento BASE, no en el :hover. Así funciona la transición en ambas direcciones.",
+        "Para `.btn-bounce`, necesitas dos reglas: `.btn-bounce { transition: transform 0.4s cubic-bezier(...) }` y `.btn-bounce:hover { transform: scale(1.1) }`.",
+        "El delay en `.btn-delay` es el cuarto valor del shorthand: `transition: background 0.3s ease 0.1s, transform 0.3s ease 0.2s`.",
+        "Para que los botones hereden los estilos base, asegúrate de que tengan tanto la clase `.btn` como su clase específica: `<button class=\"btn btn-slow\">`.",
+        "Si un botón tiene `transition: all 0.3s ease` en `.btn` y además tiene una clase específica que redefine transition, la regla más específica (o la última en el CSS) prevalece."
+      ]
+    }
+  ]
+}

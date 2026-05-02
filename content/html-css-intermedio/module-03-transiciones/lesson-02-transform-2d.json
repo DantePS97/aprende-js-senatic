@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "# Transformaciones CSS 2D\n\nLa propiedad `transform` permite modificar la forma, tamaño y posición de un elemento **sin afectar el flujo del documento**. Los elementos vecinos no se desplazan — es como mover una capa encima del resto.\n\n## ¿Por qué transform y no top/left/margin?\n\nAntes de `transform`, para mover elementos se usaban `position: relative` con `top`/`left`, o se modificaban márgenes. El problema: esas propiedades **re-calculan el layout completo** de la página (costoso en rendimiento). `transform` trabaja en una fase separada del pipeline del navegador y puede ser acelerado por GPU.\n\n## Funciones de transformación 2D\n\n### `translate(x, y)` — Desplazamiento\nMueve el elemento desde su posición actual.\n\n```css\ntransform: translate(50px, 20px);   /* 50px a la derecha, 20px abajo */\ntransform: translateX(100px);        /* solo horizontal */\ntransform: translateY(-10px);        /* solo vertical, hacia arriba */\ntransform: translate(-50%, -50%);    /* truco clásico para centrar */\n```\n\nNota clave: los porcentajes en `translate` son relativos al **propio elemento**, no al padre. Esto lo hace perfecto para el truco de centrado absoluto.\n\n### `rotate(deg)` — Rotación\nGira el elemento alrededor de su `transform-origin` (por defecto, el centro).\n\n```css\ntransform: rotate(45deg);    /* 45 grados en sentido horario */\ntransform: rotate(-30deg);   /* 30 grados en sentido antihorario */\ntransform: rotate(0.5turn);  /* media vuelta = 180deg */\n```\n\n### `scale(x, y)` — Escala\nCambia el tamaño del elemento. `1` es el tamaño original, `2` es el doble, `0.5` es la mitad.\n\n```css\ntransform: scale(1.2);       /* 20% más grande (uniforme) */\ntransform: scale(2, 0.5);    /* doble de ancho, mitad de alto */\ntransform: scaleX(1.5);      /* solo escala horizontal */\ntransform: scaleY(0.8);      /* solo escala vertical */\n```\n\n### `skew(x, y)` — Inclinación\nDistorsiona el elemento en eje horizontal y/o vertical.\n\n```css\ntransform: skewX(15deg);       /* inclina el eje X */\ntransform: skewY(10deg);       /* inclina el eje Y */\ntransform: skew(15deg, 5deg);  /* ambos ejes */\n```\n\n## Combinando transformaciones\n\nPuedes aplicar múltiples transformaciones en una sola declaración separándolas con espacios:\n\n```css\n/* Se aplican de derecha a izquierda */\ntransform: translateY(-8px) rotate(5deg) scale(1.05);\n```\n\n**IMPORTANTE:** El orden importa. `rotate(45deg) translateX(100px)` produce un resultado diferente a `translateX(100px) rotate(45deg)` porque las transformaciones se aplican en cadena, y cada una altera el sistema de coordenadas local del elemento.\n\n## `transform-origin`\n\nDefine el punto de pivote alrededor del cual se aplica la transformación. Por defecto es `50% 50%` (el centro del elemento).\n\n```css\ntransform-origin: top left;      /* esquina superior izquierda */\ntransform-origin: center bottom; /* borde inferior centrado */\ntransform-origin: 0 0;           /* esquina superior izquierda (numérico) */\ntransform-origin: 75% 25%;       /* punto personalizado */\n```\n\nCambiar `transform-origin` afecta principalmente a `rotate` y `scale`. Una rotación con `transform-origin: top left` da un efecto de \"puerta que se abre\".",
+    "examples": [
+      {
+        "code": "/* Técnica clásica de centrado con translate */\n.modal {\n  position: fixed;\n  top: 50%;\n  left: 50%;\n  /* El 50% es relativo al propio elemento */\n  transform: translate(-50%, -50%);\n  /* Resultado: perfectamente centrado en pantalla */\n}\n\n/* Hover con múltiples transforms */\n.tarjeta {\n  transition: transform 0.3s ease, box-shadow 0.3s ease;\n  box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n}\n\n.tarjeta:hover {\n  /* Sube 8px, gira ligeramente y crece un poco */\n  transform: translateY(-8px) rotate(2deg) scale(1.02);\n  box-shadow: 0 12px 24px rgba(0,0,0,0.15);\n}",
+        "explanation": "El truco `translate(-50%, -50%)` es uno de los más usados en CSS: dado que `top: 50%` posiciona la esquina superior izquierda del elemento en el centro, el translate negativo mueve el elemento hacia atrás la mitad de su propio tamaño, logrando un centrado perfecto independiente del tamaño del elemento."
+      },
+      {
+        "code": "/* Demostrando que el ORDEN importa en transforms */\n\n/* Caso 1: primero rotar, luego trasladar */\n/* La traslación ocurre en el sistema de coordenadas rotado */\n.caja-a:hover {\n  transform: rotate(45deg) translateX(100px);\n  /* Se mueve 100px en dirección diagonal (el eje X fue rotado) */\n}\n\n/* Caso 2: primero trasladar, luego rotar */\n/* El elemento se mueve 100px a la derecha y LUEGO rota en su lugar */\n.caja-b:hover {\n  transform: translateX(100px) rotate(45deg);\n}\n\n/* transform-origin: la puerta que se abre */\n.puerta {\n  transform-origin: left center; /* pivote en el borde izquierdo */\n}\n\n.puerta:hover {\n  transform: rotateY(70deg); /* se abre hacia la derecha */\n}\n\n/* Icono que gira al hacer hover en el padre */\n.boton:hover .icono {\n  transform: rotate(180deg);\n}",
+        "explanation": "El orden de las funciones en `transform` es crítico. CSS las procesa de izquierda a derecha, pero cada transformación modifica el sistema de coordenadas local. Esto es especialmente importante con `rotate` + `translate`: si rotas primero, el eje X ya no apunta horizontalmente, por lo que un translate posterior seguirá ese eje rotado."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería de transformaciones 2D",
+      "prompt": "Crea una galería visual que demuestre las principales transformaciones 2D de CSS. Cada tarjeta debe mostrar un tipo diferente de transformación al hacer hover.\n\n**Requisitos:**\n1. Contenedor `.tarjetas` con display flex, gap 20px, padding 40px, background #F3F4F6, flex-wrap wrap.\n2. Al menos 5 elementos `.tarjeta` (width 120px, height 120px, background white, border-radius 8px, box-shadow, display flex, align-items center, justify-content center, font-weight bold, cursor pointer, y `transition: transform 0.3s ease`).\n3. Hover con translate: `.tarjeta-traslada:hover { transform: translate(0, -10px) }`\n4. Hover con rotate: `.tarjeta-rota:hover { transform: rotate(45deg) }`\n5. Hover con scale: `.tarjeta-escala:hover { transform: scale(1.2) }`\n6. Hover con skew: `.tarjeta-skew:hover { transform: skewX(15deg) }`\n7. Hover combinado: `.tarjeta-combo:hover { transform: translateY(-8px) rotate(5deg) scale(1.05) }`\n8. Un elemento `.tarjeta-origen` con `transform-origin: top left` que rota al hacer hover.\n\nEtiqueta cada tarjeta con su tipo de transformación.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Transformaciones 2D</title>\n  <style>\n    body {\n      margin: 0;\n      font-family: system-ui, sans-serif;\n      min-height: 100vh;\n      background: #E2E8F0;\n    }\n\n    /* Tu código CSS aquí */\n\n  </style>\n</head>\n<body>\n\n  <!-- Crea el contenedor .tarjetas con las tarjetas de transformación -->\n\n</body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existen al menos 5 elementos con clase .tarjeta",
+          "test": "doc.querySelectorAll('.tarjeta').length >= 5"
+        },
+        {
+          "description": "La regla .tarjeta-traslada:hover tiene translate en su transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-traslada:hover' && r.style.transform && r.style.transform.includes('translate')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .tarjeta-rota:hover tiene rotate en su transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-rota:hover' && r.style.transform && r.style.transform.includes('rotate')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .tarjeta-escala:hover tiene scale en su transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-escala:hover' && r.style.transform && r.style.transform.includes('scale')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .tarjeta-combo:hover tiene transform con múltiples funciones (translateY y rotate)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-combo:hover' && r.style.transform && r.style.transform.includes('translateY') && (r.style.transform.includes('rotate') || r.style.transform.includes('scale'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .tarjeta tiene transition definida",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && !!r.style.transition); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe una regla con transform-origin para .tarjeta-origen",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-origen' && !!r.style.transformOrigin); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "La clase `.tarjeta` define los estilos base y la transición. Las clases específicas (`.tarjeta-rota`, etc.) solo definen el comportamiento hover.",
+        "Para el elemento combinado, las transformaciones se separan por espacios en una sola propiedad: `transform: translateY(-8px) rotate(5deg) scale(1.05)`.",
+        "Para `.tarjeta-origen`, define primero `transform-origin: top left` en la clase base, y luego el hover con `transform: rotate(30deg)`. Verás cómo gira desde la esquina.",
+        "HTML sugerido: `<div class=\"tarjeta tarjeta-traslada\">Traslada</div>` — cada tarjeta tiene la clase base más su clase específica.",
+        "skewX inclina el elemento horizontalmente. Un valor de 15deg da un efecto de itálica visual muy llamativo."
+      ]
+    }
+  ]
+}

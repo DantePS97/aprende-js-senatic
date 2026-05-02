@@ -1,0 +1,52 @@
+{
+  "theory": {
+    "markdown": "## CSS Grid Responsivo sin Media Queries\n\nUno de los superpoderes menos conocidos de CSS Grid es su capacidad de crear layouts completamente responsivos **sin escribir una sola media query**. Esto se logra combinando dos funciones: `auto-fill`/`auto-fit` dentro de `repeat()` y la función `minmax()`.\n\n### La función `minmax()`\n\n`minmax(min, max)` define un rango de tamaño para una columna (o fila): nunca será más pequeña que `min` ni más grande que `max`.\n\n```css\n/* La columna mide al menos 200px, pero puede crecer hasta ocupar 1fr */\ngrid-template-columns: minmax(200px, 1fr);\n```\n\nCombinado con `fr`, el resultado es una columna que tiene un mínimo garantizado pero se estira para ocupar el espacio disponible.\n\n### `auto-fill`: rellena con columnas\n\nEn lugar de escribir un número fijo de columnas, `auto-fill` le dice a Grid: **\"crea tantas columnas como quepan en el ancho disponible\"**.\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n  gap: 16px;\n}\n```\n\nEsto significa: crea columnas de al menos 200px de ancho, tantas como quepan. Cada columna puede expandirse hasta `1fr` para repartir el espacio sobrante.\n\n**Comportamiento en distintos anchos:**\n- Contenedor de 400px → 2 columnas (cada una ~200px)\n- Contenedor de 650px → 3 columnas (cada una ~216px)\n- Contenedor de 900px → 4 columnas (cada una ~225px)\n\nSin una sola media query, el layout se adapta solo.\n\n### `auto-fit` vs `auto-fill`\n\nLa diferencia es sutil pero importante, y solo se nota cuando **hay menos ítems de los que cabrían en una fila**:\n\n```css\n/* auto-fill: mantiene las columnas vacías como espacio reservado */\n.con-fill {\n  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));\n}\n\n/* auto-fit: colapsa las columnas vacías y estira las ocupadas */\n.con-fit {\n  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));\n}\n```\n\n**Ejemplo concreto con 2 ítems en contenedor de 600px:**\n- `auto-fill`: crea 4 columnas (2 con ítems + 2 vacías). Los ítems ocupan sus 150px y el resto queda vacío.\n- `auto-fit`: colapsa las 2 columnas vacías. Los 2 ítems se expanden para ocupar todo el ancho (300px cada uno).\n\n**¿Cuándo usar cada uno?**\n- `auto-fill`: para galerías o listados donde los ítems deben mantener un tamaño consistente sin importar cuántos hay.\n- `auto-fit`: para layouts donde quieres que pocos ítems se expandan y ocupen todo el ancho disponible.\n\n### Combinación con `grid-auto-rows`\n\nComo el número de filas también es dinámico, `grid-auto-rows` garantiza que las filas implícitas tengan siempre la misma altura:\n\n```css\n.galeria {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n  grid-auto-rows: 200px; /* Todas las filas miden exactamente 200px */\n  gap: 16px;\n}\n```\n\n### Limitaciones\n\n- `minmax()` requiere que el mínimo sea un valor fijo (px, rem, em) — no puede ser `fr` en el primer argumento.\n- Si el contenedor es muy pequeño y ninguna columna cabe con el mínimo, Grid puede crear desbordamiento horizontal. Solución: combinar con `min()` o usar porcentajes con cuidado.\n\n```css\n/* Más robusto: usa min() para no romper en pantallas muy pequeñas */\ngrid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));\n```\n\n### El patrón RAM (Repeat, Auto, Minmax)\n\nEste patrón tiene nombre propio en la comunidad CSS: **RAM**. Es uno de los snippets de CSS más compartidos por su elegancia y utilidad:\n\n```css\n.grid-ram {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nCon estas 3 líneas tienes un layout completamente responsivo que funciona desde móvil hasta pantallas 4K.",
+    "examples": [
+      {
+        "code": "<style>\n  .productos-ej {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));\n    gap: 12px;\n    padding: 12px;\n    background: #F8FAFC;\n  }\n  .producto-ej {\n    height: 120px;\n    background: #BFDBFE;\n    border-radius: 8px;\n    border: 1px solid #93C5FD;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-family: sans-serif;\n    font-size: 13px;\n    color: #1E40AF;\n  }\n</style>\n<div class=\"productos-ej\">\n  <div class=\"producto-ej\">Producto 1</div>\n  <div class=\"producto-ej\">Producto 2</div>\n  <div class=\"producto-ej\">Producto 3</div>\n  <div class=\"producto-ej\">Producto 4</div>\n  <div class=\"producto-ej\">Producto 5</div>\n</div>",
+        "explanation": "Grid responsivo con `auto-fill` y `minmax(160px, 1fr)`. Los 5 productos se reorganizan solos según el ancho del contenedor — más columnas en pantallas grandes, menos en pantallas pequeñas. Cero media queries."
+      },
+      {
+        "code": "<style>\n  .comparacion {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    gap: 16px;\n    font-family: sans-serif;\n    font-size: 12px;\n  }\n  .col-titulo {\n    font-weight: bold;\n    margin-bottom: 8px;\n    color: #374151;\n  }\n  .fill-grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));\n    gap: 6px;\n    background: #F0FDF4;\n    padding: 8px;\n    border-radius: 6px;\n  }\n  .fit-grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));\n    gap: 6px;\n    background: #FFF7ED;\n    padding: 8px;\n    border-radius: 6px;\n  }\n  .item-comp {\n    height: 50px;\n    background: #6EE7B7;\n    border-radius: 4px;\n  }\n  .item-comp.naranja { background: #FCD34D; }\n</style>\n<div class=\"comparacion\">\n  <div>\n    <div class=\"col-titulo\">auto-fill (2 ítems)</div>\n    <div class=\"fill-grid\">\n      <div class=\"item-comp\"></div>\n      <div class=\"item-comp\"></div>\n    </div>\n  </div>\n  <div>\n    <div class=\"col-titulo\">auto-fit (2 ítems)</div>\n    <div class=\"fit-grid\">\n      <div class=\"item-comp naranja\"></div>\n      <div class=\"item-comp naranja\"></div>\n    </div>\n  </div>\n</div>",
+        "explanation": "Comparación visual de `auto-fill` vs `auto-fit` con solo 2 ítems. Con `auto-fill` los ítems conservan su tamaño mínimo y dejan espacio vacío. Con `auto-fit` los ítems se estiran para llenar todo el ancho disponible."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería responsiva sin media queries",
+      "prompt": "Crea un grid de productos completamente responsivo. El contenedor `.productos` debe usar `repeat(auto-fill, minmax(200px, 1fr))` como valor de `grid-template-columns` y un `gap` de 16px. Agrega exactamente 5 divs con clase `.producto`, cada uno con altura de 150px y fondo `#DBEAFE`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Grid Responsivo</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ".productos existe y tiene display: grid",
+          "test": "(function() { var el = doc.querySelector('.productos'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
+        },
+        {
+          "description": "La regla CSS contiene auto-fill",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('auto-fill')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS contiene minmax",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('minmax')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen exactamente 5 elementos .producto",
+          "test": "doc.querySelectorAll('.producto').length === 5"
+        },
+        {
+          "description": ".producto tiene altura de 150px",
+          "test": "(function() { var el = doc.querySelector('.producto'); if (!el) return false; return win.getComputedStyle(el).height === '150px'; })()"
+        }
+      ],
+      "hints": [
+        "La propiedad que necesitas es: `grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))`.",
+        "`auto-fill` va dentro de `repeat()` en lugar del número de columnas. Le dice al navegador que cree tantas columnas como quepan.",
+        "`minmax(200px, 1fr)` garantiza que cada columna tenga al menos 200px pero pueda crecer para llenar el espacio sobrante.",
+        "Recuerda añadir `gap: 16px` al contenedor `.productos`.",
+        "Los 5 divs `.producto` van directamente dentro de `.productos`, con `height: 150px` y `background: #DBEAFE`."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "theory": {
+    "markdown": "## Temas con CSS Variables\n\nUno de los casos de uso más poderosos de las variables CSS es la implementación de sistemas de temas. Con la combinación correcta de selectores, puedes crear un cambio de tema oscuro/claro (y cualquier otra variante) sin duplicar una sola regla de componente.\n\n### La filosofía detrás de los temas\n\nEn lugar de escribir estilos separados para cada tema:\n\n```css\n/* Enfoque incorrecto — duplicación masiva */\n.modo-claro .boton { background: #3B82F6; color: white; }\n.modo-oscuro .boton { background: #60A5FA; color: #1F2937; }\n.modo-claro .tarjeta { background: white; color: #1F2937; }\n.modo-oscuro .tarjeta { background: #374151; color: #F9FAFB; }\n```\n\nEl enfoque correcto es cambiar solo las **variables** y dejar que los componentes las consuman automáticamente:\n\n```css\n/* Enfoque correcto — componentes usan variables */\n:root {\n  --bg: #FFFFFF;\n  --texto: #1F2937;\n  --acento: #3B82F6;\n}\n\n[data-tema=\"oscuro\"] {\n  --bg: #1F2937;\n  --texto: #F9FAFB;\n  --acento: #60A5FA;\n}\n\n/* Los componentes son los mismos para ambos temas */\n.boton  { background: var(--acento); color: var(--bg); }\n.pagina { background: var(--bg); color: var(--texto); }\n```\n\nAl cambiar el atributo `data-tema`, TODOS los componentes se actualizan a la vez.\n\n### Selector `[data-tema=\"oscuro\"]`\n\nEl atributo `data-*` es un mecanismo de HTML para almacenar datos personalizados. El selector CSS de atributo `[data-tema=\"oscuro\"]` selecciona cualquier elemento que tenga exactamente ese atributo con ese valor:\n\n```html\n<!-- Tema oscuro aplicado al elemento raíz -->\n<html data-tema=\"oscuro\">\n\n<!-- Tema oscuro solo en una sección -->\n<section data-tema=\"oscuro\">\n  <!-- Los componentes dentro usan las variables oscuras -->\n</section>\n```\n\nPuedes aplicar el atributo al elemento `html`, `body`, o a cualquier contenedor específico.\n\n### `prefers-color-scheme` — Respeto al sistema operativo\n\nLos sistemas operativos modernos exponen la preferencia de tema del usuario. CSS puede leer esto con la media query `prefers-color-scheme`:\n\n```css\n:root {\n  /* Tema claro por defecto */\n  --bg: #FFFFFF;\n  --texto: #1F2937;\n  --acento: #3B82F6;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    /* Sobrescribe automáticamente si el SO está en oscuro */\n    --bg: #1F2937;\n    --texto: #F9FAFB;\n    --acento: #60A5FA;\n  }\n}\n```\n\nEsto permite que la aplicación se adapte al tema del sistema **sin ninguna interacción del usuario**.\n\n### Combinación: preferencia del sistema + preferencia manual\n\nLa estrategia más robusta combina ambas técnicas — el tema del sistema como base, y un atributo `data-tema` para la preferencia manual que lo sobreescribe:\n\n```css\n:root {\n  --bg: #FFFFFF;\n  --texto: #1F2937;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root { --bg: #111827; --texto: #F9FAFB; }\n}\n\n/* Preferencia manual siempre gana (más específico) */\n[data-tema=\"claro\"]  { --bg: #FFFFFF; --texto: #1F2937; }\n[data-tema=\"oscuro\"] { --bg: #111827; --texto: #F9FAFB; }\n```\n\n### Variables de componente con scope local\n\nPuedes definir variables locales en un componente para personalizar su comportamiento:\n\n```css\n.alerta {\n  /* Variable local con fallback al color global */\n  --alerta-color: var(--color-info, #3B82F6);\n  background: var(--alerta-color);\n  border-left: 4px solid var(--alerta-color);\n  color: white;\n  padding: 12px 16px;\n}\n\n.alerta-peligro {\n  --alerta-color: #EF4444; /* Sobreescribe solo para esta variante */\n}\n\n.alerta-exito {\n  --alerta-color: #10B981;\n}\n```\n\n### Toggle de tema con JavaScript\n\nCambiar el tema desde JavaScript es trivialmente simple:\n\n```javascript\nconst botonTema = document.querySelector('#btn-tema');\nconst html = document.documentElement;\n\nbotonTema.addEventListener('click', () => {\n  const temaActual = html.dataset.tema;\n  html.dataset.tema = temaActual === 'oscuro' ? 'claro' : 'oscuro';\n});\n\n// O guardar en localStorage para persistencia\nlocalStorage.setItem('tema', 'oscuro');\nhtml.dataset.tema = localStorage.getItem('tema') || 'claro';\n```\n\n### Tokens semánticos vs primitivos\n\nEn sistemas de diseño maduros, se usan dos capas de variables:\n\n```css\n:root {\n  /* Capa primitiva (valores crudos) */\n  --azul-400: #60A5FA;\n  --azul-600: #2563EB;\n  --gris-900: #111827;\n  --blanco: #FFFFFF;\n\n  /* Capa semántica (propósito, referencias primitivos) */\n  --color-acento: var(--azul-600);\n  --color-fondo: var(--blanco);\n  --color-texto-principal: var(--gris-900);\n}\n\n[data-tema=\"oscuro\"] {\n  /* Solo cambia la capa semántica */\n  --color-acento: var(--azul-400);\n  --color-fondo: var(--gris-900);\n  --color-texto-principal: var(--blanco);\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  :root {\n    --bg: #FFFFFF;\n    --texto: #1F2937;\n    --acento: #3B82F6;\n    --superficie: #F3F4F6;\n  }\n  [data-tema=\"oscuro\"] {\n    --bg: #111827;\n    --texto: #F9FAFB;\n    --acento: #60A5FA;\n    --superficie: #1F2937;\n  }\n  .pagina-demo {\n    background: var(--bg);\n    color: var(--texto);\n    padding: 20px;\n    border-radius: 8px;\n    font-family: sans-serif;\n    transition: background 0.3s, color 0.3s;\n  }\n  .tarjeta-demo {\n    background: var(--superficie);\n    border-radius: 6px;\n    padding: 12px;\n    margin-bottom: 12px;\n    font-size: 14px;\n  }\n  .boton-demo {\n    background: var(--acento);\n    color: var(--bg);\n    border: none;\n    padding: 8px 16px;\n    border-radius: 6px;\n    cursor: pointer;\n    font-size: 14px;\n  }\n</style>\n<div class=\"pagina-demo\" data-tema=\"oscuro\">\n  <div class=\"tarjeta-demo\">Esta tarjeta usa variables del tema oscuro</div>\n  <button class=\"boton-demo\">Botón de acento</button>\n</div>",
+        "explanation": "Sistema de temas con `[data-tema=\"oscuro\"]` aplicado al contenedor. Las variables `--bg`, `--texto`, `--acento` y `--superficie` son sobreescritas por el tema oscuro. Los componentes (tarjeta, botón) no necesitan saber en qué tema están — solo consumen las variables."
+      },
+      {
+        "code": "<style>\n  :root {\n    --alerta-color: #3B82F6;\n    --alerta-bg: #DBEAFE;\n  }\n  .alerta {\n    background: var(--alerta-bg);\n    border-left: 4px solid var(--alerta-color);\n    color: var(--alerta-color);\n    padding: 12px 16px;\n    border-radius: 0 6px 6px 0;\n    font-family: sans-serif;\n    font-size: 14px;\n    margin-bottom: 8px;\n  }\n  .alerta-exito {\n    --alerta-color: #059669;\n    --alerta-bg: #D1FAE5;\n  }\n  .alerta-peligro {\n    --alerta-color: #DC2626;\n    --alerta-bg: #FEE2E2;\n  }\n  .alerta-advertencia {\n    --alerta-color: #D97706;\n    --alerta-bg: #FEF3C7;\n  }\n</style>\n<div class=\"alerta\">Mensaje informativo con tema por defecto</div>\n<div class=\"alerta alerta-exito\">Operación completada con éxito</div>\n<div class=\"alerta alerta-peligro\">Error: no se pudo procesar la solicitud</div>\n<div class=\"alerta alerta-advertencia\">Advertencia: esta acción es irreversible</div>",
+        "explanation": "Sistema de alertas donde cada variante sobreescribe variables locales (`--alerta-color` y `--alerta-bg`). La clase base `.alerta` contiene toda la lógica de layout — las variantes solo cambian los valores de color. Reutilización máxima con código mínimo."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Sistema de tema oscuro con data-tema",
+      "prompt": "Crea un sistema de temas. En `:root` define: `--bg: #FFFFFF`, `--texto: #1F2937`, `--acento: #3B82F6`. En `[data-tema=\"oscuro\"]` sobreescribe: `--bg: #1F2937`, `--texto: #F9FAFB`, `--acento: #60A5FA`.\n\nCrea una `.pagina` (background: var(--bg), color: var(--texto), padding: 32px) con un `.boton` dentro (background: var(--acento), color: var(--bg), padding: 8px 16px, border: none). Aplica el atributo `data-tema=\"oscuro\"` al elemento `html`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Temas CSS</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ":root define --bg",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--bg')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "[data-tema=\"oscuro\"] sobreescribe --bg",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('data-tema') && r.cssText.includes('--bg')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .pagina usa var(--bg) en background",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.pagina' && r.style.background.includes('var(--bg)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .boton usa var(--acento) en background",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.boton' && r.style.background.includes('var(--acento)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe .pagina en el DOM",
+          "test": "!!doc.querySelector('.pagina')"
+        },
+        {
+          "description": "Existe .boton dentro de .pagina",
+          "test": "!!doc.querySelector('.pagina .boton')"
+        }
+      ],
+      "hints": [
+        "El atributo `data-tema=\"oscuro\"` va en la etiqueta `<html>`: `<html lang=\"es\" data-tema=\"oscuro\">`.",
+        "El selector en CSS para ese atributo es `[data-tema=\"oscuro\"]` con corchetes, igual que los selectores de atributo.",
+        "Las variables en `[data-tema=\"oscuro\"]` no necesitan estar en `:root` — la herencia se encarga de que los hijos vean los valores sobreescritos.",
+        "Para `.boton`: usa `background: var(--acento)` y `color: var(--bg)` — el color del texto del botón debe contrastar con el fondo del botón.",
+        "Recuerda que `border: none` elimina el borde por defecto que tienen los botones en los navegadores."
+      ]
+    }
+  ]
+}

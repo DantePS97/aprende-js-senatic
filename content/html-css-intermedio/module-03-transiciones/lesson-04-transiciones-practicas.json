@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "# Patrones Prácticos de Transiciones\n\nConocer la sintaxis es solo el primer paso. Lo que distingue a un desarrollador frontend sólido es saber **cuándo y cómo** aplicar transiciones para crear interfaces que se sientan naturales, rápidas y profesionales.\n\n## Patrón 1: Underline animado en navegación\n\nUno de los efectos más elegantes y limpios para menús de navegación. La línea decorativa debajo del enlace crece de 0 a 100% del ancho.\n\n```css\n.nav-link {\n  position: relative; /* necesario para el ::after absoluto */\n  text-decoration: none;\n}\n\n.nav-link::after {\n  content: '';\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  width: 0;          /* empieza invisible */\n  height: 2px;\n  background: #3B82F6;\n  transition: width 0.3s ease; /* anima el ancho */\n}\n\n.nav-link:hover::after {\n  width: 100%; /* crece hasta cubrir todo el enlace */\n}\n```\n\n## Patrón 2: Dropdown con `max-height` trick\n\nNo puedes animar `height: auto` directamente en CSS — el navegador no sabe cómo interpolar entre `auto` y un número. La solución clásica es usar `max-height`:\n\n```css\n.dropdown-menu {\n  max-height: 0;        /* colapsado */\n  overflow: hidden;     /* oculta el contenido que \"sobresale\" */\n  transition: max-height 0.3s ease;\n}\n\n.dropdown:hover .dropdown-menu {\n  max-height: 300px;    /* un valor mayor al contenido real */\n}\n```\n\n**Cuidado:** El timing de la transición de cierre puede verse raro si `max-height` es mucho mayor que la altura real. Si el menú tiene 100px pero `max-height` es 500px, la transición de cierre \"esperará\" hasta que llegue a 100px. Usa un valor cercano al real.\n\n## Patrón 3: Botón con efecto ripple (concepto)\n\nEl efecto ripple de Material Design usa JavaScript + CSS. La transición maneja la expansión del círculo:\n\n```css\n.ripple-circle {\n  position: absolute;\n  border-radius: 50%;\n  transform: scale(0);\n  background: rgba(255,255,255,0.3);\n  transition: transform 0.4s ease-out, opacity 0.4s ease-out;\n}\n\n.ripple-circle.activo {\n  transform: scale(4);\n  opacity: 0;\n}\n```\n\n## Patrón 4: Barra de progreso animada\n\n```css\n.barra-progreso {\n  width: 0;\n  height: 6px;\n  background: #3B82F6;\n  border-radius: 3px;\n  transition: width 1s ease-in-out;\n}\n\n.barra-progreso.activa {\n  width: 75%; /* se anima desde 0 hasta este valor */\n}\n```\n\n## `will-change` para rendimiento\n\nLa propiedad `will-change` es una **pista al navegador** de que una propiedad va a cambiar, permitiéndole optimizar con antelación (generalmente creando un layer de composición en GPU).\n\n```css\n.elemento-animado {\n  will-change: transform, opacity;\n}\n```\n\n**Reglas de uso de will-change:**\n- Úsala **solo cuando hayas medido** un problema de rendimiento real\n- Aplícala justo antes de la animación y quítala después (con JS)\n- No la apliques a demasiados elementos — consumirá memoria GPU\n- Las animaciones de `transform` y `opacity` ya son eficientes por defecto\n\n## Consideraciones de UX para transiciones\n\n| Duración | Uso recomendado |\n|----------|----------------|\n| 100–200ms | Feedback inmediato (hover, focus) |\n| 200–400ms | Transiciones de elementos medianos |\n| 400–600ms | Modales, sidebars, flip cards |\n| 600ms+ | Solo para elementos que son el foco principal |\n\nLas transiciones demasiado lentas frustran al usuario. Las demasiado rápidas se pierden. El punto dulce para hover es **150–300ms**.",
+    "examples": [
+      {
+        "code": "/* Menú con underline animado */\n.nav {\n  display: flex;\n  list-style: none;\n  gap: 8px;\n  padding: 0;\n  background: #1E293B;\n  padding: 0 24px;\n}\n\n.nav-link {\n  color: #CBD5E1;\n  text-decoration: none;\n  padding: 16px 8px;\n  display: block;\n  position: relative;\n  transition: color 0.2s ease;\n}\n\n/* La línea decorativa */\n.nav-link::after {\n  content: '';\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  width: 0;\n  height: 2px;\n  background: #3B82F6;\n  transition: width 0.3s ease;\n}\n\n.nav-link:hover {\n  color: #F8FAFC;\n}\n\n.nav-link:hover::after {\n  width: 100%;\n}\n\n/* Enlace activo — línea siempre visible */\n.nav-link.activo::after {\n  width: 100%;\n}",
+        "explanation": "El truco del underline animado usa un pseudo-elemento `::after` vacío (content: '') posicionado absolutamente en la parte inferior del enlace. Comienza con width: 0 (invisible) y crece a 100% en el hover. La clave es que `position: relative` en el enlace crea el contexto de posicionamiento para el pseudo-elemento."
+      },
+      {
+        "code": "/* Dropdown con max-height trick */\n.dropdown {\n  position: relative;\n  display: inline-block;\n}\n\n.dropdown-btn {\n  background: #3B82F6;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n}\n\n.dropdown-menu {\n  position: absolute;\n  top: calc(100% + 4px);\n  left: 0;\n  background: white;\n  border-radius: 8px;\n  box-shadow: 0 4px 12px rgba(0,0,0,0.15);\n  min-width: 180px;\n\n  /* El truco: max-height en lugar de display none */\n  max-height: 0;\n  overflow: hidden;\n  opacity: 0;\n  transition: max-height 0.3s ease, opacity 0.2s ease;\n}\n\n.dropdown:hover .dropdown-menu {\n  max-height: 300px; /* mayor que el contenido real */\n  opacity: 1;\n}\n\n.dropdown-item {\n  display: block;\n  padding: 10px 16px;\n  color: #1E293B;\n  text-decoration: none;\n  transition: background 0.15s ease;\n}\n\n.dropdown-item:hover {\n  background: #F3F4F6;\n}",
+        "explanation": "Combinar `max-height: 0` + `overflow: hidden` con la transición de `max-height` es el truco estándar para animar la aparición de contenido de altura variable. Añadir `opacity` mejora la sensación visual. El dropdown aparece suavemente en vez de aparecer de golpe."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Navbar con underline animado y dropdown",
+      "prompt": "Construye una barra de navegación con dos efectos de transición avanzados: un subrayado animado en los enlaces y un menú desplegable que aparece suavemente.\n\n**Requisitos:**\n\n**Barra de navegación:**\n1. `.nav` con background #1E293B, padding 0 24px, display flex, align-items center, gap 24px.\n2. `.nav-link` con color white, text-decoration none, padding 16px 8px, display block, position relative.\n3. `.nav-link::after` con content '', position absolute, bottom 0, left 0, width 0, height 2px, background #3B82F6, y `transition: width 0.3s ease`.\n4. `.nav-link:hover::after` con `width: 100%`.\n\n**Menú desplegable:**\n5. Un `.dropdown` con position relative dentro del nav.\n6. `.dropdown-menu` con position absolute, top 100%, left 0, background white, border-radius 8px, box-shadow, min-width 180px, **max-height: 0**, overflow hidden, y `transition: max-height 0.3s ease`.\n7. `.dropdown:hover .dropdown-menu` con `max-height: 200px`.\n8. Elementos `.dropdown-item` dentro del menú con padding 10px 16px, color #1E293B, text-decoration none.\n9. `.dropdown-item:hover` con background #F3F4F6.\n\nIncluye al menos 3 enlaces en el nav y 3 items en el dropdown.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Transiciones Prácticas</title>\n  <style>\n    * {\n      box-sizing: border-box;\n      margin: 0;\n      padding: 0;\n    }\n\n    body {\n      font-family: system-ui, sans-serif;\n      background: #F8FAFC;\n    }\n\n    /* Tu código CSS aquí */\n\n  </style>\n</head>\n<body>\n\n  <!-- Estructura sugerida:\n    nav.nav\n      a.nav-link href=\"#\"\n      a.nav-link href=\"#\"\n      div.dropdown\n        a.nav-link href=\"#\"\n        div.dropdown-menu\n          a.dropdown-item href=\"#\"\n          a.dropdown-item href=\"#\"\n          a.dropdown-item href=\"#\"\n  -->\n\n</body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el elemento .nav",
+          "test": "doc.querySelector('.nav') !== null"
+        },
+        {
+          "description": "Existe una regla CSS para .nav-link::after (o .nav-link:after)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nav-link') && r.selectorText.includes('after')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla del ::after tiene transition que incluye 'width'",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nav-link') && r.selectorText.includes('after') && r.style.transition && r.style.transition.includes('width')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .nav-link:hover::after tiene width: 100%",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nav-link') && r.selectorText.includes('hover') && r.selectorText.includes('after') && r.style.width === '100%'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .dropdown-menu tiene max-height: 0",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.dropdown-menu' && r.style.maxHeight === '0px'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .dropdown:hover .dropdown-menu tiene max-height mayor que 0",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.dropdown:hover .dropdown-menu' && r.style.maxHeight && r.style.maxHeight !== '0px'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .dropdown-menu tiene transition que incluye max-height",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.dropdown-menu' && r.style.transition && r.style.transition.includes('max-height')); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Para que el `::after` funcione, el `.nav-link` DEBE tener `position: relative`. Sin esto, el pseudo-elemento absoluto no se posicionará relativo al enlace.",
+        "El `content: ''` en `::after` es obligatorio — sin él, el pseudo-elemento no se renderiza, aunque tenga todos los demás estilos.",
+        "Para el dropdown, usa `max-height: 0` (con px) en el estado cerrado, no solo `0`. Algunos navegadores necesitan unidad para la transición.",
+        "El selector `.dropdown:hover .dropdown-menu` funciona cuando el hover está en `.dropdown` (el contenedor), no solo en el botón. Esto mantiene el menú abierto cuando mueves el ratón hacia los items.",
+        "Si el dropdown no se muestra, verifica que tenga `overflow: hidden` junto con `max-height: 0` — sin overflow hidden, el contenido se vería aunque max-height sea 0."
+      ]
+    }
+  ]
+}

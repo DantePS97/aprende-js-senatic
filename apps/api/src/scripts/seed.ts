@@ -502,6 +502,91 @@ async function seed() {
   ]);
   console.log('✅  Módulo JS-I 10 listo (4 lecciones)');
 
+  // ─── Curso: HTML/CSS Intermedio ──────────────────────────────────────────
+
+  const htmlCssIntermedio = await CourseModel.findOneAndUpdate(
+    { slug: 'html-css-intermedio' },
+    {
+      $setOnInsert: {
+        slug: 'html-css-intermedio',
+        title: 'HTML/CSS Intermedio',
+        description: 'Domina CSS Grid, variables, animaciones, selectores avanzados y diseño responsive moderno',
+        level: 'intermediate',
+        iconEmoji: '🎨',
+        order: 4,
+      },
+    },
+    { upsert: true, new: true }
+  );
+  console.log('✅  Curso "HTML/CSS Intermedio" listo');
+
+  // Módulo 1 — CSS Grid
+  await seedModule(htmlCssIntermedio._id, 1, 'CSS Grid', 'Domina el sistema de grid bidimensional de CSS', [
+    { order: 1, title: 'Grid básico: columnas y filas',          xpReward: 25, contentId: 'html-css-intermedio/module-01-grid/lesson-01-grid-basico' },
+    { order: 2, title: 'Grid areas nombradas',                   xpReward: 30, contentId: 'html-css-intermedio/module-01-grid/lesson-02-grid-areas' },
+    { order: 3, title: 'Grid responsive: auto-fill y auto-fit',  xpReward: 35, contentId: 'html-css-intermedio/module-01-grid/lesson-03-grid-responsive' },
+    { order: 4, title: 'Alineación en Grid',                     xpReward: 30, contentId: 'html-css-intermedio/module-01-grid/lesson-04-grid-alineacion' },
+  ]);
+  console.log('✅  Módulo CSS-I 1 listo (4 lecciones)');
+
+  // Módulo 2 — Variables CSS
+  await seedModule(htmlCssIntermedio._id, 2, 'Variables CSS', 'Custom properties, temas dinámicos y cálculos', [
+    { order: 1, title: 'Variables CSS: custom properties',       xpReward: 25, contentId: 'html-css-intermedio/module-02-variables/lesson-01-variables-css' },
+    { order: 2, title: 'Temas con variables CSS',                xpReward: 30, contentId: 'html-css-intermedio/module-02-variables/lesson-02-variables-temas' },
+    { order: 3, title: 'Variables y calc()',                     xpReward: 30, contentId: 'html-css-intermedio/module-02-variables/lesson-03-variables-calc' },
+  ]);
+  console.log('✅  Módulo CSS-I 2 listo (3 lecciones)');
+
+  // Módulo 3 — Transiciones y Transforms
+  await seedModule(htmlCssIntermedio._id, 3, 'Transiciones y Transforms', 'Anima con transition, transform 2D y 3D', [
+    { order: 1, title: 'Transiciones CSS',                       xpReward: 25, contentId: 'html-css-intermedio/module-03-transiciones/lesson-01-transiciones' },
+    { order: 2, title: 'Transform 2D',                           xpReward: 30, contentId: 'html-css-intermedio/module-03-transiciones/lesson-02-transform-2d' },
+    { order: 3, title: 'Transform 3D y perspective',             xpReward: 35, contentId: 'html-css-intermedio/module-03-transiciones/lesson-03-transform-3d' },
+    { order: 4, title: 'Transiciones prácticas: hover effects',  xpReward: 35, contentId: 'html-css-intermedio/module-03-transiciones/lesson-04-transiciones-practicas' },
+  ]);
+  console.log('✅  Módulo CSS-I 3 listo (4 lecciones)');
+
+  // Módulo 4 — Animaciones CSS
+  await seedModule(htmlCssIntermedio._id, 4, 'Animaciones CSS', '@keyframes, fill-mode, play-state y patrones prácticos', [
+    { order: 1, title: '@keyframes y animation',                 xpReward: 30, contentId: 'html-css-intermedio/module-04-animaciones/lesson-01-keyframes' },
+    { order: 2, title: 'Propiedades avanzadas de animation',     xpReward: 35, contentId: 'html-css-intermedio/module-04-animaciones/lesson-02-animacion-propiedades' },
+    { order: 3, title: 'Animaciones prácticas: skeleton y más',  xpReward: 40, contentId: 'html-css-intermedio/module-04-animaciones/lesson-03-animaciones-practicas' },
+  ]);
+  console.log('✅  Módulo CSS-I 4 listo (3 lecciones)');
+
+  // Módulo 5 — Selectores Avanzados
+  await seedModule(htmlCssIntermedio._id, 5, 'Selectores Avanzados', 'Combinadores, atributos, pseudo-clases modernas y especificidad', [
+    { order: 1, title: 'Combinadores CSS',                        xpReward: 25, contentId: 'html-css-intermedio/module-05-selectores/lesson-01-combinadores' },
+    { order: 2, title: 'Selectores de atributo',                  xpReward: 25, contentId: 'html-css-intermedio/module-05-selectores/lesson-02-selectores-atributo' },
+    { order: 3, title: 'Pseudo-clases avanzadas: :is(), :has()',  xpReward: 35, contentId: 'html-css-intermedio/module-05-selectores/lesson-03-pseudo-clases-avanzadas' },
+    { order: 4, title: 'Especificidad y la cascada CSS',          xpReward: 35, contentId: 'html-css-intermedio/module-05-selectores/lesson-04-especificidad' },
+  ]);
+  console.log('✅  Módulo CSS-I 5 listo (4 lecciones)');
+
+  // Módulo 6 — Diseño Responsive Moderno
+  await seedModule(htmlCssIntermedio._id, 6, 'Diseño Responsive Moderno', 'clamp(), container queries e imágenes adaptativas', [
+    { order: 1, title: 'Layout fluido con clamp(), min() y max()', xpReward: 35, contentId: 'html-css-intermedio/module-06-responsive/lesson-01-fluid-layout' },
+    { order: 2, title: 'Container Queries',                        xpReward: 40, contentId: 'html-css-intermedio/module-06-responsive/lesson-02-container-queries' },
+    { order: 3, title: 'Imágenes adaptativas',                     xpReward: 35, contentId: 'html-css-intermedio/module-06-responsive/lesson-03-imagenes-adaptativas' },
+  ]);
+  console.log('✅  Módulo CSS-I 6 listo (3 lecciones)');
+
+  // Módulo 7 — Formularios Avanzados
+  await seedModule(htmlCssIntermedio._id, 7, 'Formularios Avanzados', 'Validación HTML5, pseudo-estados y estilos personalizados', [
+    { order: 1, title: 'Validación HTML5 nativa',                 xpReward: 30, contentId: 'html-css-intermedio/module-07-formularios/lesson-01-validacion-html5' },
+    { order: 2, title: 'Pseudo-estados de formulario',            xpReward: 30, contentId: 'html-css-intermedio/module-07-formularios/lesson-02-pseudo-estados-form' },
+    { order: 3, title: 'Estilos personalizados de inputs',        xpReward: 35, contentId: 'html-css-intermedio/module-07-formularios/lesson-03-estilos-personalizados' },
+  ]);
+  console.log('✅  Módulo CSS-I 7 listo (3 lecciones)');
+
+  // Módulo 8 — Efectos Visuales
+  await seedModule(htmlCssIntermedio._id, 8, 'Efectos Visuales', 'filter, clip-path y blend modes', [
+    { order: 1, title: 'filter: blur, brightness y más',         xpReward: 30, contentId: 'html-css-intermedio/module-08-efectos/lesson-01-filter-css' },
+    { order: 2, title: 'clip-path: formas y recortes',           xpReward: 35, contentId: 'html-css-intermedio/module-08-efectos/lesson-02-clip-path' },
+    { order: 3, title: 'Blend modes y efectos de composición',   xpReward: 35, contentId: 'html-css-intermedio/module-08-efectos/lesson-03-blend-modes' },
+  ]);
+  console.log('✅  Módulo CSS-I 8 listo (3 lecciones)');
+
   // ─── Logros ───────────────────────────────────────────────────────────────
 
   await seedAchievements();
@@ -509,7 +594,8 @@ async function seed() {
   // JS básico: 3+4+4+4+5+4+4+3+3+3+3 = 40 lecciones
   // HTML/CSS básico: 6+3+7+2+2 = 20 lecciones
   // JS intermedio: 5+4+5+4+4+4+4+4+3+4 = 41 lecciones
-  const totalLecciones = 40 + 20 + 41; // 101
+  // HTML/CSS intermedio: 4+3+4+3+4+3+3+3 = 27 lecciones
+  const totalLecciones = 40 + 20 + 41 + 27; // 128
   const totalXP =
     // JS básico
     15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 +
@@ -518,7 +604,9 @@ async function seed() {
     15+15+20+20+25+25 + 15+20+20 + 20+25+30+25+30+35+30 + 35+40 + 25+35 +
     // JS intermedio
     40+45+40+45+55 + 45+45+50+40 + 45+50+45+45+50 + 50+55+60+60 + 40+40+50+45 +
-    45+40+45+40 + 50+55+60+55 + 50+55+50+55 + 50+50+55 + 50+45+55+50;
+    45+40+45+40 + 50+55+60+55 + 50+55+50+55 + 50+50+55 + 50+45+55+50 +
+    // HTML/CSS intermedio
+    25+30+35+30 + 25+30+30 + 25+30+35+35 + 30+35+40 + 25+25+35+35 + 35+40+35 + 30+30+35 + 30+35+35;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();

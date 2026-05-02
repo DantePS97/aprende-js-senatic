@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## Selectores de Atributo CSS\n\nLos selectores de atributo son una de las herramientas más subestimadas del CSS. En lugar de seleccionar elementos por clase o ID, te permiten seleccionarlos según el **valor de cualquier atributo HTML**, con varios niveles de precisión: si el atributo existe, si tiene un valor exacto, si empieza con ciertos caracteres, si termina con ellos, y más.\n\n### Por qué importan\n\nSin selectores de atributo, tendrías que agregar clases `.enlace-externo`, `.enlace-pdf`, `.enlace-email` a cada `<a>` manualmente. Con selectores de atributo, el CSS INFIERE el estilo a partir de información que ya existe en el HTML semántico. Menos clases, HTML más limpio, mantenimiento más fácil.\n\n### Sintaxis base: `[attr]`\n\nSelecciona cualquier elemento que TENGA el atributo, sin importar su valor:\n\n```css\na[download] {\n  /* Cualquier <a> que tenga el atributo download */\n  font-weight: bold;\n}\n\ninput[disabled] {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n```\n\n### Valor exacto: `[attr=\"val\"]`\n\n```css\ninput[type=\"checkbox\"] {\n  width: 18px;\n  height: 18px;\n}\n```\n\n### Palabra en lista: `[attr~=\"val\"]`\n\nUsa cuando el atributo contiene una lista de palabras separadas por espacios (como `class`):\n\n```css\n[data-tags~=\"destacado\"] {\n  /* Elementos cuyo data-tags contiene la palabra \"destacado\" */\n  background: #FEF3C7;\n}\n```\n\n### Prefijo de idioma: `[attr|=\"val\"]`\n\nSelecciona cuando el valor es exactamente `val` O empieza con `val-` (diseñado para atributos `lang`):\n\n```css\n[lang|=\"es\"] {\n  /* Selecciona lang=\"es\" y lang=\"es-AR\", lang=\"es-MX\", etc. */\n  font-family: 'Lato', sans-serif;\n}\n```\n\n### Empieza con: `[attr^=\"val\"]`\n\n```css\na[href^=\"https://\"] {\n  /* Todos los enlaces externos (HTTPS) */\n  color: #3B82F6;\n}\n\na[href^=\"mailto:\"] {\n  /* Todos los enlaces de email */\n  color: #10B981;\n}\n\na[href^=\"tel:\"] {\n  /* Todos los enlaces de teléfono */\n  color: #F59E0B;\n}\n```\n\n### Termina con: `[attr$=\"val\"]`\n\n```css\na[href$=\".pdf\"] {\n  /* Todos los enlaces a archivos PDF */\n  color: #EF4444;\n}\n\na[href$=\".zip\"] {\n  /* Archivos ZIP */\n  font-style: italic;\n}\n```\n\n### Contiene: `[attr*=\"val\"]`\n\n```css\na[href*=\"github\"] {\n  /* Cualquier URL que contenga \"github\" */\n  color: #374151;\n}\n```\n\n### Modificador insensible a mayúsculas: `[attr=\"val\" i]`\n\nAgregando `i` al final, la comparación ignora mayúsculas/minúsculas:\n\n```css\na[href$=\".PDF\" i] {\n  /* Selecciona .pdf, .PDF, .Pdf, etc. */\n  color: #EF4444;\n}\n```\n\n### Especificidad\n\nTodos los selectores de atributo tienen la misma especificidad que una clase: `(0, 1, 0)`. Esto los hace seguros de usar sin preocuparse por conflictos inesperados con IDs.\n\n### Tabla de referencia\n\n| Selector | Descripción |\n|----------|-------------|\n| `[attr]` | El atributo existe |\n| `[attr=\"val\"]` | Valor exactamente igual a `val` |\n| `[attr~=\"val\"]` | `val` es una palabra en la lista |\n| `[attr\\|=\"val\"]` | Valor es `val` o empieza con `val-` |\n| `[attr^=\"val\"]` | Valor empieza con `val` |\n| `[attr$=\"val\"]` | Valor termina con `val` |\n| `[attr*=\"val\"]` | Valor contiene `val` |\n| `[attr=\"val\" i]` | Igual, ignorando mayúsculas |",
+    "examples": [
+      {
+        "code": "<style>\n  .lista-links { list-style: none; padding: 0; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px; }\n  .lista-links a { text-decoration: none; padding: 8px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }\n  a[href^=\"https://\"] { color: #3B82F6; background: #EFF6FF; }\n  a[href^=\"mailto:\"] { color: #10B981; background: #F0FDF4; }\n  a[href$=\".pdf\"] { color: #EF4444; background: #FEF2F2; }\n  a[href^=\"tel:\"] { color: #F59E0B; background: #FFFBEB; }\n  a[href^=\"#\"] { color: #8B5CF6; background: #F5F3FF; }\n  a[download] { font-weight: bold; }\n</style>\n<ul class=\"lista-links\">\n  <li><a href=\"https://example.com\">Sitio externo (azul)</a></li>\n  <li><a href=\"mailto:info@ejemplo.com\">Correo electrónico (verde)</a></li>\n  <li><a href=\"documento.pdf\">Descargar PDF (rojo)</a></li>\n  <li><a href=\"tel:+123456789\">Llamar por teléfono (naranja)</a></li>\n  <li><a href=\"#seccion\">Ancla interna (violeta)</a></li>\n  <li><a href=\"archivo.zip\" download>Descargar archivo (negrita)</a></li>\n</ul>",
+        "explanation": "Seis selectores de atributo distinguen visualmente seis tipos de enlaces sin agregar ninguna clase al HTML. El CSS lee el `href` directamente para inferir el color y el fondo. Cada patrón (`^=`, `$=`, `[download]`) usa la técnica más adecuada para el tipo de valor."
+      },
+      {
+        "code": "<style>\n  .formulario { font-family: sans-serif; display: flex; flex-direction: column; gap: 12px; max-width: 360px; padding: 16px; border: 1px solid #E5E7EB; border-radius: 8px; }\n  input[type=\"text\"], input[type=\"email\"] { padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; }\n  input[type=\"submit\"] { background: #3B82F6; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }\n  input[placeholder*=\"correo\" i] { border-color: #10B981; }\n  input[required] { outline-offset: 2px; }\n  input[disabled] { background: #F3F4F6; opacity: 0.6; cursor: not-allowed; }\n</style>\n<form class=\"formulario\">\n  <input type=\"text\" placeholder=\"Tu nombre\" required>\n  <input type=\"email\" placeholder=\"Tu correo electrónico\" required>\n  <input type=\"text\" placeholder=\"Empresa (opcional)\" disabled>\n  <input type=\"submit\" value=\"Enviar\">\n</form>",
+        "explanation": "`input[placeholder*=\"correo\" i]` usa el modificador `i` para encontrar el input cuyo placeholder contenga \"correo\" sin importar mayúsculas. `input[required]` y `input[disabled]` usan la existencia del atributo sin valor. `input[type=\"submit\"]` aplica estilos solo al botón de envío."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Estiliza una lista de enlaces por tipo",
+      "prompt": "Crea una lista de 6 enlaces con diferentes tipos de `href` y usa selectores de atributo para darles estilos visuales distintos según su propósito:\n\n1. Enlace externo con `href` que empieza con `https://` → `color: #3B82F6`\n2. Enlace de email con `href` que empieza con `mailto:` → `color: #10B981`\n3. Enlace a PDF con `href` que termina en `.pdf` → `color: #EF4444`\n4. Enlace de teléfono con `href` que empieza con `tel:` → `color: #F59E0B`\n5. Enlace de ancla con `href` que empieza con `#` → `color: #8B5CF6`\n6. Enlace con atributo `download` presente → `font-weight: bold`\n\nTodos los enlaces deben tener `padding: 8px 12px`, `display: block` y `text-decoration: none`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Selectores de Atributo</title>\n    <style>\n      body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; }\n      ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }\n      a { padding: 8px 12px; display: block; text-decoration: none; border-radius: 6px; border: 1px solid #E5E7EB; }\n\n      /* Escribe tus selectores de atributo aquí */\n\n    </style>\n  </head>\n  <body>\n    <h1>Tipos de enlaces</h1>\n    <ul>\n      <!-- Crea los 6 enlaces aquí -->\n\n    </ul>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "CSS tiene regla para a[href^=\"https://\"]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"https://\"]')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para a[href^=\"mailto:\"]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"mailto:\"')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para a[href$=\".pdf\"]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href$=\".pdf\"]')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para a[href^=\"tel:\"]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"tel:\"')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para a[href^=\"#\"]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"#\"]')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para a[download]",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[download]')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen 6 elementos <a> en el DOM",
+          "test": "doc.querySelectorAll('a').length >= 6"
+        }
+      ],
+      "hints": [
+        "El selector `a[href^=\"https://\"]` significa: un `<a>` cuyo atributo `href` EMPIEZA con `https://`. La sintaxis `^=` es para \"empieza con\".",
+        "Para el enlace de PDF usa `$=` (termina con): `a[href$=\".pdf\"]`. No importa lo que haya antes en la URL, si termina en `.pdf` se aplica.",
+        "El atributo `download` no necesita valor: `<a href=\"archivo.zip\" download>`. El selector `a[download]` selecciona cualquier `<a>` que TENGA ese atributo, sea cual sea su valor.",
+        "Asegúrate de que el `href` de cada enlace use el prefijo correcto: `https://`, `mailto:`, `.pdf`, `tel:`, `#`.",
+        "Puedes combinar selectores de atributo con pseudoclases: `a[href^=\"https://\"]:hover { text-decoration: underline; }`."
+      ]
+    }
+  ]
+}

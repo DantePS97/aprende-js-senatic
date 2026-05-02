@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## Combinadores CSS\n\nLos combinadores son el mecanismo que usa CSS para expresar **relaciones estructurales** entre elementos del DOM. No seleccionan por clase o ID, sino por la posición que ocupa un elemento en relación con otro. Dominar los combinadores te permite escribir selectores quirúrgicamente precisos sin necesidad de agregar clases extra al HTML.\n\n### El problema que resuelven\n\nImagina un artículo de blog: tiene párrafos normales, párrafos justo después de un título, listas con ítems directos y listas anidadas. Si solo usas clases, acabas llenando el HTML con `.parrafo-post-h2`, `.parrafo-general`, `.item-directo`... Los combinadores te dan toda esa precisión **sin tocar el HTML**.\n\n### Combinador descendiente (espacio)\n\nEl más común. Selecciona cualquier elemento B que sea descendiente de A, sin importar cuántos niveles hay en medio:\n\n```css\narticle p {\n  /* Todos los <p> dentro de <article>, en cualquier nivel */\n  line-height: 1.7;\n}\n```\n\nÚsalo cuando quieras aplicar estilos a todos los descendientes de un contexto, sin preocuparte por la profundidad.\n\n### Combinador hijo directo `>`\n\nSelecciona solo los hijos **inmediatos** de un elemento, no los nietos ni más profundos:\n\n```css\narticle > p {\n  /* Solo los <p> que son hijos directos de <article> */\n  font-size: 1.1em;\n}\n```\n\nEsto es fundamental cuando tienes listas anidadas o componentes dentro de componentes: `ul > li` no afecta a los `<li>` de sublistas.\n\n### Combinador hermano adyacente `+`\n\nSelecciona el **primer hermano inmediato** que viene justo después del elemento. Ambos deben compartir el mismo padre:\n\n```css\nh2 + p {\n  /* El primer <p> que aparece justo después de un <h2> */\n  margin-top: 0;\n  color: #6B7280;\n}\n```\n\nEste es el selector ideal para el párrafo de introducción debajo de un título: no quieres que todos los párrafos tengan ese estilo, solo el primero.\n\n### Combinador hermano general `~`\n\nSelecciona **todos los hermanos** que vienen después del elemento (no solo el primero):\n\n```css\nh2 ~ p {\n  /* Todos los <p> que son hermanos y vienen después de un <h2> */\n  line-height: 1.8;\n}\n```\n\nLa diferencia clave con `+`: el `+` selecciona solo el hermano inmediato, el `~` selecciona todos los siguientes.\n\n### Combinando combinadores\n\nPuedes encadenar múltiples combinadores en un solo selector:\n\n```css\narticle > ul > li + li {\n  /* Los <li> que siguen a otro <li>, dentro de <ul> hijos directos de <article> */\n  margin-top: 4px;\n}\n```\n\n### Tabla de referencia rápida\n\n| Sintaxis | Nombre | Selecciona |\n|----------|--------|------------|\n| `A B` | Descendiente | B dentro de A (cualquier nivel) |\n| `A > B` | Hijo directo | B hijo inmediato de A |\n| `A + B` | Hermano adyacente | B justo después de A, mismo padre |\n| `A ~ B` | Hermano general | Todos los B después de A, mismo padre |\n\n### Cuándo usar cada uno\n\n- **Espacio**: estilos generales de contenido (`article p`, `.card span`)\n- **`>`**: evitar contaminación de componentes anidados (`nav > ul`, `ul > li`)\n- **`+`**: estilos del primer elemento tras otro (`h2 + p`, `.btn + .btn`)\n- **`~`**: estilos de todos los elementos que siguen a uno especial (`h2 ~ p`, `input:checked ~ label`)",
+    "examples": [
+      {
+        "code": "<style>\n  .post h2 { color: #1F2937; margin-top: 32px; }\n  .post h2 + p { margin-top: 4px; color: #6B7280; font-style: italic; }\n  .post h2 ~ p { line-height: 1.8; }\n  .post > p { font-size: 1.05em; border-left: 3px solid #3B82F6; padding-left: 12px; }\n</style>\n<article class=\"post\" style=\"font-family: sans-serif; max-width: 540px; padding: 16px;\">\n  <p>Este párrafo es hijo directo del article — borde azul.</p>\n  <h2>Primer título</h2>\n  <p>Este va justo después del h2: gris e itálico (h2 + p).</p>\n  <p>Este también es hermano del h2: solo interlineado (h2 ~ p).</p>\n  <h2>Segundo título</h2>\n  <p>Otro párrafo post-título: gris e itálico otra vez.</p>\n</article>",
+        "explanation": "Los tres selectores actúan simultáneamente. `h2 + p` pone el primer párrafo en gris cursivo. `h2 ~ p` aumenta el interlineado de TODOS los párrafos que siguen al h2. `.post > p` añade el borde azul solo a los hijos directos de `.post`."
+      },
+      {
+        "code": "<style>\n  .menu > ul { list-style: none; padding: 0; display: flex; gap: 8px; }\n  .menu > ul > li { position: relative; }\n  .menu > ul > li > a { padding: 8px 12px; display: block; background: #3B82F6; color: white; border-radius: 4px; text-decoration: none; font-family: sans-serif; font-size: 14px; }\n  .menu li + li > a { background: #6B7280; }\n  .menu ul ul { display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #E5E7EB; border-radius: 4px; min-width: 140px; }\n  .menu li:hover > ul { display: block; }\n  .menu ul ul li { padding: 4px 12px; font-family: sans-serif; font-size: 13px; }\n</style>\n<nav class=\"menu\">\n  <ul>\n    <li><a href=\"#\">Inicio</a>\n      <ul>\n        <li>Noticias</li>\n        <li>Blog</li>\n      </ul>\n    </li>\n    <li><a href=\"#\">Servicios</a></li>\n    <li><a href=\"#\">Contacto</a></li>\n  </ul>\n</nav>",
+        "explanation": "`.menu > ul > li > a` selecciona solo los enlaces del primer nivel, no los de submenús. `li + li > a` da color diferente a todos los ítems de menú excepto el primero. La combinación `>` protege los estilos de submenús de heredar el diseño del nivel principal."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Maqueta un artículo de blog con combinadores",
+      "prompt": "Construye el layout de un artículo de blog usando SOLO combinadores CSS (sin clases adicionales en los elementos del artículo). Requisitos:\n\n1. Crea un `<article>` con al menos dos `<h2>`, varios `<p>` y un `<ul>` con varios `<li>`.\n2. Aplica estas reglas:\n   - `h2 + p` → `margin-top: 0; color: #6B7280`\n   - `h2 ~ p` → `line-height: 1.7`\n   - `article > p` → `font-size: 1.1em`\n   - `ul > li` → `list-style: none; padding: 8px 0; border-bottom: 1px solid #E5E7EB`\n   - `ul > li:last-child` → `border-bottom: none`\n   - `li + li` → `margin-top: 4px`\n3. Agrega dos párrafos con clase `.nota` y aplica `.nota + .nota { margin-top: 0 }`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Artículo con Combinadores</title>\n    <style>\n      body { font-family: sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; }\n      article { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\n\n      /* Escribe tus reglas con combinadores aquí */\n\n    </style>\n  </head>\n  <body>\n    <!-- Construye el article aquí -->\n\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "CSS tiene la regla h2 + p",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 + p'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene la regla h2 ~ p",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 ~ p'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene la regla article > p",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'article > p'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene la regla ul > li",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'ul > li'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla con combinador li + li o ul > li + li",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'li + li' || r.selectorText === 'ul > li + li'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen elementos h2 en el DOM",
+          "test": "doc.querySelectorAll('article h2').length >= 2"
+        },
+        {
+          "description": "Existen elementos li dentro de ul en el DOM",
+          "test": "doc.querySelectorAll('ul > li').length >= 3"
+        }
+      ],
+      "hints": [
+        "El selector `h2 + p` selecciona el `<p>` que viene inmediatamente después de un `<h2>`. Asegúrate de que en tu HTML no haya otro elemento entre el `<h2>` y ese `<p>`.",
+        "El selector `h2 ~ p` afecta TODOS los `<p>` que son hermanos y vienen después de cualquier `<h2>`, sin importar cuántos elementos hay entre ellos.",
+        "Para `article > p` recuerda que el `>` significa hijo DIRECTO. Los `<p>` dentro de un `<div>` dentro del `<article>` NO cuentan.",
+        "El selector `ul > li:last-child` combina el combinador `>` con la pseudo-clase `:last-child` para quitar el borde al último elemento.",
+        "Para la clase `.nota`, escribe dos `<p class='nota'>` consecutivos. El selector `.nota + .nota` aplica al segundo (el que viene justo después de otro `.nota`)."
+      ]
+    }
+  ]
+}

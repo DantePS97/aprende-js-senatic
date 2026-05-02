@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## CSS Grid: Áreas con Nombre\n\nUna de las funciones más poderosas —y elegantes— de CSS Grid es la posibilidad de nombrar zonas del layout y luego asignar elementos a esas zonas por nombre. Esto hace que el CSS sea **autodocumentado**: leyendo el mapa de áreas entiendes visualmente cómo está estructurada la página.\n\n### `grid-template-areas`\n\nEsta propiedad define el mapa visual del layout usando cadenas de texto entre comillas. Cada cadena representa una fila, y las palabras dentro de ella representan las columnas:\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: 200px 1fr;\n  grid-template-rows: 80px 1fr 60px;\n  grid-template-areas:\n    \"cabecera cabecera\"\n    \"barra    contenido\"\n    \"pie      pie\";\n}\n```\n\nLo que estás describiendo es una cuadrícula de 3 filas × 2 columnas donde:\n- La fila 1: `cabecera` ocupa las 2 columnas\n- La fila 2: `barra` ocupa la col. 1, `contenido` ocupa la col. 2\n- La fila 3: `pie` ocupa las 2 columnas\n\n#### Reglas sintácticas importantes\n\n1. **Cada cadena = una fila.** El número de cadenas define cuántas filas hay.\n2. **Cada palabra en una cadena = una columna.** Debe coincidir con el número de columnas definidas en `grid-template-columns`.\n3. **El punto (`.`) representa una celda vacía** — sin elemento asignado.\n4. **Un área debe ser rectangular** — no puedes crear formas en L ni T con `grid-template-areas`.\n5. **Los nombres no pueden tener espacios** — usa guiones: `nav-lateral`, `main-content`.\n\n```css\n/* Celda vacía con punto */\n.contenedor {\n  grid-template-areas:\n    \"logo nav nav\"\n    \".    main main\";\n}\n```\n\n### `grid-area` en los ítems\n\nPara colocar un ítem en una zona nombrada, usas la propiedad `grid-area` con el nombre que definiste:\n\n```css\n.mi-cabecera  { grid-area: cabecera; }\n.mi-barra     { grid-area: barra; }\n.mi-contenido { grid-area: contenido; }\n.mi-pie       { grid-area: pie; }\n```\n\nEl elemento se expande automáticamente para cubrir todas las celdas que pertenecen a ese área. No importa el orden en el HTML — Grid los coloca en la zona correcta.\n\n### Layout completo de página\n\nEste patrón es el más usado en páginas web reales:\n\n```css\n.pagina {\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  grid-template-rows: 70px 1fr 50px;\n  min-height: 100vh;\n  grid-template-areas:\n    \"header  header\"\n    \"sidebar main\"\n    \"footer  footer\";\n  gap: 16px;\n}\n\nheader  { grid-area: header; }\naside   { grid-area: sidebar; }\nmain    { grid-area: main; }\nfooter  { grid-area: footer; }\n```\n\n### Cambiar el layout con media queries\n\nEl verdadero poder de las áreas nombradas aparece al combinarlas con media queries. Puedes reorganizar TODA la página cambiando solo `grid-template-areas` y `grid-template-columns`:\n\n```css\n/* Móvil: todo en una columna */\n@media (max-width: 768px) {\n  .pagina {\n    grid-template-columns: 1fr;\n    grid-template-areas:\n      \"header\"\n      \"main\"\n      \"sidebar\"\n      \"footer\";\n  }\n}\n```\n\nEsta capacidad de reorganizar el layout desde CSS, sin tocar el HTML, es uno de los argumentos más fuertes para usar Grid Areas en proyectos reales.\n\n### `grid-area` como shorthand de posicionamiento\n\n`grid-area` también puede usarse como shorthand para posicionamiento por líneas (sin nombres):\n\n```css\n/* grid-area: row-start / col-start / row-end / col-end */\n.elemento {\n  grid-area: 1 / 1 / 2 / 3; /* Empieza en fila 1 col 1, termina en fila 2 col 3 */\n}\n```\n\nPero cuando usas áreas nombradas, el nombre es mucho más legible y mantenible.",
+    "examples": [
+      {
+        "code": "<style>\n  .layout-areas {\n    display: grid;\n    grid-template-columns: 160px 1fr;\n    grid-template-rows: 56px 200px 40px;\n    grid-template-areas:\n      \"cab cab\"\n      \"bar con\"\n      \"pie pie\";\n    gap: 8px;\n    height: 320px;\n    font-family: sans-serif;\n    font-size: 13px;\n  }\n  .layout-areas > * {\n    border-radius: 4px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: white;\n    font-weight: bold;\n  }\n  .cab { grid-area: cab; background: #3B82F6; }\n  .bar { grid-area: bar; background: #8B5CF6; }\n  .con { grid-area: con; background: #10B981; }\n  .pie { grid-area: pie; background: #F59E0B; }\n</style>\n<div class=\"layout-areas\">\n  <div class=\"cab\">Cabecera</div>\n  <div class=\"bar\">Barra lateral</div>\n  <div class=\"con\">Contenido principal</div>\n  <div class=\"pie\">Pie de página</div>\n</div>",
+        "explanation": "Layout clásico de 4 zonas usando `grid-template-areas`. El mapa visual en el CSS describe exactamente lo que se ve en pantalla: cabecera y pie abarcan ambas columnas, mientras barra lateral y contenido comparten la fila del medio."
+      },
+      {
+        "code": "<style>\n  .dashboard {\n    display: grid;\n    grid-template-columns: 1fr 1fr 1fr;\n    grid-template-rows: auto auto;\n    grid-template-areas:\n      \"hero    hero    stats\"\n      \"reciente reciente actividad\";\n    gap: 12px;\n    font-family: sans-serif;\n    font-size: 12px;\n  }\n  .dashboard > * {\n    background: #F1F5F9;\n    border: 1px solid #CBD5E1;\n    border-radius: 6px;\n    padding: 12px;\n    min-height: 80px;\n  }\n  .hero     { grid-area: hero; background: #DBEAFE; }\n  .stats    { grid-area: stats; background: #FCE7F3; }\n  .reciente { grid-area: reciente; background: #DCFCE7; }\n  .actividad{ grid-area: actividad; background: #FEF3C7; }\n</style>\n<div class=\"dashboard\">\n  <div class=\"hero\">Banner principal (2 cols)</div>\n  <div class=\"stats\">Estadísticas</div>\n  <div class=\"reciente\">Actividad reciente (2 cols)</div>\n  <div class=\"actividad\">Actividad</div>\n</div>",
+        "explanation": "Dashboard de 3 columnas con áreas irregulares. El área `hero` ocupa 2 columnas y `stats` una, mientras `reciente` ocupa 2 columnas de la segunda fila. Esto sería muy difícil de lograr solo con Flexbox."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Maqueta un layout con grid-template-areas",
+      "prompt": "Construye un layout de página completa usando `grid-template-areas`. El contenedor `.layout` debe tener 2 columnas (`200px 1fr`) y 3 filas. Usa estas áreas exactas:\n\n```\n\"cabecera cabecera\"\n\"barra    contenido\"\n\"pie      pie\"\n```\n\nCrea los elementos con las clases: `.cabecera` (grid-area: cabecera), `.barra` (grid-area: barra), `.contenido` (grid-area: contenido) y `.pie` (grid-area: pie). Agrega texto descriptivo dentro de cada elemento.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Layout con Grid Areas</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ".layout existe y tiene display: grid",
+          "test": "(function() { var el = doc.querySelector('.layout'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
+        },
+        {
+          "description": "La regla CSS de .layout define grid-template-areas",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.layout' && r.style.gridTemplateAreas && r.style.gridTemplateAreas.length > 0); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .cabecera define grid-area: cabecera",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cabecera' && r.style.gridArea === 'cabecera'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .barra define grid-area: barra",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.barra' && r.style.gridArea === 'barra'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .contenido define grid-area: contenido",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.contenido' && r.style.gridArea === 'contenido'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .pie define grid-area: pie",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.pie' && r.style.gridArea === 'pie'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Los 4 elementos de zona existen en el DOM",
+          "test": "!!doc.querySelector('.cabecera') && !!doc.querySelector('.barra') && !!doc.querySelector('.contenido') && !!doc.querySelector('.pie')"
+        }
+      ],
+      "hints": [
+        "El contenedor `.layout` necesita `display: grid`, `grid-template-columns: 200px 1fr` y `grid-template-areas` con las 3 cadenas de texto.",
+        "Cada cadena de `grid-template-areas` debe ir entre comillas y representar una fila. Las palabras dentro definen cómo se reparte cada área en las columnas.",
+        "Para que `cabecera` abarque ambas columnas, escribe su nombre dos veces en la primera cadena: `\"cabecera cabecera\"`.",
+        "Los elementos hijos usan `grid-area: nombre` (sin comillas) para anclarse a su zona.",
+        "Añade `grid-template-rows` al contenedor para darle altura a cada fila, por ejemplo `80px 1fr 60px`."
+      ]
+    }
+  ]
+}

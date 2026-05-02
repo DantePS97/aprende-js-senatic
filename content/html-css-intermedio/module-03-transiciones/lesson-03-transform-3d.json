@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "# Transformaciones CSS 3D\n\nCSS no solo permite transformar elementos en el plano 2D — también podemos crear ilusiones convincentes de profundidad y movimiento tridimensional usando las propiedades 3D. Son la base de efectos como tarjetas que giran, galerías de fotos y transiciones de página.\n\n## El sistema de coordenadas 3D\n\nAñadimos un tercer eje `Z` que apunta hacia el espectador:\n- Eje **X**: horizontal (izquierda/derecha)\n- Eje **Y**: vertical (arriba/abajo)  \n- Eje **Z**: profundidad (hacia ti / lejos de ti)\n\n## `perspective` — La distancia del espectador\n\nSin perspectiva, no hay sensación de profundidad. La propiedad `perspective` simula la distancia desde el espectador hasta el plano Z=0.\n\n**IMPORTANTE:** `perspective` se aplica en el **elemento padre**, no en el elemento que se transforma.\n\n```css\n/* Aplicado al contenedor padre */\n.escena {\n  perspective: 600px;  /* distancia corta = efecto dramático */\n}\n\n/* O como función dentro de transform (menos común) */\n.elemento {\n  transform: perspective(600px) rotateY(45deg);\n}\n```\n\nValores de perspectiva:\n- `200px–400px`: Muy dramático, distorsión pronunciada\n- `600px–800px`: Moderado, natural\n- `1000px+`: Sutil, casi ortográfico\n\n## Funciones de transformación 3D\n\n### Rotación 3D\n```css\ntransform: rotateX(45deg);   /* gira alrededor del eje horizontal */\ntransform: rotateY(180deg);  /* gira alrededor del eje vertical — efecto flip */\ntransform: rotateZ(30deg);   /* igual que rotate() en 2D */\ntransform: rotate3d(1, 1, 0, 45deg); /* eje personalizado */\n```\n\n### Traslación en Z\n```css\ntransform: translateZ(100px);   /* acerca el elemento al espectador */\ntransform: translateZ(-50px);   /* aleja el elemento */\ntransform: translate3d(x, y, z); /* shorthand 3D */\n```\n\n### Escala 3D\n```css\ntransform: scale3d(1.2, 1.2, 1);  /* escala 3D */\n```\n\n## `transform-style: preserve-3d`\n\nPor defecto, los hijos de un elemento transformado en 3D son \"aplanados\" al plano 2D del padre. Para que los hijos también participen en el espacio 3D, el padre necesita:\n\n```css\n.contenedor-3d {\n  transform-style: preserve-3d;\n}\n```\n\nEsto es **esencial** para el efecto de flip card: sin él, las dos caras de la tarjeta no se posicionarían correctamente en el espacio 3D.\n\n## `backface-visibility: hidden`\n\nCuando un elemento se rota más de 90 grados, su cara trasera queda visible (como el reverso de una hoja de papel). Con `backface-visibility: hidden`, el elemento se hace invisible cuando está \"de espaldas\".\n\n```css\n.cara {\n  backface-visibility: hidden;\n}\n```\n\nEsto es la clave del efecto flip card: cada cara se oculta cuando no está de frente al espectador.\n\n## El patrón Flip Card\n\nEl efecto de tarjeta que gira es el ejemplo canónico de CSS 3D:\n\n```css\n/* 1. El escenario define la perspectiva */\n.escena { perspective: 600px; }\n\n/* 2. La tarjeta rota al hacer hover */\n.tarjeta-3d {\n  transform-style: preserve-3d;\n  transition: transform 0.6s ease;\n}\n.tarjeta-3d:hover { transform: rotateY(180deg); }\n\n/* 3. Las caras ocultan su dorso */\n.cara {\n  position: absolute;\n  backface-visibility: hidden;\n}\n\n/* 4. La cara trasera empieza pre-rotada */\n.cara-detras { transform: rotateY(180deg); }\n```",
+    "examples": [
+      {
+        "code": "/* Cubo CSS 3D — para entender el espacio 3D */\n.escena {\n  perspective: 400px;\n  width: 100px;\n  height: 100px;\n}\n\n.cubo {\n  width: 100%;\n  height: 100%;\n  position: relative;\n  transform-style: preserve-3d;\n  transition: transform 1s ease;\n  animation: rotar 8s linear infinite;\n}\n\n/* Las 6 caras del cubo */\n.cara-cubo {\n  position: absolute;\n  width: 100px;\n  height: 100px;\n  opacity: 0.85;\n  backface-visibility: hidden;\n}\n\n.frente  { transform: translateZ(50px);  background: #3B82F6; }\n.detras  { transform: rotateY(180deg) translateZ(50px); background: #EF4444; }\n.derecha { transform: rotateY( 90deg) translateZ(50px); background: #10B981; }\n.izquier { transform: rotateY(-90deg) translateZ(50px); background: #F59E0B; }\n.arriba  { transform: rotateX( 90deg) translateZ(50px); background: #8B5CF6; }\n.abajo   { transform: rotateX(-90deg) translateZ(50px); background: #EC4899; }\n\n@keyframes rotar {\n  from { transform: rotateX(0) rotateY(0); }\n  to   { transform: rotateX(360deg) rotateY(360deg); }\n}",
+        "explanation": "El cubo 3D muestra cómo `translateZ` posiciona cada cara a la distancia correcta, y `rotateY`/`rotateX` las orientan hacia las 6 direcciones. Sin `transform-style: preserve-3d` en `.cubo`, todas las caras colapsarían en un plano 2D."
+      },
+      {
+        "code": "/* Flip Card completa */\n.escena {\n  width: 200px;\n  height: 260px;\n  perspective: 600px; /* perspectiva en el PADRE */\n}\n\n.tarjeta-3d {\n  width: 100%;\n  height: 100%;\n  position: relative;\n  transform-style: preserve-3d; /* hijos en espacio 3D */\n  transition: transform 0.6s ease;\n  cursor: pointer;\n}\n\n/* Hover: rota la tarjeta completa */\n.tarjeta-3d:hover {\n  transform: rotateY(180deg);\n}\n\n/* Estilos compartidos de ambas caras */\n.cara {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 12px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 1.5rem;\n  backface-visibility: hidden; /* oculta cuando está de espaldas */\n}\n\n.cara-frente {\n  background: linear-gradient(135deg, #3B82F6, #8B5CF6);\n  color: white;\n  /* No necesita transform inicial — ya está de frente */\n}\n\n.cara-detras {\n  background: linear-gradient(135deg, #10B981, #059669);\n  color: white;\n  /* Pre-rotada: empieza de espaldas, queda de frente al girar 180deg */\n  transform: rotateY(180deg);\n}",
+        "explanation": "El secreto del flip card está en que la cara trasera empieza con `transform: rotateY(180deg)` — ya está \"dada vuelta\". Cuando el contenedor rota otros 180°, la cara trasera llega a 360° total (= 0°) quedando de frente al espectador, mientras la cara frontal queda a 180° y se oculta por `backface-visibility: hidden`."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tarjeta flip 3D interactiva",
+      "prompt": "Construye un efecto de tarjeta que gira en 3D al hacer hover, revelando información en su cara trasera.\n\n**Requisitos:**\n1. Un contenedor `.escena` con width 200px, height 260px y `perspective: 600px`.\n2. Dentro, un div `.tarjeta-3d` con width/height 100%, position relative, `transform-style: preserve-3d`, `transition: transform 0.6s ease`, cursor pointer.\n3. `.tarjeta-3d:hover` con `transform: rotateY(180deg)`.\n4. Dos hijos con clase `.cara`: position absolute, width/height 100%, `backface-visibility: hidden`, border-radius 12px, display flex, align-items center, justify-content center, font-size 1.5rem.\n5. `.cara-frente`: `background: linear-gradient(135deg, #3B82F6, #8B5CF6)`, color white. Muestra un emoji o icono (🎴).\n6. `.cara-detras`: `background: linear-gradient(135deg, #10B981, #059669)`, color white, `transform: rotateY(180deg)`. Muestra texto revelado.\n\nPrueba haciendo hover sobre la tarjeta — debería girar suavemente mostrando la cara trasera.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Transformaciones 3D</title>\n  <style>\n    body {\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: #F1F5F9;\n      font-family: system-ui, sans-serif;\n      margin: 0;\n    }\n\n    /* Tu código CSS aquí */\n\n  </style>\n</head>\n<body>\n\n  <!-- Estructura:\n    .escena\n      .tarjeta-3d\n        .cara.cara-frente\n        .cara.cara-detras\n  -->\n\n</body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el elemento .escena",
+          "test": "doc.querySelector('.escena') !== null"
+        },
+        {
+          "description": "La regla CSS de .escena define perspective",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.escena' && !!r.style.perspective); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .tarjeta-3d tiene transform-style: preserve-3d",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d' && r.style.transformStyle === 'preserve-3d'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .tarjeta-3d:hover tiene rotateY(180deg) en su transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d:hover' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .cara tiene backface-visibility: hidden",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara' && r.style.backfaceVisibility === 'hidden'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla .cara-detras tiene rotateY(180deg) en su transform",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara-detras' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen tanto .cara-frente como .cara-detras en el DOM",
+          "test": "doc.querySelector('.cara-frente') !== null && doc.querySelector('.cara-detras') !== null"
+        }
+      ],
+      "hints": [
+        "El orden de la estructura HTML importa: `.escena` > `.tarjeta-3d` > `.cara-frente` y `.cara-detras` como hermanos.",
+        "Si la tarjeta no gira, verifica que `.escena` tenga `perspective` y `.tarjeta-3d` tenga `transform-style: preserve-3d`.",
+        "La cara trasera DEBE tener `transform: rotateY(180deg)` en su estado base — no en :hover. Empieza girada para que al girar el contenedor quede de frente.",
+        "Ambas caras necesitan `position: absolute` y `width: 100%; height: 100%` para superponerse exactamente.",
+        "Si ves la cara trasera a través de la frontal, asegúrate de que ambas caras tengan `backface-visibility: hidden`."
+      ]
+    }
+  ]
+}

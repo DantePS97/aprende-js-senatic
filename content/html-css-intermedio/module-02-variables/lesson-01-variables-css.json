@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## CSS Custom Properties (Variables CSS)\n\nLas propiedades personalizadas de CSS, conocidas popularmente como **variables CSS**, son una de las características más transformadoras que ha recibido CSS en los últimos años. Permiten almacenar valores reutilizables directamente en la hoja de estilos, con una capacidad que va mucho más allá de los preprocesadores: son **dinámicas** y **heredables**.\n\n### Declarar una variable\n\nLas variables CSS se declaran con el prefijo `--` (dos guiones), seguido del nombre que elijas:\n\n```css\n:root {\n  --color-primario: #3B82F6;\n  --color-texto: #1F2937;\n  --espaciado-base: 16px;\n  --radio-borde: 8px;\n  --sombra: 0 2px 4px rgba(0, 0, 0, 0.1);\n}\n```\n\nEl selector `:root` es el elemento raíz del documento (equivale a `html` pero con mayor especificidad). Declarar variables aquí las hace disponibles en **todo el documento**.\n\n### Usar una variable: `var()`\n\nPara usar una variable, empleas la función `var()` con el nombre de la variable:\n\n```css\n.boton {\n  background-color: var(--color-primario);\n  padding: var(--espaciado-base);\n  border-radius: var(--radio-borde);\n  color: white;\n}\n\nh1 {\n  color: var(--color-texto);\n  font-size: 2rem;\n}\n```\n\n### Valores de fallback\n\n`var()` acepta un segundo argumento como **valor de respaldo**, que se usa cuando la variable no está definida:\n\n```css\n.elemento {\n  /* Si --color-acento no existe, usa #6366F1 */\n  color: var(--color-acento, #6366F1);\n\n  /* Fallback en cadena */\n  background: var(--bg-primario, var(--bg-secundario, white));\n\n  /* Fallback con valor calculado */\n  padding: var(--espaciado, 1rem);\n}\n```\n\nLos fallbacks son fundamentales cuando usas variables en componentes que pueden existir fuera de un contexto donde la variable esté definida.\n\n### Alcance y herencia\n\nA diferencia de las variables en lenguajes de programación, las variables CSS **se heredan** a través del árbol DOM. Esto significa que una variable definida en un elemento padre está disponible en todos sus descendientes:\n\n```css\n/* Variable global en :root */\n:root {\n  --color-marca: #3B82F6;\n}\n\n/* Variable local en un componente */\n.tarjeta {\n  --color-marca: #EC4899; /* Sobreescribe solo dentro de .tarjeta */\n  color: var(--color-marca); /* Usa el rosado */\n}\n\n/* Fuera de .tarjeta, --color-marca sigue siendo azul */\np {\n  color: var(--color-marca); /* Usa el azul de :root */\n}\n```\n\nEste mecanismo de herencia es la base de los sistemas de temas en CSS moderno.\n\n### Variables en JavaScript\n\nUna diferencia crucial respecto a variables de Sass/Less: las variables CSS existen en el DOM y pueden leerse y modificarse con JavaScript en tiempo de ejecución:\n\n```javascript\n// Leer una variable\nconst color = getComputedStyle(document.documentElement)\n  .getPropertyValue('--color-primario');\n\n// Modificar una variable (efecto inmediato en toda la página)\ndocument.documentElement.style\n  .setProperty('--color-primario', '#EC4899');\n```\n\nEsto hace posible cambiar temas completos con una sola línea de JavaScript.\n\n### Convenciones de nomenclatura\n\nNo hay reglas estrictas, pero estas convenciones son ampliamente adoptadas:\n\n```css\n:root {\n  /* Colores: color-[contexto] o color-[nombre] */\n  --color-primario: #3B82F6;\n  --color-texto-muted: #6B7280;\n\n  /* Espaciado: espacio-[talla] */\n  --espacio-xs: 4px;\n  --espacio-sm: 8px;\n  --espacio-md: 16px;\n  --espacio-lg: 32px;\n\n  /* Tipografía: fuente-[propiedad] */\n  --fuente-base: 'Inter', sans-serif;\n  --tamano-sm: 0.875rem;\n\n  /* Efectos */\n  --sombra-sm: 0 1px 2px rgba(0,0,0,0.05);\n  --radio-sm: 4px;\n}\n```\n\nUsa nombres descriptivos del **propósito**, no del valor: `--color-peligro` es mejor que `--color-rojo` porque si el día de mañana cambias el rojo por un naranja, el nombre `--color-rojo` dejaría de tener sentido.",
+    "examples": [
+      {
+        "code": "<style>\n  :root {\n    --color-primario: #3B82F6;\n    --color-texto: #1F2937;\n    --espaciado: 16px;\n    --radio-borde: 8px;\n  }\n  .tarjeta-ej {\n    padding: var(--espaciado);\n    border-radius: var(--radio-borde);\n    border: 1px solid var(--color-primario);\n    max-width: 300px;\n    font-family: sans-serif;\n  }\n  .tarjeta-ej .titulo-ej {\n    color: var(--color-primario);\n    margin: 0 0 8px 0;\n    font-size: 18px;\n  }\n  .tarjeta-ej .desc-ej {\n    color: var(--color-texto);\n    margin: 0;\n    font-size: 14px;\n    line-height: 1.5;\n  }\n</style>\n<div class=\"tarjeta-ej\">\n  <h2 class=\"titulo-ej\">Variables CSS</h2>\n  <p class=\"desc-ej\">Las propiedades personalizadas hacen el código más mantenible y consistente.</p>\n</div>",
+        "explanation": "Tarjeta que usa 4 variables definidas en `:root`. Si necesitas cambiar el color primario, basta con modificarlo en un solo lugar — todos los elementos que lo usan se actualizan automáticamente."
+      },
+      {
+        "code": "<style>\n  :root {\n    --color-exito: #10B981;\n    --color-advertencia: #F59E0B;\n    --color-error: #EF4444;\n    --radio: 6px;\n    --padding-badge: 4px 12px;\n  }\n  .badge {\n    display: inline-block;\n    padding: var(--padding-badge);\n    border-radius: var(--radio);\n    font-family: sans-serif;\n    font-size: 13px;\n    font-weight: bold;\n    color: white;\n    margin-right: 8px;\n  }\n  .badge-exito       { background: var(--color-exito); }\n  .badge-advertencia { background: var(--color-advertencia); }\n  .badge-error       { background: var(--color-error); }\n\n  /* Variable local sobreescrita en un componente oscuro */\n  .fondo-oscuro {\n    --color-exito: #6EE7B7;  /* Versión más suave sobre fondo oscuro */\n    background: #1F2937;\n    padding: 16px;\n    border-radius: 8px;\n    margin-top: 12px;\n  }\n</style>\n<div>\n  <span class=\"badge badge-exito\">Activo</span>\n  <span class=\"badge badge-advertencia\">Pendiente</span>\n  <span class=\"badge badge-error\">Error</span>\n</div>\n<div class=\"fondo-oscuro\">\n  <span class=\"badge badge-exito\">Activo (versión suave)</span>\n</div>",
+        "explanation": "Sistema de badges semánticos donde cada variante usa su propia variable de color. Dentro de `.fondo-oscuro`, `--color-exito` es sobreescrita con un verde más suave — solo los elementos dentro de ese contenedor usan la versión local."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Sistema de diseño con variables CSS",
+      "prompt": "Crea un sistema de variables CSS y aplícalas a una tarjeta. En `:root` define exactamente: `--color-primario: #3B82F6`, `--color-texto: #1F2937`, `--espaciado: 16px` y `--radio-borde: 8px`.\n\nCrea una `.tarjeta` con un `h2.titulo` y un `p.descripcion` dentro. Aplica al `.tarjeta`: `padding: var(--espaciado)`, `border-radius: var(--radio-borde)` y `border: 1px solid var(--color-primario)`. Al `.titulo`: `color: var(--color-primario)`. A `.descripcion`: `color: var(--color-texto)`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Variables CSS</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ":root define --color-primario",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('--color-primario')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ":root define --espaciado",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('--espaciado')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .tarjeta usa var(--espaciado) en padding",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && r.style.padding.includes('var(--espaciado)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "La regla CSS de .tarjeta usa var(--color-primario)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && r.style.cssText.includes('var(--color-primario)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe .titulo dentro de .tarjeta",
+          "test": "!!doc.querySelector('.tarjeta .titulo')"
+        },
+        {
+          "description": "Existe .descripcion dentro de .tarjeta",
+          "test": "!!doc.querySelector('.tarjeta .descripcion')"
+        },
+        {
+          "description": "La regla CSS de .titulo usa var(--color-primario)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.titulo' && r.style.color.includes('var(--color-primario)')); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Las variables se declaran en `:root { --nombre: valor; }` con doble guion al inicio del nombre.",
+        "Para usar una variable: `propiedad: var(--nombre-variable);` — no olvides los paréntesis de `var()`.",
+        "Para el borde de `.tarjeta` que use la variable: `border: 1px solid var(--color-primario);`.",
+        "Las clases `.titulo` y `.descripcion` deben estar en los elementos `h2` y `p` respectivamente dentro de `.tarjeta`.",
+        "El nombre exacto de las variables importa: `--color-primario`, `--color-texto`, `--espaciado`, `--radio-borde`."
+      ]
+    }
+  ]
+}

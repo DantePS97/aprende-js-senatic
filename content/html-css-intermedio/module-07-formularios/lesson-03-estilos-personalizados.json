@@ -1,0 +1,61 @@
+{
+  "theory": {
+    "markdown": "## Controles de formulario personalizados con CSS\n\nLos controles nativos del navegador — checkboxes, radio buttons, selectores — son funcionales pero visualmente inconsistentes entre sistemas operativos. CSS moderno te permite reemplazar completamente su apariencia sin sacrificar accesibilidad ni funcionalidad.\n\n### La propiedad `appearance: none`\n\nEl primer paso para personalizar cualquier control nativo es eliminar su aspecto predeterminado:\n\n```css\ninput[type=\"checkbox\"] {\n  appearance: none;\n  -webkit-appearance: none; /* Safari */\n}\n```\n\nDespués de esto, el elemento es como un lienzo en blanco — puedes darle cualquier forma.\n\n### Checkboxes personalizados\n\nSin `appearance: none`, un checkbox es una caja gris del sistema. Con él, puedes diseñarlo completamente:\n\n```css\ninput[type=\"checkbox\"] {\n  appearance: none;\n  -webkit-appearance: none;\n  width: 20px;\n  height: 20px;\n  border: 2px solid #D1D5DB;\n  border-radius: 4px;\n  cursor: pointer;\n  position: relative;\n  transition: all 0.2s;\n}\n\n/* Estado marcado */\ninput[type=\"checkbox\"]:checked {\n  background-color: #3B82F6;\n  border-color: #3B82F6;\n}\n\n/* Checkmark con pseudo-elemento */\ninput[type=\"checkbox\"]:checked::after {\n  content: '';\n  position: absolute;\n  top: 2px;\n  left: 6px;\n  width: 5px;\n  height: 10px;\n  border: 2px solid white;\n  border-top: none;\n  border-left: none;\n  transform: rotate(45deg);\n}\n```\n\n### Radio buttons personalizados\n\nEl mismo principio aplica a los radio buttons:\n\n```css\ninput[type=\"radio\"] {\n  appearance: none;\n  -webkit-appearance: none;\n  width: 20px;\n  height: 20px;\n  border: 2px solid #D1D5DB;\n  border-radius: 50%; /* Círculo */\n  cursor: pointer;\n  position: relative;\n}\n\ninput[type=\"radio\"]:checked {\n  border-color: #3B82F6;\n}\n\ninput[type=\"radio\"]:checked::after {\n  content: '';\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  width: 10px;\n  height: 10px;\n  background: #3B82F6;\n  border-radius: 50%;\n}\n```\n\n### Select personalizado\n\nEl `<select>` nativo es el control más difícil de estilizar. La estrategia es usar `appearance: none` y añadir una flecha propia:\n\n```css\nselect {\n  appearance: none;\n  -webkit-appearance: none;\n  padding: 10px 36px 10px 12px;\n  border: 2px solid #D1D5DB;\n  border-radius: 6px;\n  background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E\");\n  background-repeat: no-repeat;\n  background-position: right 10px center;\n  cursor: pointer;\n}\n```\n\n### Toggle switch (interruptor)\n\nUn toggle switch es un checkbox disfrazado — la accesibilidad permanece intacta:\n\n```html\n<label class=\"toggle\">\n  <input type=\"checkbox\">\n  <span class=\"slider\"></span>\n  Modo oscuro\n</label>\n```\n\n```css\n.toggle input {\n  opacity: 0;\n  width: 0;\n  height: 0;\n  position: absolute;\n}\n\n.slider {\n  position: relative;\n  display: inline-block;\n  width: 44px;\n  height: 24px;\n  background: #D1D5DB;\n  border-radius: 24px;\n  cursor: pointer;\n  transition: background 0.3s;\n}\n\n.slider::after {\n  content: '';\n  position: absolute;\n  top: 2px;\n  left: 2px;\n  width: 20px;\n  height: 20px;\n  background: white;\n  border-radius: 50%;\n  transition: transform 0.3s;\n}\n\ninput:checked + .slider {\n  background: #3B82F6;\n}\n\ninput:checked + .slider::after {\n  transform: translateX(20px);\n}\n```\n\n### Accesibilidad al personalizar controles\n\nAl personalizar controles, NUNCA pierdas accesibilidad:\n\n1. **Mantén el elemento nativo** — solo cambias su apariencia, no lo reemplazas con un `div`\n2. **Preserva el `:focus-visible`** — los usuarios de teclado deben ver el foco\n3. **Usa `<label>`** — siempre asocia etiquetas con sus controles\n4. **Respeta `:disabled`** — aplica estilos para el estado deshabilitado\n\n```css\n/* Foco accesible */\ninput[type=\"checkbox\"]:focus-visible {\n  outline: 3px solid #3B82F6;\n  outline-offset: 2px;\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .demo-check {\n    display: flex;\n    flex-direction: column;\n    gap: 12px;\n    padding: 16px;\n    font-family: sans-serif;\n    font-size: 14px;\n  }\n  .opcion-demo {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    cursor: pointer;\n  }\n  .opcion-demo input[type=\"checkbox\"] {\n    appearance: none;\n    -webkit-appearance: none;\n    width: 22px;\n    height: 22px;\n    border: 2px solid #D1D5DB;\n    border-radius: 5px;\n    cursor: pointer;\n    position: relative;\n    transition: all 0.15s;\n    flex-shrink: 0;\n  }\n  .opcion-demo input[type=\"checkbox\"]:checked {\n    background-color: #3B82F6;\n    border-color: #3B82F6;\n  }\n  .opcion-demo input[type=\"checkbox\"]:checked::after {\n    content: '';\n    position: absolute;\n    top: 3px;\n    left: 6px;\n    width: 6px;\n    height: 11px;\n    border: 2px solid white;\n    border-top: none;\n    border-left: none;\n    transform: rotate(45deg);\n  }\n  .opcion-demo input[type=\"checkbox\"]:focus-visible {\n    outline: 3px solid rgba(59,130,246,0.5);\n    outline-offset: 2px;\n  }\n</style>\n<div class=\"demo-check\">\n  <label class=\"opcion-demo\">\n    <input type=\"checkbox\" checked>\n    JavaScript\n  </label>\n  <label class=\"opcion-demo\">\n    <input type=\"checkbox\">\n    TypeScript\n  </label>\n  <label class=\"opcion-demo\">\n    <input type=\"checkbox\" checked>\n    CSS Avanzado\n  </label>\n</div>",
+        "explanation": "Checkboxes completamente personalizados. `appearance: none` elimina el estilo del sistema. El checkmark se crea con `::after` usando un rectángulo rotado 45° que forma una palomita. El estado `:checked` cambia el fondo a azul. `:focus-visible` mantiene la accesibilidad para usuarios de teclado."
+      },
+      {
+        "code": "<style>\n  .toggle-demo {\n    display: flex;\n    align-items: center;\n    gap: 12px;\n    padding: 16px;\n    font-family: sans-serif;\n    font-size: 14px;\n    cursor: pointer;\n  }\n  .toggle-demo input {\n    opacity: 0;\n    width: 0;\n    height: 0;\n    position: absolute;\n  }\n  .slider-demo {\n    position: relative;\n    display: inline-block;\n    width: 48px;\n    height: 26px;\n    background: #D1D5DB;\n    border-radius: 26px;\n    transition: background 0.3s;\n    flex-shrink: 0;\n  }\n  .slider-demo::after {\n    content: '';\n    position: absolute;\n    top: 3px;\n    left: 3px;\n    width: 20px;\n    height: 20px;\n    background: white;\n    border-radius: 50%;\n    transition: transform 0.3s;\n    box-shadow: 0 1px 3px rgba(0,0,0,0.2);\n  }\n  .toggle-demo input:checked + .slider-demo {\n    background: #3B82F6;\n  }\n  .toggle-demo input:checked + .slider-demo::after {\n    transform: translateX(22px);\n  }\n</style>\n<label class=\"toggle-demo\">\n  <input type=\"checkbox\">\n  <span class=\"slider-demo\"></span>\n  Notificaciones activas\n</label>",
+        "explanation": "Toggle switch construido sobre un `<input type=\"checkbox\">` invisible. El input real queda con `opacity: 0` y dimensiones cero, pero sigue siendo accesible. El `<span class=\"slider-demo\">` es el visual. Al marcar el checkbox, el selector CSS `input:checked + .slider-demo` activa el cambio de color y el pseudo-elemento `::after` se desplaza con `transform: translateX`."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Checkboxes con estilo personalizado",
+      "prompt": "Crea un div `.opciones` que contenga 3 checkboxes. Cada checkbox debe estar envuelto en un `<label>` con clase `.opcion` (el label contiene el input y el texto).\n\nCSS requerido:\n- `.opcion`: display flex, align-items center, gap 8px, cursor pointer, margin-bottom 8px\n- `.opcion input[type=\"checkbox\"]`: appearance none, -webkit-appearance none, width 20px, height 20px, border `2px solid #D1D5DB`, border-radius 4px, cursor pointer, position relative\n- `.opcion input[type=\"checkbox\"]:checked`: background-color #3B82F6, border-color #3B82F6\n- `.opcion input[type=\"checkbox\"]:checked::after`: content '✓', color white, position absolute, top 50%, left 50%, transform `translate(-50%, -50%)`, font-size 14px\n\nPon textos descriptivos en cada checkbox (por ejemplo: las 3 tecnologías que quieras aprender).",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Checkboxes Personalizados</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el contenedor .opciones",
+          "test": "!!doc.querySelector('.opciones')"
+        },
+        {
+          "description": "Existen exactamente 3 checkboxes",
+          "test": "doc.querySelectorAll('input[type=\"checkbox\"]').length === 3"
+        },
+        {
+          "description": "CSS tiene regla con appearance: none para el checkbox",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('input[type') && r.selectorText.includes('checkbox') && (r.style.appearance === 'none' || r.style.webkitAppearance === 'none')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para el estado :checked del checkbox",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('checkbox') && r.selectorText.includes(':checked') && !r.selectorText.includes('::after')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para :checked::after con content",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':checked') && r.selectorText.includes('::after') && !!r.style.content); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS de .opcion tiene display: flex",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.opcion' && r.style.display === 'flex'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen 3 labels con clase .opcion",
+          "test": "doc.querySelectorAll('.opcion').length === 3"
+        }
+      ],
+      "hints": [
+        "Empieza con `appearance: none` y `-webkit-appearance: none` en el mismo bloque CSS para compatibilidad con Chrome/Safari.",
+        "Para que `::after` funcione con `position: absolute`, el input necesita `position: relative`.",
+        "El truco de `top: 50%; left: 50%; transform: translate(-50%, -50%)` centra perfectamente el contenido dentro del elemento.",
+        "La estructura HTML correcta es: `<label class=\"opcion\"><input type=\"checkbox\"> Texto</label>` — el input va DENTRO del label.",
+        "Si el checkmark (✓) se ve pero no está centrado, verifica que el input tenga `position: relative` y el `::after` tenga `position: absolute`.",
+        "Puedes usar `content: '✓'` o `content: '\\2713'` (código Unicode) — ambos funcionan."
+      ]
+    }
+  ]
+}

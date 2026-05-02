@@ -1,0 +1,61 @@
+{
+  "theory": {
+    "markdown": "## Filtros CSS: `filter` y `backdrop-filter`\n\nLa propiedad `filter` aplica efectos visuales directamente desde CSS, sin necesidad de editar imágenes en Photoshop o usar canvas. Es una de las propiedades más versátiles para crear interfaces con carácter visual.\n\n### La propiedad `filter`\n\n`filter` acepta una o más **funciones de filtro** separadas por espacio:\n\n```css\n.elemento {\n  filter: funcion1(valor) funcion2(valor);\n}\n```\n\n### Funciones disponibles\n\n#### `blur(radio)`\nDesenfoca el elemento. El radio define la intensidad:\n\n```css\n.desenfocado {\n  filter: blur(4px);  /* Desenfoque moderado */\n  filter: blur(0);    /* Sin desenfoque */\n}\n```\n\n#### `brightness(porcentaje)`\nAjusta el brillo. `100%` es el original, `0%` es negro total, `200%` es el doble de brillante:\n\n```css\n.brillante { filter: brightness(150%); }\n.oscuro    { filter: brightness(50%); }\n```\n\n#### `contrast(porcentaje)`\nAumenta o reduce el contraste:\n\n```css\n.alto-contraste { filter: contrast(200%); }\n.bajo-contraste { filter: contrast(50%); }\n```\n\n#### `grayscale(porcentaje)`\nConvierte a escala de grises. `100%` es completamente gris, `0%` es el color original:\n\n```css\n.blanco-negro { filter: grayscale(100%); }\n/* Efecto hover: color al pasar el cursor */\n.foto:hover   { filter: grayscale(0%); }\n```\n\n#### `sepia(porcentaje)`\nAplica un tono cálido envejecido:\n\n```css\n.vintage { filter: sepia(80%); }\n```\n\n#### `saturate(porcentaje)`\nAumenta o reduce la saturación de los colores. Valores > 100% saturan más, < 100% desaturan:\n\n```css\n.vibrante   { filter: saturate(200%); }\n.desaturado { filter: saturate(30%); }\n```\n\n#### `hue-rotate(ángulo)`\nRota el mapa de colores en la rueda de color. Útil para variaciones de paleta sin cambiar la imagen:\n\n```css\n.paleta-alternativa { filter: hue-rotate(90deg); }\n.invertir-paleta    { filter: hue-rotate(180deg); }\n```\n\n#### `drop-shadow()` vs `box-shadow`\n\n`drop-shadow()` en `filter` es diferente de `box-shadow`. La clave: `drop-shadow` sigue la **forma real** del elemento (incluyendo transparencias en PNG), mientras que `box-shadow` sigue el rectángulo del bounding box:\n\n```css\n/* Sombra que sigue la forma del PNG */\n.icono-png {\n  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));\n}\n\n/* Sombra rectangular (ignora transparencias) */\n.icono-png {\n  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);\n}\n```\n\n### Combinar filtros\n\nPuedes encadenar múltiples filtros en una sola declaración:\n\n```css\n.efecto-cinematico {\n  filter: contrast(110%) brightness(90%) sepia(20%) saturate(80%);\n}\n\n.foto:hover {\n  filter: brightness(110%) saturate(120%);\n  transition: filter 0.3s ease;\n}\n```\n\n### `backdrop-filter`: filtrar el fondo\n\n`backdrop-filter` aplica filtros al contenido que está **detrás** del elemento, no al elemento en sí. El caso de uso más común es el glassmorphism:\n\n```css\n.tarjeta-vidrio {\n  backdrop-filter: blur(10px) saturate(150%);\n  background: rgba(255, 255, 255, 0.1);\n  border: 1px solid rgba(255, 255, 255, 0.2);\n  border-radius: 16px;\n}\n```\n\nPara que `backdrop-filter` funcione, el elemento debe tener un **fondo semi-transparente** (con alpha < 1). Si el fondo es opaco, no hay nada que filtrar detrás.\n\n### Performance y uso\n\nLos filtros CSS tienen costo de GPU. Para animaciones fluidas:\n\n```css\n.con-filtro {\n  /* Promueve el elemento a su propia capa de composición */\n  will-change: filter;\n  filter: blur(0);\n  transition: filter 0.3s ease;\n}\n\n.con-filtro:hover {\n  filter: blur(2px) brightness(80%);\n}\n```\n\n`will-change: filter` le indica al navegador que prepare la capa con anticipación.",
+    "examples": [
+      {
+        "code": "<style>\n  .filtros-galeria {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: 12px;\n    padding: 16px;\n    background: #F8FAFC;\n    border-radius: 12px;\n  }\n  .filtro-item {\n    display: flex;\n    flex-direction: column;\n    gap: 6px;\n    align-items: center;\n    font-family: sans-serif;\n    font-size: 11px;\n    color: #6B7280;\n  }\n  .muestra {\n    width: 80px;\n    height: 80px;\n    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    border-radius: 6px;\n    transition: filter 0.3s;\n  }\n  .muestra:hover { filter: none !important; }\n  .f-grayscale  { filter: grayscale(100%); }\n  .f-blur       { filter: blur(3px); }\n  .f-brightness { filter: brightness(170%); }\n  .f-sepia      { filter: sepia(100%); }\n  .f-contrast   { filter: contrast(250%); }\n</style>\n<div class=\"filtros-galeria\">\n  <div class=\"filtro-item\"><div class=\"muestra\"></div>Original</div>\n  <div class=\"filtro-item\"><div class=\"muestra f-grayscale\"></div>grayscale</div>\n  <div class=\"filtro-item\"><div class=\"muestra f-blur\"></div>blur</div>\n  <div class=\"filtro-item\"><div class=\"muestra f-brightness\"></div>brightness</div>\n  <div class=\"filtro-item\"><div class=\"muestra f-sepia\"></div>sepia</div>\n  <div class=\"filtro-item\"><div class=\"muestra f-contrast\"></div>contrast</div>\n</div>",
+        "explanation": "Galería comparativa de filtros CSS sobre el mismo gradiente base. Pasa el cursor sobre cualquier elemento para ver el original. Nota cómo `grayscale(100%)` elimina todo el color, `blur` desenfoca suavemente y `brightness(170%)` ilumina dramáticamente. Los filtros se aplican en tiempo real sin modificar el elemento original."
+      },
+      {
+        "code": "<style>\n  .glass-demo {\n    position: relative;\n    width: 320px;\n    height: 200px;\n    border-radius: 16px;\n    overflow: hidden;\n    font-family: sans-serif;\n  }\n  .fondo-glass {\n    position: absolute;\n    inset: 0;\n    background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);\n  }\n  .circulos {\n    position: absolute;\n    inset: 0;\n  }\n  .circulo {\n    position: absolute;\n    border-radius: 50%;\n    opacity: 0.6;\n  }\n  .c1 { width: 120px; height: 120px; background: #ffd700; top: -30px; left: -30px; }\n  .c2 { width: 80px; height: 80px; background: #00f5ff; bottom: -20px; right: 20px; }\n  .tarjeta-glass {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    width: 200px;\n    padding: 20px;\n    backdrop-filter: blur(12px) saturate(180%);\n    background: rgba(255, 255, 255, 0.15);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    border-radius: 12px;\n    color: white;\n    text-align: center;\n  }\n  .tarjeta-glass h3 { margin: 0 0 8px; font-size: 16px; }\n  .tarjeta-glass p { margin: 0; font-size: 12px; opacity: 0.9; }\n</style>\n<div class=\"glass-demo\">\n  <div class=\"fondo-glass\"></div>\n  <div class=\"circulos\">\n    <div class=\"circulo c1\"></div>\n    <div class=\"circulo c2\"></div>\n  </div>\n  <div class=\"tarjeta-glass\">\n    <h3>Glassmorphism</h3>\n    <p>backdrop-filter: blur(12px)</p>\n  </div>\n</div>",
+        "explanation": "Efecto glassmorphism clásico con `backdrop-filter`. La tarjeta central tiene un fondo con 15% de opacidad y un `backdrop-filter: blur(12px) saturate(180%)` que desenfoca y satura todo lo que hay detrás. Los círculos de colores en el fondo demuestran cómo el vidrio distorsiona el contenido subyacente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería de filtros CSS",
+      "prompt": "Crea una galería de imágenes con filtros CSS. Usa `.imagenes` como contenedor (display grid, grid-template-columns: repeat(3, 1fr), gap 16px). Crea 6 `.imagen-contenedor` (border-radius 8px, overflow hidden, aspect-ratio 1), cada uno con un div `.imagen` (width 100%, height 160px, background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)).\n\nAplica filtros:\n1. Primer contenedor: sin filtro (original)\n2. Segundo: `.imagen-contenedor:nth-child(2) .imagen` → `filter: grayscale(100%)`\n3. Tercero: `filter: blur(4px)`\n4. Cuarto: `filter: brightness(150%)`\n5. Quinto: `filter: sepia(80%)`\n6. Sexto: `filter: hue-rotate(90deg)`\n\nAdemás, crea un elemento `.glassmorphism` (position relative, backdrop-filter: blur(10px) saturate(150%), background: rgba(255,255,255,0.1), border: 1px solid rgba(255,255,255,0.2), border-radius 16px, padding 24px) y colócalo sobre un fondo de color.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Filtros CSS</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existen 6 elementos .imagen-contenedor",
+          "test": "doc.querySelectorAll('.imagen-contenedor').length === 6"
+        },
+        {
+          "description": "CSS tiene una regla de filtro con grayscale",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('grayscale')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene una regla de filtro con blur",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('blur')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene una regla de filtro con brightness",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('brightness')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene una regla de filtro con sepia",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('sepia')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe el elemento .glassmorphism",
+          "test": "!!doc.querySelector('.glassmorphism')"
+        },
+        {
+          "description": "CSS de .glassmorphism tiene backdrop-filter",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.glassmorphism' && !!r.style.backdropFilter); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Para los nth-child, la sintaxis es: `.imagen-contenedor:nth-child(2) .imagen { filter: grayscale(100%); }` — el selector apunta al `.imagen` dentro del segundo contenedor.",
+        "Para el efecto glassmorphism, el elemento necesita un fondo semi-transparente: `background: rgba(255,255,255,0.1)`. Con fondo opaco, `backdrop-filter` no tiene efecto visible.",
+        "Agrega `aspect-ratio: 1` en `.imagen-contenedor` para que todas las celdas sean cuadradas independientemente del contenido.",
+        "Si `backdrop-filter` no se ve, asegúrate de que `.glassmorphism` esté dentro de un contenedor con un fondo colorido visible detrás.",
+        "`blur(4px)` es suficiente para un desenfoque notable. Valores muy altos (>10px) hacen casi irreconocible el contenido.",
+        "Para que `hue-rotate` sea visible, el elemento debe tener colores saturados — el gradiente azul-morado es perfecto para eso."
+      ]
+    }
+  ]
+}

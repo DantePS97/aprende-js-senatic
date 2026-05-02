@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## CSS Grid: Fundamentos\n\nCSS Grid Layout es el sistema de maquetación bidimensional más poderoso de CSS. A diferencia de Flexbox (que trabaja en una sola dimensión), Grid te permite controlar filas Y columnas simultáneamente, lo que lo hace ideal para layouts completos de página y componentes con estructura matricial.\n\n### Activar Grid\n\nPara convertir un elemento en un **contenedor de grid**, aplicas `display: grid` (bloque) o `display: inline-grid` (en línea). Los hijos directos pasan a llamarse **ítems de grid** y se organizan automáticamente en la cuadrícula.\n\n```css\n.contenedor {\n  display: grid;\n}\n```\n\n### Definir columnas: `grid-template-columns`\n\nEsta propiedad es el corazón de Grid. Defines cuántas columnas tiene la cuadrícula y cuál es el ancho de cada una:\n\n```css\n/* 3 columnas: 200px, 200px, 200px */\n.contenedor {\n  display: grid;\n  grid-template-columns: 200px 200px 200px;\n}\n```\n\n#### La unidad `fr` (fracción)\n\nLa unidad `fr` representa una fracción del **espacio disponible** en el contenedor. Es la unidad estrella de Grid:\n\n```css\n/* 3 columnas iguales que ocupan todo el ancho */\n.contenedor {\n  grid-template-columns: 1fr 1fr 1fr;\n}\n\n/* Columna lateral fija + contenido flexible */\n.contenedor {\n  grid-template-columns: 250px 1fr;\n}\n\n/* Proporción 1:2:1 */\n.contenedor {\n  grid-template-columns: 1fr 2fr 1fr;\n}\n```\n\n#### La función `repeat()`\n\nCuando repites el mismo valor varias veces, `repeat()` evita la redundancia:\n\n```css\n/* Equivale a: 1fr 1fr 1fr 1fr */\n.contenedor {\n  grid-template-columns: repeat(4, 1fr);\n}\n\n/* Patrón repetido: 100px 1fr 100px 1fr */\n.contenedor {\n  grid-template-columns: repeat(2, 100px 1fr);\n}\n```\n\n### Definir filas: `grid-template-rows`\n\nFunciona igual que `grid-template-columns` pero para las filas:\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  grid-template-rows: 100px 200px 100px;\n}\n```\n\n#### Filas automáticas: `grid-auto-rows`\n\nCuando tienes más ítems de los que caben en las filas definidas, Grid crea filas implícitas. Con `grid-auto-rows` controlas su altura:\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  grid-auto-rows: 150px; /* Todas las filas extras miden 150px */\n}\n```\n\n### Espaciado: `gap`, `row-gap`, `column-gap`\n\nEl espaciado entre celdas se controla con estas propiedades (antes se llamaban `grid-gap`, `grid-row-gap` y `grid-column-gap`):\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n\n  /* Espacio igual entre filas y columnas */\n  gap: 16px;\n\n  /* O por separado */\n  row-gap: 24px;      /* espacio entre filas */\n  column-gap: 12px;   /* espacio entre columnas */\n}\n```\n\nA diferencia de `margin`, `gap` solo aplica **entre** celdas, nunca en los bordes exteriores del contenedor.\n\n### Mezcla de unidades\n\nGrid permite combinar unidades libremente en la misma declaración:\n\n```css\n.contenedor {\n  /* Sidebar fijo + contenido + publicidad fija */\n  grid-template-columns: 200px 1fr 160px;\n\n  /* Primera fila fija, resto automático */\n  grid-template-rows: 80px auto;\n}\n```\n\n### Flujo automático\n\nLos ítems de grid se colocan automáticamente de izquierda a derecha, de arriba a abajo. Cuando se llenan las columnas de una fila, los ítems siguientes pasan a la siguiente fila. Este comportamiento se llama **flujo automático** (`grid-auto-flow: row` por defecto).",
+    "examples": [
+      {
+        "code": "<style>\n  .galeria-ejemplo {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: 12px;\n    padding: 12px;\n    background: #F1F5F9;\n  }\n  .foto-ejemplo {\n    height: 100px;\n    background: #94A3B8;\n    border-radius: 6px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: white;\n    font-family: sans-serif;\n    font-size: 14px;\n  }\n</style>\n<div class=\"galeria-ejemplo\">\n  <div class=\"foto-ejemplo\">Foto 1</div>\n  <div class=\"foto-ejemplo\">Foto 2</div>\n  <div class=\"foto-ejemplo\">Foto 3</div>\n  <div class=\"foto-ejemplo\">Foto 4</div>\n  <div class=\"foto-ejemplo\">Foto 5</div>\n  <div class=\"foto-ejemplo\">Foto 6</div>\n</div>",
+        "explanation": "Grid de 3 columnas iguales usando `repeat(3, 1fr)`. Los 6 ítems se distribuyen automáticamente en 2 filas. El `gap` de 12px crea espacio uniforme entre todas las celdas sin tocar los bordes exteriores."
+      },
+      {
+        "code": "<style>\n  .layout-ejemplo {\n    display: grid;\n    grid-template-columns: 180px 1fr;\n    grid-template-rows: 60px 1fr 40px;\n    gap: 8px;\n    height: 300px;\n    padding: 8px;\n    background: #F8FAFC;\n    font-family: sans-serif;\n    font-size: 13px;\n  }\n  .layout-ejemplo > div {\n    border-radius: 4px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: white;\n  }\n  .header-ej { background: #3B82F6; grid-column: 1 / -1; }\n  .sidebar-ej { background: #8B5CF6; }\n  .main-ej { background: #10B981; }\n  .footer-ej { background: #F59E0B; grid-column: 1 / -1; }\n</style>\n<div class=\"layout-ejemplo\">\n  <div class=\"header-ej\">Header</div>\n  <div class=\"sidebar-ej\">Sidebar 180px</div>\n  <div class=\"main-ej\">Main 1fr</div>\n  <div class=\"footer-ej\">Footer</div>\n</div>",
+        "explanation": "Layout clásico combinando columnas de distinto tamaño (`180px 1fr`) con filas definidas. `grid-column: 1 / -1` hace que header y footer se extiendan por todas las columnas. Las unidades `fr` absorben el espacio restante."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Crea una galería con CSS Grid",
+      "prompt": "Construye una galería de fotos usando CSS Grid. Crea un contenedor `.galeria` con 3 columnas de igual ancho usando `repeat(3, 1fr)` y un `gap` de 16px. Dentro coloca exactamente 6 divs con la clase `.foto`, cada uno con altura de 120px y fondo de color `#CBD5E1`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Galería Grid</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "Existe el contenedor .galeria en el DOM",
+          "test": "!!doc.querySelector('.galeria')"
+        },
+        {
+          "description": ".galeria tiene display: grid",
+          "test": "win.getComputedStyle(doc.querySelector('.galeria')).display === 'grid'"
+        },
+        {
+          "description": "La regla CSS de .galeria contiene 1fr en grid-template-columns",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria' && r.style.gridTemplateColumns.includes('1fr')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".galeria tiene gap de 16px",
+          "test": "(function() { var el = doc.querySelector('.galeria'); if (!el) return false; var st = win.getComputedStyle(el); return st.gap === '16px' || st.rowGap === '16px' || st.columnGap === '16px' || st.gridGap === '16px'; })()"
+        },
+        {
+          "description": "Existen exactamente 6 elementos .foto",
+          "test": "doc.querySelectorAll('.foto').length === 6"
+        },
+        {
+          "description": "Los .foto son hijos directos de .galeria",
+          "test": "doc.querySelectorAll('.galeria > .foto').length === 6"
+        },
+        {
+          "description": ".foto tiene altura de 120px",
+          "test": "(function() { var el = doc.querySelector('.foto'); if (!el) return false; return win.getComputedStyle(el).height === '120px'; })()"
+        }
+      ],
+      "hints": [
+        "Recuerda que `display: grid` va en el contenedor (.galeria), no en los ítems.",
+        "Usa `repeat(3, 1fr)` para las tres columnas iguales — es equivalente a escribir `1fr 1fr 1fr`.",
+        "La propiedad `gap: 16px` aplica el mismo espacio entre filas y columnas al mismo tiempo.",
+        "Los 6 divs `.foto` deben estar directamente dentro de `.galeria`, sin contenedores intermedios.",
+        "Para la altura de `.foto`, usa `height: 120px` y `background: #CBD5E1`."
+      ]
+    }
+  ]
+}

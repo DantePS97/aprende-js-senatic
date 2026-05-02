@@ -1,0 +1,61 @@
+{
+  "theory": {
+    "markdown": "## Pseudo-clases de formularios en CSS\n\nCSS ofrece un conjunto de **pseudo-clases** específicas para formularios que permiten dar retroalimentación visual en tiempo real al usuario. Sin JavaScript. El formulario literalmente habla visualmente mientras el usuario escribe.\n\n### `:focus` y `:focus-visible`\n\n`:focus` se activa cuando un campo recibe el foco (clic o Tab). Es la base del diseño de formularios:\n\n```css\ninput:focus {\n  outline: none;\n  border-color: #3B82F6;\n  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);\n}\n```\n\n`:focus-visible` es más preciso: solo aplica cuando el foco llega por teclado (Tab), no por clic. Ideal para accesibilidad:\n\n```css\nbutton:focus-visible {\n  outline: 3px solid #3B82F6;\n}\n```\n\n### `:valid` e `:invalid`\n\nEstas pseudo-clases reaccionan a los atributos de validación HTML5:\n\n- `:valid` — el campo cumple todas las validaciones (`required`, `pattern`, `type`, etc.)\n- `:invalid` — el campo tiene al menos un error de validación\n\n```css\ninput:valid {\n  border-color: #10B981; /* Verde: correcto */\n}\n\ninput:invalid {\n  border-color: #EF4444; /* Rojo: error */\n}\n```\n\n**Problema**: `:invalid` se activa desde el momento que carga la página (campo vacío con `required` ya es inválido). Esto genera una mala experiencia visual. La solución es combinar con `:not(:placeholder-shown)`.\n\n### `:placeholder-shown`\n\nSe activa cuando el placeholder **es visible** (campo vacío). Usándolo con negación, puedes detectar \"el usuario ya escribió algo\":\n\n```css\n/* Solo muestra error cuando el campo tiene contenido Y es inválido */\ninput:invalid:not(:placeholder-shown) {\n  border-color: #EF4444;\n}\n\n/* Solo muestra éxito cuando tiene contenido Y es válido */\ninput:valid:not(:placeholder-shown) {\n  border-color: #10B981;\n}\n```\n\n### `:required` y `:optional`\n\nPermiten diferenciar visualmente campos obligatorios de opcionales:\n\n```css\ninput:required {\n  border-left: 3px solid #F59E0B;\n}\n\ninput:optional {\n  opacity: 0.8;\n}\n```\n\n### `:focus-within`\n\nSe activa en el **contenedor** cuando cualquier descendiente recibe el foco. Perfecto para animar el formulario completo:\n\n```css\n.formulario:focus-within {\n  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);\n  transform: translateY(-2px);\n}\n```\n\n### `:disabled` y `:read-only`\n\n```css\ninput:disabled {\n  background: #F3F4F6;\n  cursor: not-allowed;\n  opacity: 0.6;\n}\n\ninput:read-only {\n  background: #F9FAFB;\n  color: #6B7280;\n}\n```\n\n### `:checked`\n\nPara checkboxes y radio buttons cuando están seleccionados:\n\n```css\ninput[type=\"checkbox\"]:checked + label {\n  color: #3B82F6;\n  font-weight: 600;\n}\n\ninput[type=\"radio\"]:checked + label::before {\n  background: #3B82F6;\n}\n```\n\n### Patrón completo de formulario reactivo\n\nCombinando todas las pseudo-clases, puedes construir un formulario que responde visualmente sin una sola línea de JavaScript:\n\n```css\n/* Base */\ninput {\n  border: 2px solid #D1D5DB;\n  transition: border-color 0.2s, box-shadow 0.2s;\n}\n\n/* Foco */\ninput:focus {\n  outline: none;\n  border-color: #3B82F6;\n  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);\n}\n\n/* Válido (solo si el usuario ya escribió) */\ninput:valid:not(:placeholder-shown) {\n  border-color: #10B981;\n}\n\n/* Inválido (solo si el usuario ya escribió) */\ninput:invalid:not(:placeholder-shown) {\n  border-color: #EF4444;\n}\n\n/* El formulario entero reacciona al foco */\n.formulario:focus-within {\n  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .form-reactivo {\n    display: flex;\n    flex-direction: column;\n    gap: 12px;\n    max-width: 320px;\n    padding: 20px;\n    background: white;\n    border-radius: 12px;\n    border: 1px solid #E5E7EB;\n    font-family: sans-serif;\n    transition: box-shadow 0.3s;\n  }\n  .form-reactivo:focus-within {\n    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);\n  }\n  .form-reactivo input {\n    padding: 10px 12px;\n    border: 2px solid #D1D5DB;\n    border-radius: 6px;\n    font-size: 14px;\n    transition: border-color 0.2s, box-shadow 0.2s;\n  }\n  .form-reactivo input:focus {\n    outline: none;\n    border-color: #3B82F6;\n    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);\n  }\n  .form-reactivo input:valid:not(:placeholder-shown) {\n    border-color: #10B981;\n  }\n  .form-reactivo input:invalid:not(:placeholder-shown) {\n    border-color: #EF4444;\n  }\n</style>\n<form class=\"form-reactivo\">\n  <input type=\"email\" required placeholder=\"correo@ejemplo.com\">\n  <input type=\"text\" required minlength=\"3\" placeholder=\"Tu nombre\">\n  <input type=\"number\" min=\"18\" max=\"99\" required placeholder=\"Edad\">\n</form>",
+        "explanation": "Formulario que cambia de color según el estado del campo. Verde cuando el valor es válido, rojo cuando es inválido (pero solo después de que el usuario haya escrito algo, gracias a `:not(:placeholder-shown)`). El borde azul aparece al hacer foco. El formulario entero eleva su sombra gracias a `:focus-within`."
+      },
+      {
+        "code": "<style>\n  .estados-demo {\n    display: flex;\n    flex-direction: column;\n    gap: 10px;\n    max-width: 300px;\n    padding: 16px;\n    font-family: sans-serif;\n    font-size: 13px;\n  }\n  .estados-demo label {\n    font-size: 12px;\n    color: #6B7280;\n    margin-bottom: 2px;\n  }\n  .estados-demo input {\n    padding: 8px 10px;\n    border: 2px solid #D1D5DB;\n    border-radius: 6px;\n    font-size: 14px;\n    width: 100%;\n    box-sizing: border-box;\n  }\n  .estados-demo input:required {\n    border-left: 4px solid #F59E0B;\n  }\n  .estados-demo input:optional {\n    border-left: 4px solid #D1D5DB;\n  }\n  .estados-demo input:disabled {\n    background: #F3F4F6;\n    cursor: not-allowed;\n    opacity: 0.6;\n  }\n</style>\n<form class=\"estados-demo\">\n  <label>Campo requerido (borde naranja):</label>\n  <input type=\"text\" required placeholder=\"Obligatorio\">\n  <label>Campo opcional (borde gris):</label>\n  <input type=\"text\" placeholder=\"Opcional\">\n  <label>Campo deshabilitado:</label>\n  <input type=\"text\" disabled value=\"No editable\">\n</form>",
+        "explanation": "Demostración de `:required`, `:optional` y `:disabled`. El borde izquierdo naranja marca visualmente los campos obligatorios sin tocar el HTML — solo CSS. Los campos deshabilitados cambian el cursor y se atenúan. Este patrón es accesible y no requiere agregar clases extra."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Formulario con retroalimentación visual por pseudo-clases",
+      "prompt": "Crea un formulario `.formulario-reactivo` con dos inputs (nombre y email, ambos `required`) y una etiqueta `<label>` para cada uno.\n\nAplica estas reglas CSS usando pseudo-clases:\n- `input:focus` — quita el outline, pon `border-color: #3B82F6` y `box-shadow: 0 0 0 3px rgba(59,130,246,0.3)`\n- `input:valid` — `border-color: #10B981`\n- `input:invalid` — `border-color: #EF4444`\n- `input:invalid:not(:placeholder-shown)` — `border-color: #EF4444` (para no mostrar error mientras el campo está vacío)\n- `.formulario-reactivo:focus-within` — `box-shadow: 0 4px 12px rgba(0,0,0,0.1)`\n\nEstilo base: `.formulario-reactivo` con padding 20px, background white, border-radius 8px, display flex, flex-direction column, gap 12px. `input` con padding 10px, border `2px solid #D1D5DB`, border-radius 6px.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Formulario Reactivo</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el formulario aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "CSS tiene regla para input:focus",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:focus'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para input:valid",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:valid'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla para input:invalid",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('input:invalid')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla con :focus-within",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':focus-within')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene regla con :not(:placeholder-shown) para evitar error en campo vacío",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':placeholder-shown')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen inputs required dentro del formulario",
+          "test": "doc.querySelectorAll('.formulario-reactivo input[required]').length >= 2"
+        },
+        {
+          "description": "Existen al menos 2 etiquetas label en el formulario",
+          "test": "doc.querySelectorAll('label').length >= 2"
+        }
+      ],
+      "hints": [
+        "Las pseudo-clases se escriben directamente en el selector CSS: `input:focus { ... }` — sin espacio entre el elemento y la pseudo-clase.",
+        "Para `:focus-within`, el selector es `.formulario-reactivo:focus-within` — se aplica al contenedor, no al input.",
+        "El truco `:invalid:not(:placeholder-shown)` evita mostrar el borde rojo cuando el campo aún está vacío. El placeholder visible indica que el usuario todavía no ha interactuado.",
+        "Agrega `transition: border-color 0.2s, box-shadow 0.2s` al `input` base para que los cambios de color sean suaves.",
+        "Asegúrate de poner `placeholder` en los inputs para que la pseudo-clase `:placeholder-shown` funcione correctamente.",
+        "Para quitar el outline nativo del navegador al hacer foco, usa `outline: none` dentro de `input:focus`."
+      ]
+    }
+  ]
+}

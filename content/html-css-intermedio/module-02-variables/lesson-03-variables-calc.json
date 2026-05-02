@@ -1,0 +1,56 @@
+{
+  "theory": {
+    "markdown": "## `calc()` con Variables CSS\n\nLa función `calc()` permite realizar cálculos matemáticos directamente en CSS, y cuando la combinas con variables CSS, obtienes uno de los sistemas más flexibles y mantenibles de la plataforma web. Esta combinación elimina la necesidad de preprocesadores como Sass para operaciones matemáticas básicas.\n\n### La función `calc()` básica\n\n`calc()` acepta una expresión matemática con los cuatro operadores básicos:\n\n```css\n.elemento {\n  width: calc(100% - 32px);    /* Resta */\n  padding: calc(8px + 2vw);    /* Suma */\n  font-size: calc(1rem * 1.25); /* Multiplicación */\n  height: calc(100vh / 3);     /* División */\n}\n```\n\nReglas importantes:\n- Los operadores `+` y `-` **deben tener espacios** a ambos lados: `calc(100% - 32px)` no `calc(100%-32px)`.\n- Los operadores `*` y `/` no requieren espacios, pero es buena práctica incluirlos.\n- Se pueden **mezclar unidades** distintas: `calc(50% - 20px)` es válido.\n\n### `calc()` con variables CSS\n\nLa verdadera potencia surge al combinar ambas:\n\n```css\n:root {\n  --base: 8px;\n}\n\n.elemento {\n  padding: calc(var(--base) * 2);     /* 16px */\n  margin: calc(var(--base) * 3);      /* 24px */\n  border-radius: calc(var(--base) / 2); /* 4px */\n}\n```\n\nAhora si cambias `--base: 10px`, todos los elementos se recalculan automáticamente manteniendo las proporciones.\n\n### Escala de espaciado\n\nEl caso de uso más común es construir una **escala de espaciado** basada en una unidad base:\n\n```css\n:root {\n  --base: 8px;\n\n  --espacio-1: calc(var(--base) * 0.5);  /* 4px */\n  --espacio-2: calc(var(--base) * 1);    /* 8px */\n  --espacio-3: calc(var(--base) * 1.5);  /* 12px */\n  --espacio-4: calc(var(--base) * 2);    /* 16px */\n  --espacio-6: calc(var(--base) * 3);    /* 24px */\n  --espacio-8: calc(var(--base) * 4);    /* 32px */\n  --espacio-12: calc(var(--base) * 6);   /* 48px */\n  --espacio-16: calc(var(--base) * 8);   /* 64px */\n}\n```\n\nEste enfoque se conoce como **escala de 8 puntos** y es el estándar de la industria (usado por Material Design, Tailwind CSS, entre otros).\n\n### Tipografía responsiva con `calc()`\n\nUna técnica popular para tamaños de fuente fluidos que escalan con el viewport:\n\n```css\n:root {\n  --fuente-min: 16px;\n  --fuente-max: 22px;\n}\n\nh1 {\n  /* Escala entre 16px en móvil y 22px en escritorio */\n  font-size: clamp(\n    var(--fuente-min),\n    calc(var(--fuente-min) + 1.5vw),\n    var(--fuente-max)\n  );\n}\n```\n\n### Layouts fluidos con `calc()`\n\n```css\n:root {\n  --columnas: 3;\n  --gap: 16px;\n}\n\n.item {\n  /* Ancho exacto de cada elemento en un grid de N columnas */\n  width: calc((100% - (var(--gap) * (var(--columnas) - 1))) / var(--columnas));\n}\n```\n\n### Variables que se calculan entre sí\n\nLas variables pueden referenciar otras variables dentro de `calc()`:\n\n```css\n:root {\n  --base: 8px;\n  --espacio-sm: calc(var(--base) * 1);\n  --espacio-md: calc(var(--base) * 2);\n  --espacio-lg: calc(var(--base) * 4);\n\n  /* Una variable que usa otra variable calculada */\n  --espacio-xl: calc(var(--espacio-lg) * 2); /* 64px */\n}\n```\n\n### `clamp()`: el aliado de `calc()`\n\n`clamp(min, ideal, max)` es una función CSS que trabaja en perfecta armonía con `calc()` y variables:\n\n```css\n:root {\n  --padding-min: 16px;\n  --padding-max: 48px;\n}\n\n.seccion {\n  /* Padding que crece con el viewport, pero tiene límites */\n  padding: clamp(var(--padding-min), 5vw, var(--padding-max));\n}\n```\n\n### Operaciones avanzadas: anidamiento\n\n`calc()` puede anidarse aunque en CSS moderno hay mejores alternativas:\n\n```css\n.elemento {\n  /* Equivalente a calc(100% - calc(16px * 2)) */\n  width: calc(100% - 32px);\n\n  /* calc dentro de calc (soportado pero verbose) */\n  width: calc(100% - calc(var(--padding) * 2));\n\n  /* Más limpio: calcula directamente */\n  width: calc(100% - (var(--padding) * 2));\n}\n```\n\n### Limitaciones\n\n- No puedes concatenar strings con `calc()` — solo valores numéricos con unidades.\n- La variable usada en multiplicación/división debe ser un número sin unidad para uno de los factores: `calc(var(--factor) * 1px)` donde `--factor: 3` da `3px`.\n- `calc()` no ejecuta funciones trigonométricas — para eso existen `sin()`, `cos()` en CSS moderno.",
+    "examples": [
+      {
+        "code": "<style>\n  :root {\n    --base: 8px;\n    --espacio-sm: calc(var(--base) * 1);\n    --espacio-md: calc(var(--base) * 2);\n    --espacio-lg: calc(var(--base) * 4);\n    --espacio-xl: calc(var(--base) * 8);\n  }\n  .escala-demo {\n    font-family: sans-serif;\n    font-size: 13px;\n  }\n  .banda {\n    background: #6366F1;\n    color: white;\n    border-radius: 4px;\n    margin-bottom: 4px;\n    display: flex;\n    align-items: center;\n  }\n  .b1 { padding: var(--espacio-sm); }\n  .b2 { padding: var(--espacio-md); }\n  .b3 { padding: var(--espacio-lg); }\n  .b4 { padding: var(--espacio-xl); }\n</style>\n<div class=\"escala-demo\">\n  <div class=\"banda b1\">espacio-sm = 8px × 1 = 8px</div>\n  <div class=\"banda b2\">espacio-md = 8px × 2 = 16px</div>\n  <div class=\"banda b3\">espacio-lg = 8px × 4 = 32px</div>\n  <div class=\"banda b4\">espacio-xl = 8px × 8 = 64px</div>\n</div>",
+        "explanation": "Escala de espaciado basada en una variable `--base` de 8px. Todas las variantes se calculan como múltiplos de la base. Si cambias `--base: 10px`, toda la escala se ajusta proporcionalmente de forma automática."
+      },
+      {
+        "code": "<style>\n  :root {\n    --columnas: 3;\n    --gap: 16px;\n    --padding-contenedor: 24px;\n  }\n  .grid-calc {\n    padding: var(--padding-contenedor);\n    background: #F8FAFC;\n    border-radius: 8px;\n  }\n  .fila-calc {\n    display: flex;\n    gap: var(--gap);\n    margin-bottom: var(--gap);\n  }\n  .item-calc {\n    width: calc((100% - (var(--gap) * (var(--columnas) - 1))) / var(--columnas));\n    height: 80px;\n    background: #A5B4FC;\n    border-radius: 6px;\n    flex-shrink: 0;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-family: sans-serif;\n    font-size: 11px;\n    color: #3730A3;\n  }\n</style>\n<div class=\"grid-calc\">\n  <div class=\"fila-calc\">\n    <div class=\"item-calc\">calc()</div>\n    <div class=\"item-calc\">calc()</div>\n    <div class=\"item-calc\">calc()</div>\n  </div>\n  <div class=\"fila-calc\">\n    <div class=\"item-calc\">calc()</div>\n    <div class=\"item-calc\">calc()</div>\n    <div class=\"item-calc\">calc()</div>\n  </div>\n</div>",
+        "explanation": "Layout de 3 columnas calculado dinámicamente con `calc()` y variables. La fórmula `(100% - (gap * (columnas - 1))) / columnas` calcula el ancho exacto de cada ítem para que quepan en su fila con el gap correcto."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Escala de espaciado con calc()",
+      "prompt": "Construye una escala de espaciado usando variables CSS y `calc()`. En `:root` define exactamente: `--base: 8px`, `--espacio-sm: calc(var(--base) * 1)`, `--espacio-md: calc(var(--base) * 2)`, `--espacio-lg: calc(var(--base) * 4)`.\n\nCrea tres divs con texto descriptivo: `.caja-sm` (padding: var(--espacio-sm), background: #FEE2E2), `.caja-md` (padding: var(--espacio-md), background: #FEF3C7) y `.caja-lg` (padding: var(--espacio-lg), background: #DCFCE7).",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Calc y Variables</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ":root define --base",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--base')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ":root contiene calc() en sus variables",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.cssText.includes('calc(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".caja-sm tiene padding-top de 8px (1 × base)",
+          "test": "(function() { var el = doc.querySelector('.caja-sm'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '8px'; })()"
+        },
+        {
+          "description": ".caja-md tiene padding-top de 16px (2 × base)",
+          "test": "(function() { var el = doc.querySelector('.caja-md'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '16px'; })()"
+        },
+        {
+          "description": ".caja-lg tiene padding-top de 32px (4 × base)",
+          "test": "(function() { var el = doc.querySelector('.caja-lg'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '32px'; })()"
+        },
+        {
+          "description": "Los tres elementos .caja-sm, .caja-md y .caja-lg existen",
+          "test": "!!doc.querySelector('.caja-sm') && !!doc.querySelector('.caja-md') && !!doc.querySelector('.caja-lg')"
+        }
+      ],
+      "hints": [
+        "Define las variables calculadas en `:root` usando `calc(var(--base) * N)` donde N es el multiplicador.",
+        "El valor `--base: 8px` es la unidad que da nombre al patrón: todo es múltiplo de 8.",
+        "Luego aplica las variables con `padding: var(--espacio-sm)` en cada clase de caja.",
+        "Los colores de fondo son exactos: `#FEE2E2` para sm, `#FEF3C7` para md, `#DCFCE7` para lg.",
+        "Para verificar el padding, el navegador calcula `calc(8px * 1) = 8px`, `calc(8px * 2) = 16px`, `calc(8px * 4) = 32px`."
+      ]
+    }
+  ]
+}

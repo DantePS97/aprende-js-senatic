@@ -1,0 +1,60 @@
+{
+  "theory": {
+    "markdown": "## Pseudo-clases modernas de CSS\n\nLas pseudo-clases clásicas como `:hover`, `:focus` o `:first-child` ya las conoces. Pero CSS moderno introdujo un conjunto de pseudo-clases que cambian fundamentalmente cómo escribimos selectores: `:not()`, `:is()`, `:where()` y la revolucionaria `:has()`. Juntas te permiten escribir CSS más expresivo, con menos repetición y con una lógica que antes era imposible.\n\n### `:not()` — La negación\n\nSelecciona elementos que NO coincidan con el selector dado. La versión moderna acepta selectores complejos:\n\n```css\n/* Todos los <td> excepto el último de cada fila */\ntd:not(:last-child) {\n  border-right: 1px solid #E5E7EB;\n}\n\n/* Todos los párrafos excepto los que tienen clase .especial */\np:not(.especial) {\n  color: #374151;\n}\n```\n\nLa especificidad de `:not()` es la del selector que contiene, no `:not()` en sí mismo. `:not(.clase)` tiene especificidad `(0,1,0)`.\n\n### `:is()` — Selector lista\n\nAgrupa varios selectores en uno, reduciendo repetición. El navegador trata la lista como alternativas:\n\n```css\n/* Sin :is() */\nh1, h2, h3, h4, h5, h6 {\n  font-family: Georgia, serif;\n}\n\n/* Con :is() */\n:is(h1, h2, h3, h4, h5, h6) {\n  font-family: Georgia, serif;\n}\n\n/* Más potente: contextos múltiples */\n:is(article, section, aside) p {\n  line-height: 1.7;\n}\n```\n\nLa especificidad de `:is()` es la del **selector más específico** de su lista. Si mezclas clases e IDs, `:is(#id, .clase)` tendrá especificidad de ID.\n\n### `:where()` — Como :is() pero con cero especificidad\n\nFuncionalmente idéntico a `:is()`, pero su especificidad es siempre `(0,0,0)`. Ideal para estilos base que deben ser fácilmente sobreescritos:\n\n```css\n/* Estilos de reset que cualquier regla puede sobrescribir */\n:where(.tarjeta, .panel, .caja) {\n  border-radius: 8px;\n  border: 1px solid #E5E7EB;\n  padding: 16px;\n}\n\n/* Esta regla ganará SIEMPRE aunque tenga menor especificidad en papel */\n.tarjeta {\n  border-color: #3B82F6; /* Sobrescribe el border de :where() sin problema */\n}\n```\n\n### `:has()` — El selector padre (el santo grial)\n\n`:has()` permite seleccionar un elemento basándose en sus **descendientes o hermanos**. Esto era imposible en CSS hasta hace poco y requería JavaScript:\n\n```css\n/* Un <figure> que contiene un <figcaption> */\nfigure:has(figcaption) {\n  border: 1px solid #E5E7EB;\n  padding: 8px;\n}\n\n/* Una tarjeta que contiene una imagen: darle layout horizontal */\n.tarjeta:has(img) {\n  display: flex;\n  gap: 16px;\n}\n\n/* El label que precede a un input con foco */\n.grupo:has(input:focus) label {\n  color: #3B82F6;\n  font-weight: bold;\n}\n```\n\n### Patrones de `:nth-child()`\n\n```css\n/* Filas pares e impares */\ntr:nth-child(even) { background: #F9FAFB; }\ntr:nth-child(odd)  { background: white; }\n\n/* Cada 3 elementos, empezando en el primero */\nli:nth-child(3n+1) { color: #3B82F6; }\n\n/* Los primeros 3 */\nli:nth-child(-n+3) { font-weight: bold; }\n```\n\n### `:nth-of-type()` vs `:nth-child()`\n\n- `:nth-child(2)` — el segundo hijo sea cual sea su tipo\n- `:nth-of-type(2)` — el segundo elemento de ESE tipo\n\n```css\np:nth-of-type(2) {\n  /* El segundo <p>, aunque entre medias haya <h2>, <ul>, etc. */\n  font-style: italic;\n}\n```\n\n### Compatibilidad\n\n- `:not()`, `:is()`, `:where()` — soporte universal en navegadores modernos\n- `:has()` — soportado desde Chrome 105, Safari 15.4, Firefox 121 (2023). Uso seguro en producción desde 2024.",
+    "examples": [
+      {
+        "code": "<style>\n  .tabla-ejemplo { border-collapse: collapse; width: 100%; font-family: sans-serif; font-size: 14px; }\n  .tabla-ejemplo th { background: #1F2937; color: white; padding: 10px 12px; text-align: left; }\n  .tabla-ejemplo td { padding: 8px 12px; }\n  .tabla-ejemplo tr:nth-child(even) { background: #F9FAFB; }\n  .tabla-ejemplo tr:nth-child(odd) { background: white; }\n  .tabla-ejemplo td:not(:last-child) { border-right: 1px solid #E5E7EB; }\n  :is(h1, h2, h3) { font-family: Georgia, serif; color: #1F2937; margin: 0 0 12px; }\n</style>\n<h2>Tabla con pseudo-clases</h2>\n<table class=\"tabla-ejemplo\">\n  <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th></tr></thead>\n  <tbody>\n    <tr><td>Laptop Pro</td><td>Tecnología</td><td>$1,200</td></tr>\n    <tr><td>Monitor 4K</td><td>Tecnología</td><td>$450</td></tr>\n    <tr><td>Teclado Mec.</td><td>Periférico</td><td>$120</td></tr>\n    <tr><td>Mouse Erg.</td><td>Periférico</td><td>$80</td></tr>\n  </tbody>\n</table>",
+        "explanation": "`tr:nth-child(even/odd)` alterna el fondo de filas. `td:not(:last-child)` agrega bordes verticales a todas las celdas excepto la última de cada fila — más elegante que agregar clase a cada celda. `:is(h1, h2, h3)` aplica la fuente Georgia a los tres niveles de heading con un solo selector."
+      },
+      {
+        "code": "<style>\n  :where(.tarjeta, .panel, .caja) { border-radius: 8px; border: 1px solid #E5E7EB; padding: 16px; margin-bottom: 12px; font-family: sans-serif; }\n  .tarjeta { background: white; }\n  .lista-tarjetas { list-style: none; padding: 0; max-width: 400px; }\n  .lista-tarjetas > li:has(.badge) { background: #EFF6FF; border-color: #BFDBFE; }\n  .badge { display: inline-block; background: #3B82F6; color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }\n  .formulario-grupo { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 6px; }\n  .formulario-grupo label { font-size: 13px; color: #6B7280; transition: color 0.2s; }\n  .formulario-grupo:has(input:focus) label { color: #3B82F6; font-weight: bold; }\n  .formulario-grupo input { padding: 8px; border: 1px solid #D1D5DB; border-radius: 6px; outline: none; }\n  .formulario-grupo:has(input:focus) input { border-color: #3B82F6; }\n</style>\n<ul class=\"lista-tarjetas\">\n  <li class=\"tarjeta\">Ítem sin badge — fondo blanco normal</li>\n  <li class=\"tarjeta\"><span class=\"badge\">NUEVO</span> Ítem con badge — fondo azul por :has()</li>\n  <li class=\"tarjeta\">Otro ítem sin badge</li>\n</ul>\n<div class=\"formulario-grupo\">\n  <label>Nombre de usuario</label>\n  <input type=\"text\" placeholder=\"Haz clic aquí...\">\n</div>",
+        "explanation": "`:where()` aplica estilos base a `.tarjeta`, `.panel` y `.caja` con cero especificidad, así cualquier regla posterior puede sobreescribirlos fácilmente. `:has(.badge)` detecta los `<li>` que contienen un badge y les da fondo azul. `:has(input:focus)` aplica el estilo al `.formulario-grupo` completo cuando el input hijo tiene foco — esto era JavaScript puro hace dos años."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tabla con patrones y tarjetas con :has()",
+      "prompt": "Construye una tabla estilizada y una lista de tarjetas usando pseudo-clases modernas.\n\n**Parte 1 — Tabla:**\n1. Crea una `<table>` con clase `.tabla` con al menos 4 filas de datos.\n2. Aplica `tr:nth-child(even)` con `background: #F9FAFB`.\n3. Aplica `tr:nth-child(odd)` con `background: white`.\n4. Aplica `td:not(:last-child)` con `border-right: 1px solid #E5E7EB`.\n5. Aplica `:is(h1, h2, h3)` con `font-family: Georgia, serif; color: #1F2937`.\n6. Aplica `:where(.tarjeta, .panel, .caja)` con `border-radius: 8px; border: 1px solid #E5E7EB`.\n\n**Parte 2 — Lista con :has():**\n1. Crea una `<ul class=\"lista-tarjetas\">` con al menos 3 `<li>`.\n2. Algunos `<li>` deben contener un `<span class=\"badge\">`.\n3. Aplica `.lista-tarjetas > li:has(.badge)` con `background: #EFF6FF`.\n4. Crea un `.formulario-grupo` con `<label>` e `<input>` y aplica `.formulario-grupo:has(input:focus) label` con `color: #3B82F6`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Pseudo-clases Modernas</title>\n    <style>\n      body { font-family: sans-serif; max-width: 680px; margin: 0 auto; padding: 24px; }\n\n      /* Escribe tu CSS aquí */\n\n    </style>\n  </head>\n  <body>\n    <!-- Parte 1: Tabla -->\n\n    <!-- Parte 2: Lista con :has() -->\n\n    <!-- Parte 3: Formulario con :has() -->\n\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": "CSS tiene tr:nth-child(even)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nth-child(even)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene :not(:last-child) en algún selector",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':not(:last-child)')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene :is( en algún selector",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':is(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene :where( en algún selector",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':where(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "CSS tiene :has( en algún selector",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':has(')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe una tabla en el DOM",
+          "test": "!!doc.querySelector('table') || !!doc.querySelector('.tabla')"
+        },
+        {
+          "description": "CSS tiene tr:nth-child(odd)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nth-child(odd)')); } catch(e) { return false; } })"
+        }
+      ],
+      "hints": [
+        "Para `:is(h1, h2, h3)` escribe exactamente eso como selector CSS. El navegador lo interpretará como \"cualquier h1, h2 o h3\".",
+        "`:where(.tarjeta, .panel, .caja)` tiene especificidad cero, lo que significa que cualquier otra regla sobre `.tarjeta` la sobrescribirá sin conflictos.",
+        "Para `:has()` recuerda que selecciona el PADRE. `.lista-tarjetas > li:has(.badge)` selecciona el `<li>` que CONTIENE un `.badge`, no el badge en sí.",
+        "El selector `.formulario-grupo:has(input:focus) label` es una cadena: selecciona el `<label>` dentro de un `.formulario-grupo` que A SU VEZ contiene un `<input>` con foco.",
+        "`:nth-child(even)` y `:nth-child(odd)` son equivalentes a `:nth-child(2n)` y `:nth-child(2n+1)` respectivamente."
+      ]
+    }
+  ]
+}

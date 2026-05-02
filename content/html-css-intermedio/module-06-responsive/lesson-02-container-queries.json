@@ -1,0 +1,62 @@
+{
+  "theory": {
+    "markdown": "## Container Queries — responsive basado en el contenedor\n\nLos media queries responden al **viewport**. Los container queries responden al **contenedor padre** — mucho más útil para componentes reutilizables.\n\n### El problema que resuelven\n\n```css\n/* Media query: ¿qué tan ancho es el viewport? */\n@media (min-width: 768px) { .card { flex-direction: row; } }\n\n/* Pero si la tarjeta está en una sidebar angosta...\n   el viewport puede ser de 1200px pero la tarjeta solo tiene 250px */\n```\n\n---\n\n### Sintaxis básica\n\n**Paso 1**: Declarar el contenedor\n```css\n.contenedor {\n  container-type: inline-size;  /* habilita queries de ancho */\n  container-name: tarjeta;      /* nombre opcional */\n}\n\n/* Shorthand: */\n.contenedor {\n  container: tarjeta / inline-size;\n}\n```\n\n**Paso 2**: Escribir el query\n```css\n@container (min-width: 400px) {\n  .card { flex-direction: row; }\n}\n\n/* Con nombre específico: */\n@container tarjeta (min-width: 400px) {\n  .card { flex-direction: row; }\n}\n```\n\n---\n\n### container-type valores\n\n| Valor | Qué permite |\n|-------|------------|\n| `inline-size` | queries de ancho (el más común) |\n| `size` | queries de ancho Y alto |\n| `normal` | solo style queries (no size) |\n\n---\n\n### Unidades de contenedor\n\n```css\n@container (min-width: 400px) {\n  .titulo {\n    font-size: clamp(1rem, 5cqi, 2rem);\n    /*                   ↑ 5% del ancho del contenedor */\n  }\n}\n```\n\n| Unidad | Significa |\n|--------|----------|\n| `cqw` | 1% del ancho del contenedor |\n| `cqh` | 1% del alto del contenedor |\n| `cqi` | 1% del inline-size (ancho en horizontal) |\n| `cqb` | 1% del block-size (alto en horizontal) |\n\n---\n\n### Ejemplo real: tarjeta adaptativa\n\n```css\n.card-wrapper {\n  container-type: inline-size;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;  /* móvil: apilado */\n  gap: 1rem;\n}\n\n@container (min-width: 450px) {\n  .card {\n    flex-direction: row;   /* desktop: horizontal */\n    align-items: center;\n  }\n\n  .card-imagen {\n    width: 40%;\n    flex-shrink: 0;\n  }\n}\n```\n\n---\n\n### Compatibilidad\n\nContainer Queries tienen soporte completo en todos los browsers modernos desde 2023. Para proyectos que necesiten IE11 o browsers muy antiguos, usa media queries como fallback.",
+    "examples": [
+      {
+        "code": "<style>\n  .layout {\n    display: grid;\n    grid-template-columns: 1fr 2fr;\n    gap: 16px;\n    padding: 16px;\n    background: #F8FAFC;\n    border-radius: 8px;\n  }\n\n  .col-angosta,\n  .col-ancha {\n    container-type: inline-size;\n  }\n\n  .producto {\n    background: white;\n    border: 1px solid #E2E8F0;\n    border-radius: 8px;\n    padding: 12px;\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n  }\n\n  .producto-img {\n    width: 100%;\n    aspect-ratio: 16/9;\n    background: #CBD5E1;\n    border-radius: 4px;\n  }\n\n  @container (min-width: 350px) {\n    .producto {\n      flex-direction: row;\n      align-items: center;\n    }\n\n    .producto-img {\n      width: 120px;\n      aspect-ratio: 1;\n      flex-shrink: 0;\n    }\n  }\n</style>\n\n<div class=\"layout\">\n  <div class=\"col-angosta\">\n    <div class=\"producto\">\n      <div class=\"producto-img\"></div>\n      <div>\n        <strong>Columna angosta</strong>\n        <p style=\"margin:0;font-size:.875rem;color:#64748B\">Se apila verticalmente</p>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"col-ancha\">\n    <div class=\"producto\">\n      <div class=\"producto-img\"></div>\n      <div>\n        <strong>Columna ancha</strong>\n        <p style=\"margin:0;font-size:.875rem;color:#64748B\">Se organiza en fila</p>\n      </div>\n    </div>\n  </div>\n</div>",
+        "explanation": "El mismo componente .producto se comporta diferente según el ancho de su contenedor, no del viewport. En la columna angosta se apila; en la ancha se organiza en fila — sin cambiar el HTML ni el viewport."
+      },
+      {
+        "code": "<style>\n  .grid-cards {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n    gap: 16px;\n    padding: 16px;\n  }\n\n  /* Cada celda del grid es un contenedor */\n  .grid-cards > * {\n    container-type: inline-size;\n  }\n\n  .feature-card {\n    background: white;\n    border: 1px solid #E2E8F0;\n    border-radius: 12px;\n    padding: 16px;\n    text-align: center;\n  }\n\n  .feature-icon {\n    font-size: 2rem;\n    margin-bottom: 8px;\n  }\n\n  .feature-card h3 {\n    font-size: clamp(0.875rem, 4cqi, 1.125rem);\n    margin: 0 0 4px;\n  }\n\n  .feature-card p {\n    font-size: clamp(0.75rem, 3cqi, 0.875rem);\n    color: #64748B;\n    margin: 0;\n    display: none;\n  }\n\n  @container (min-width: 220px) {\n    .feature-card {\n      text-align: left;\n      display: flex;\n      gap: 12px;\n      align-items: flex-start;\n    }\n\n    .feature-card p { display: block; }\n  }\n</style>\n\n<div class=\"grid-cards\">\n  <div>\n    <div class=\"feature-card\">\n      <div class=\"feature-icon\">⚡</div>\n      <div>\n        <h3>Rápido</h3>\n        <p>Optimizado para máximo rendimiento</p>\n      </div>\n    </div>\n  </div>\n  <div>\n    <div class=\"feature-card\">\n      <div class=\"feature-icon\">🔒</div>\n      <div>\n        <h3>Seguro</h3>\n        <p>Autenticación y encriptación integradas</p>\n      </div>\n    </div>\n  </div>\n  <div>\n    <div class=\"feature-card\">\n      <div class=\"feature-icon\">📱</div>\n      <div>\n        <h3>Responsive</h3>\n        <p>Diseño adaptativo en todos los dispositivos</p>\n      </div>\n    </div>\n  </div>\n</div>",
+        "explanation": "Las unidades cqi escalan con el contenedor. El texto también es visible/oculto según el espacio disponible en el contenedor — la descripción solo aparece cuando hay espacio suficiente."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tarjeta adaptativa con container queries",
+      "prompt": "Crea una tarjeta de producto que cambie de layout vertical a horizontal según el ancho de su contenedor:\n\n1. `.card-container`: `container-type: inline-size`.\n2. `.product-card`: `display: flex`, `flex-direction: column`, `gap: 1rem`, padding y border.\n3. `.product-image`: `width: 100%`, `aspect-ratio: 4/3`, `background: #CBD5E1`, `border-radius: 8px`.\n4. `@container (min-width: 400px)` que cambie `.product-card` a `flex-direction: row` y `.product-image` a `width: 160px`.\n5. Muestra dos instancias: una dentro de `.col-sm` (max-width: 300px) y otra dentro de `.col-lg` (max-width: 600px).",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Container Queries</title>\n    <style>\n      body { padding: 24px; background: #F8FAFC; font-family: sans-serif; }\n\n      .demo-layout {\n        display: flex;\n        gap: 24px;\n        flex-wrap: wrap;\n        align-items: flex-start;\n      }\n\n      .col-sm { max-width: 300px; flex: 1; }\n      .col-lg { max-width: 600px; flex: 2; }\n\n      /* 1. Declarar el contenedor */\n      .card-container {\n\n      }\n\n      /* 2. .product-card — layout base (vertical) */\n      .product-card {\n\n      }\n\n      /* 3. .product-image */\n      .product-image {\n\n      }\n\n      /* 4. @container query — layout horizontal */\n\n    </style>\n  </head>\n  <body>\n    <div class=\"demo-layout\">\n      <div class=\"col-sm\">\n        <div class=\"card-container\">\n          <div class=\"product-card\">\n            <div class=\"product-image\"></div>\n            <div class=\"product-info\">\n              <h3 style=\"margin: 0 0 4px\">Producto A</h3>\n              <p style=\"margin: 0; color: #64748B; font-size: .875rem\">Contenedor angosto → layout vertical</p>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"col-lg\">\n        <div class=\"card-container\">\n          <div class=\"product-card\">\n            <div class=\"product-image\"></div>\n            <div class=\"product-info\">\n              <h3 style=\"margin: 0 0 4px\">Producto B</h3>\n              <p style=\"margin: 0; color: #64748B; font-size: .875rem\">Contenedor ancho → layout horizontal</p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ".card-container tiene container-type: inline-size",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.card-container' && r.style.containerType === 'inline-size'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".product-card tiene display: flex",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.product-card' && r.style.display === 'flex'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".product-card tiene flex-direction: column",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.product-card' && r.style.flexDirection === 'column'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".product-image tiene aspect-ratio definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.product-image' && !!r.style.aspectRatio); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existe una regla @container en el CSS",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.trim().startsWith('@container')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Dentro del @container hay flex-direction: row",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('@container') && r.cssText.includes('row')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Hay 2 elementos .product-card en el DOM",
+          "expression": "doc.querySelectorAll('.product-card').length === 2"
+        },
+        {
+          "description": ".card-container existe en el DOM",
+          "expression": "!!doc.querySelector('.card-container')"
+        }
+      ],
+      "hints": [
+        "`container-type: inline-size` habilita queries basados en el ancho del elemento.",
+        "El `@container` query se escribe como `@container (min-width: Xpx) { ... }` — igual que un media query pero para el contenedor.",
+        "El contenedor y el elemento que se adapta son entidades diferentes: `.card-container` declara el contexto, `.product-card` responde al query."
+      ]
+    }
+  ]
+}

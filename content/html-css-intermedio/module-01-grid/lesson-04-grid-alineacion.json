@@ -1,0 +1,52 @@
+{
+  "theory": {
+    "markdown": "## Alineación en CSS Grid\n\nGrid ofrece un sistema de alineación completo y bidimensional. A diferencia de Flexbox donde el eje principal cambia según `flex-direction`, en Grid los ejes son siempre los mismos: el **eje de fila (horizontal)** y el **eje de columna (vertical)**. Esto hace que las propiedades de alineación sean más predecibles.\n\n### Alineación de ítems dentro de sus celdas\n\nEstas propiedades controlan cómo se posiciona **cada ítem dentro de su propia celda**:\n\n#### `justify-items` — eje horizontal (fila)\n\nAlinea todos los ítems a lo largo del eje horizontal dentro de su celda:\n\n```css\n.contenedor {\n  justify-items: start;   /* Pega al borde izquierdo de la celda */\n  justify-items: end;     /* Pega al borde derecho */\n  justify-items: center;  /* Centrado horizontalmente */\n  justify-items: stretch; /* Ocupa todo el ancho (valor por defecto) */\n}\n```\n\n#### `align-items` — eje vertical (columna)\n\nAlinea todos los ítems a lo largo del eje vertical dentro de su celda:\n\n```css\n.contenedor {\n  align-items: start;   /* Pega arriba en la celda */\n  align-items: end;     /* Pega abajo */\n  align-items: center;  /* Centrado verticalmente */\n  align-items: stretch; /* Ocupa toda la altura (valor por defecto) */\n}\n```\n\n#### `place-items` — shorthand de ambos\n\n`place-items` es el shorthand que combina `align-items` y `justify-items` en una sola declaración:\n\n```css\n/* place-items: align-items  justify-items */\n.contenedor {\n  place-items: center;        /* center center (mismo valor para ambos) */\n  place-items: start end;     /* align: start, justify: end */\n  place-items: center stretch; /* align: center, justify: stretch */\n}\n```\n\n### Alineación de la cuadrícula dentro del contenedor\n\nCuando el grid es más pequeño que su contenedor (esto ocurre cuando usas columnas con px fijos en lugar de fr), puedes controlar dónde se ubica la cuadrícula completa dentro del contenedor:\n\n#### `justify-content` — cuadrícula en eje horizontal\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-columns: repeat(3, 150px); /* Total: 450px */\n  width: 700px; /* Contenedor más ancho que la cuadrícula */\n\n  justify-content: start;         /* Cuadrícula al inicio (por defecto) */\n  justify-content: end;           /* Cuadrícula al final */\n  justify-content: center;        /* Cuadrícula centrada */\n  justify-content: space-between; /* Espacio entre columnas */\n  justify-content: space-around;  /* Espacio alrededor de columnas */\n  justify-content: space-evenly;  /* Espacio perfectamente uniforme */\n}\n```\n\n#### `align-content` — cuadrícula en eje vertical\n\nMismo concepto pero en vertical, cuando las filas no llenan el alto del contenedor:\n\n```css\n.contenedor {\n  display: grid;\n  grid-template-rows: repeat(2, 100px); /* Total: 200px */\n  height: 400px; /* Contenedor más alto */\n\n  align-content: center;       /* Filas centradas verticalmente */\n  align-content: space-between; /* Espacio entre filas */\n}\n```\n\n### Alineación individual con `justify-self` y `align-self`\n\nEstas propiedades van en el **ítem** (no en el contenedor) y anulan la alineación global para ese elemento en particular:\n\n```css\n.item-especial {\n  justify-self: end;    /* Este ítem se alinea a la derecha en su celda */\n  align-self: start;    /* Este ítem se alinea arriba en su celda */\n}\n\n.centrado {\n  place-self: center;   /* Shorthand: centrado en ambos ejes */\n}\n```\n\nEsto es muy útil cuando la mayoría de ítems tiene una alineación y uno o dos necesitan tratamiento especial.\n\n### Ejemplo práctico: centrar contenido en celda\n\nUno de los usos más frecuentes es crear un grid donde cada celda funciona como un contenedor centrado:\n\n```css\n.tablero {\n  display: grid;\n  grid-template-columns: repeat(4, 100px);\n  grid-template-rows: repeat(3, 80px);\n  place-items: center; /* Centra todo en ambos ejes */\n  gap: 8px;\n}\n\n.ficha {\n  width: 60px;\n  height: 50px;\n  background: #6366F1;\n  border-radius: 6px;\n  /* La ficha queda centrada dentro de su celda de 100x80px */\n}\n```\n\n### Tabla de referencia rápida\n\n| Propiedad | En | Eje | Efecto |\n|---|---|---|---|\n| `justify-items` | Contenedor | Horizontal | Alinea ítems en sus celdas |\n| `align-items` | Contenedor | Vertical | Alinea ítems en sus celdas |\n| `place-items` | Contenedor | Ambos | Shorthand de los anteriores |\n| `justify-content` | Contenedor | Horizontal | Alinea la cuadrícula en el contenedor |\n| `align-content` | Contenedor | Vertical | Alinea la cuadrícula en el contenedor |\n| `justify-self` | Ítem | Horizontal | Alinea un ítem en su celda |\n| `align-self` | Ítem | Vertical | Alinea un ítem en su celda |\n| `place-self` | Ítem | Ambos | Shorthand de los anteriores |",
+    "examples": [
+      {
+        "code": "<style>\n  .tablero-ej {\n    display: grid;\n    grid-template-columns: repeat(4, 100px);\n    grid-template-rows: repeat(2, 80px);\n    place-items: center;\n    justify-content: center;\n    gap: 8px;\n    background: #F1F5F9;\n    padding: 12px;\n    border-radius: 8px;\n  }\n  .celda-ej {\n    width: 60px;\n    height: 50px;\n    background: #6366F1;\n    border-radius: 6px;\n  }\n  .celda-ej:nth-child(3) {\n    justify-self: start;\n    align-self: start;\n    background: #EC4899;\n  }\n  .celda-ej:nth-child(6) {\n    place-self: end;\n    background: #F59E0B;\n  }\n</style>\n<div class=\"tablero-ej\">\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n  <div class=\"celda-ej\"></div>\n</div>",
+        "explanation": "Grid con `place-items: center` que centra todos los ítems. El tercer elemento (rosado) usa `justify-self: start; align-self: start` para anclarse en la esquina superior izquierda de su celda. El sexto (naranja) usa `place-self: end` para ir a la esquina inferior derecha."
+      },
+      {
+        "code": "<style>\n  .grid-content {\n    display: grid;\n    grid-template-columns: repeat(3, 120px);\n    grid-template-rows: repeat(2, 70px);\n    justify-content: space-between;\n    align-content: space-between;\n    width: 450px;\n    height: 220px;\n    background: #EFF6FF;\n    padding: 12px;\n    border-radius: 8px;\n    border: 2px dashed #93C5FD;\n  }\n  .bloque {\n    background: #3B82F6;\n    border-radius: 4px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: white;\n    font-family: sans-serif;\n    font-size: 11px;\n  }\n</style>\n<div class=\"grid-content\">\n  <div class=\"bloque\">A</div>\n  <div class=\"bloque\">B</div>\n  <div class=\"bloque\">C</div>\n  <div class=\"bloque\">D</div>\n  <div class=\"bloque\">E</div>\n  <div class=\"bloque\">F</div>\n</div>",
+        "explanation": "Cuadrícula de columnas fijas (360px total) en un contenedor de 450px. `justify-content: space-between` distribuye el espacio sobrante horizontalmente entre columnas. `align-content: space-between` hace lo mismo verticalmente. El borde punteado marca los límites del contenedor."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tablero de fichas centradas",
+      "prompt": "Crea un tablero `.tablero` usando CSS Grid con 3 columnas de 150px cada una, 3 filas de 100px cada una, gap de 8px. Aplica `place-items: center` y `justify-content: center` al tablero. Agrega exactamente 9 divs con clase `.celda`, cada uno con ancho de 80px, alto de 60px y fondo `#FEF3C7`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Tablero Grid</title>\n    <style>\n      /* Escribe tu CSS aquí */\n    </style>\n  </head>\n  <body>\n    <!-- Crea el HTML aquí -->\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ".tablero existe y tiene display: grid",
+          "test": "(function() { var el = doc.querySelector('.tablero'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
+        },
+        {
+          "description": ".tablero tiene place-items: center (o justify-items y align-items: center)",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && (r.style.placeItems === 'center' || (r.style.justifyItems === 'center' && r.style.alignItems === 'center'))); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".tablero tiene justify-content: center",
+          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && r.style.justifyContent === 'center'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Existen exactamente 9 elementos .celda",
+          "test": "doc.querySelectorAll('.celda').length === 9"
+        },
+        {
+          "description": ".celda tiene ancho de 80px",
+          "test": "(function() { var el = doc.querySelector('.celda'); if (!el) return false; return win.getComputedStyle(el).width === '80px'; })()"
+        }
+      ],
+      "hints": [
+        "Define las columnas con `grid-template-columns: repeat(3, 150px)` y las filas con `grid-template-rows: repeat(3, 100px)`.",
+        "`place-items: center` es el shorthand para `align-items: center` y `justify-items: center` al mismo tiempo — usa el que prefieras.",
+        "`justify-content: center` centra la cuadrícula completa dentro del contenedor (visible si el contenedor es más ancho que las columnas fijas).",
+        "Los 9 divs `.celda` deben ser hijos directos de `.tablero`, con `width: 80px`, `height: 60px` y `background: #FEF3C7`.",
+        "El gap de 8px va en el contenedor: `gap: 8px`."
+      ]
+    }
+  ]
+}

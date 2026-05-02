@@ -1,0 +1,66 @@
+{
+  "theory": {
+    "markdown": "## Imágenes adaptativas\n\nLas imágenes son el recurso más pesado de la web. Servirlas correctamente puede reducir el peso de la página en un 70%.\n\n### object-fit — controlar el encuadre\n\n```css\n.imagen {\n  width: 100%;\n  height: 200px;\n  object-fit: cover;     /* recorta para llenar — más común */\n  object-position: center top; /* dónde centrar el recorte */\n}\n```\n\n| Valor | Comportamiento |\n|-------|----------------|\n| `fill` | estira (rompe proporción) |\n| `contain` | encaja sin recortar (puede haber espacio vacío) |\n| `cover` | rellena sin espacio vacío (recorta si necesario) |\n| `none` | tamaño original, puede desbordarse |\n| `scale-down` | el menor entre `none` y `contain` |\n\n---\n\n### aspect-ratio — proporciones predecibles\n\n```css\n.card-imagen {\n  aspect-ratio: 16 / 9;  /* o simplemente 16/9 */\n  width: 100%;\n  background: #E2E8F0;   /* placeholder mientras carga */\n}\n\n/* Combinar con object-fit: */\nimg.thumbnail {\n  width: 100%;\n  aspect-ratio: 4/3;\n  object-fit: cover;\n}\n```\n\n---\n\n### srcset — servir la imagen correcta\n\n```html\n<!-- El browser elige la más adecuada para la pantalla -->\n<img\n  src=\"imagen-800.jpg\"\n  srcset=\"imagen-400.jpg 400w,\n          imagen-800.jpg 800w,\n          imagen-1200.jpg 1200w\"\n  sizes=\"(max-width: 600px) 100vw,\n         (max-width: 900px) 50vw,\n         33vw\"\n  alt=\"Descripción\"\n/>\n```\n\n- `srcset`: lista de imágenes con sus anchos reales (`w`)\n- `sizes`: cuánto espacio ocupa la imagen en cada breakpoint\n\n---\n\n### `<picture>` — control total\n\n```html\n<picture>\n  <!-- WebP para browsers modernos -->\n  <source srcset=\"imagen.webp\" type=\"image/webp\">\n  <!-- AVIF incluso más moderno -->\n  <source srcset=\"imagen.avif\" type=\"image/avif\">\n  <!-- Fallback para IE11 -->\n  <img src=\"imagen.jpg\" alt=\"Descripción\" loading=\"lazy\">\n</picture>\n\n<!-- También para art direction: -->\n<picture>\n  <source srcset=\"banner-desktop.jpg\" media=\"(min-width: 768px)\">\n  <img src=\"banner-movil.jpg\" alt=\"Banner\">\n</picture>\n```\n\n---\n\n### loading=\"lazy\" — carga diferida\n\n```html\n<!-- El browser solo carga la imagen cuando está cerca del viewport -->\n<img src=\"foto.jpg\" alt=\"Foto\" loading=\"lazy\">\n\n<!-- Preload para imágenes críticas (hero, LCP) -->\n<img src=\"hero.jpg\" alt=\"Hero\" loading=\"eager\" fetchpriority=\"high\">\n```\n\n---\n\n### Grid de imágenes con masonry-like\n\n```css\n.galeria {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n  gap: 8px;\n}\n\n.galeria .destacada {\n  grid-column: span 2;\n  grid-row: span 2;\n}\n\n.galeria img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  border-radius: 8px;\n}\n```",
+    "examples": [
+      {
+        "code": "<style>\n  .galeria {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));\n    gap: 8px;\n    padding: 16px;\n    background: #F8FAFC;\n    border-radius: 12px;\n  }\n\n  .galeria-item {\n    border-radius: 8px;\n    overflow: hidden;\n    background: #CBD5E1;\n    aspect-ratio: 1;\n  }\n\n  .galeria-item.grande {\n    grid-column: span 2;\n    grid-row: span 2;\n    aspect-ratio: unset;\n  }\n\n  /* Simulamos imágenes con degradados */\n  .galeria-item:nth-child(1) { background: linear-gradient(135deg, #667EEA, #764BA2); }\n  .galeria-item:nth-child(2) { background: linear-gradient(135deg, #F093FB, #F5576C); }\n  .galeria-item:nth-child(3) { background: linear-gradient(135deg, #4FACFE, #00F2FE); }\n  .galeria-item:nth-child(4) { background: linear-gradient(135deg, #43E97B, #38F9D7); }\n  .galeria-item:nth-child(5) { background: linear-gradient(135deg, #FA709A, #FEE140); }\n</style>\n\n<div class=\"galeria\">\n  <div class=\"galeria-item grande\"></div>\n  <div class=\"galeria-item\"></div>\n  <div class=\"galeria-item\"></div>\n  <div class=\"galeria-item\"></div>\n  <div class=\"galeria-item\"></div>\n</div>",
+        "explanation": "Grid con grid-column: span 2 y grid-row: span 2 para el elemento destacado. aspect-ratio: 1 en los normales garantiza cuadrados perfectos sin altura fija."
+      },
+      {
+        "code": "<style>\n  .card-media {\n    width: 280px;\n    background: white;\n    border-radius: 12px;\n    overflow: hidden;\n    border: 1px solid #E2E8F0;\n  }\n\n  .card-media picture {\n    display: block;\n  }\n\n  .card-media img {\n    width: 100%;\n    aspect-ratio: 16 / 9;\n    object-fit: cover;\n    object-position: center;\n    display: block;\n  }\n\n  .card-body {\n    padding: 16px;\n  }\n\n  .card-body h3 {\n    margin: 0 0 8px;\n    font-size: 1rem;\n  }\n\n  .card-body p {\n    margin: 0;\n    font-size: .875rem;\n    color: #64748B;\n    line-height: 1.5;\n  }\n</style>\n\n<div class=\"card-media\">\n  <picture>\n    <source srcset=\"https://picsum.photos/seed/webp/560/315\" type=\"image/webp\">\n    <img\n      src=\"https://picsum.photos/seed/fallback/560/315\"\n      alt=\"Imagen de ejemplo\"\n      loading=\"lazy\"\n    >\n  </picture>\n  <div class=\"card-body\">\n    <h3>Imagen adaptativa</h3>\n    <p>Usa picture + srcset + aspect-ratio + object-fit para resultados perfectos.</p>\n  </div>\n</div>",
+        "explanation": "Combinación correcta: <picture> para formatos modernos, aspect-ratio para reservar el espacio antes de cargar, object-fit: cover para encuadre perfecto, loading=\"lazy\" para performance."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Galería responsive con imágenes adaptativas",
+      "prompt": "Construye una galería de imágenes con grid adaptativo y buenas prácticas:\n\n1. `.galeria-grid`: `display: grid`, `grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))`, `gap: 8px`.\n2. `.galeria-item`: `aspect-ratio: 1`, `border-radius: 8px`, `overflow: hidden`, `background: #CBD5E1`.\n3. `.galeria-item.destacada`: `grid-column: span 2`, `grid-row: span 2`, `aspect-ratio: unset`.\n4. Dentro de cada `.galeria-item` usa un `<img>` con:\n   - `width: 100%` y `height: 100%`\n   - `object-fit: cover`\n   - `loading=\"lazy\"`\n5. Al menos una imagen debe estar en un elemento `<picture>`.\n6. Al menos 5 `.galeria-item` en el DOM, uno con clase `destacada`.",
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"es\">\n  <head>\n    <title>Imágenes Adaptativas</title>\n    <style>\n      body { margin: 0; padding: 24px; background: #F1F5F9; font-family: sans-serif; }\n\n      /* 1. Grid de galería */\n      .galeria-grid {\n\n      }\n\n      /* 2. Item base */\n      .galeria-item {\n\n      }\n\n      /* 3. Item destacado */\n      .galeria-item.destacada {\n\n      }\n\n      /* 4. Imágenes dentro del grid */\n      .galeria-item img {\n\n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"galeria-grid\">\n      <!-- Item 1: destacado, envuelto en <picture> -->\n      <div class=\"galeria-item destacada\">\n        <picture>\n          <source srcset=\"https://picsum.photos/seed/a/600/400\" type=\"image/webp\">\n          <img src=\"https://picsum.photos/seed/a/600/400\" alt=\"Foto destacada\" loading=\"lazy\">\n        </picture>\n      </div>\n\n      <!-- Items normales -->\n      <div class=\"galeria-item\">\n        <img src=\"https://picsum.photos/seed/b/300/300\" alt=\"Foto 2\" loading=\"lazy\">\n      </div>\n      <div class=\"galeria-item\">\n        <img src=\"https://picsum.photos/seed/c/300/300\" alt=\"Foto 3\" loading=\"lazy\">\n      </div>\n      <div class=\"galeria-item\">\n        <img src=\"https://picsum.photos/seed/d/300/300\" alt=\"Foto 4\" loading=\"lazy\">\n      </div>\n      <div class=\"galeria-item\">\n        <img src=\"https://picsum.photos/seed/e/300/300\" alt=\"Foto 5\" loading=\"lazy\">\n      </div>\n    </div>\n  </body>\n</html>",
+      "type": "html",
+      "tests": [
+        {
+          "description": ".galeria-grid tiene display: grid",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria-grid' && r.style.display === 'grid'); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".galeria-grid usa grid-template-columns con repeat y minmax",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria-grid' && r.style.gridTemplateColumns && r.style.gridTemplateColumns.includes('minmax')); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".galeria-item tiene aspect-ratio definido",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria-item' && !!r.style.aspectRatio); } catch(e) { return false; } })"
+        },
+        {
+          "description": ".galeria-item.destacada tiene grid-column: span 2",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria-item.destacada' && r.style.gridColumn && r.style.gridColumn.includes('span 2')); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Las imágenes tienen object-fit: cover",
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('img') && r.style.objectFit === 'cover'); } catch(e) { return false; } })"
+        },
+        {
+          "description": "Hay al menos 5 elementos .galeria-item",
+          "expression": "doc.querySelectorAll('.galeria-item').length >= 5"
+        },
+        {
+          "description": "Existe al menos un elemento <picture>",
+          "expression": "doc.querySelectorAll('picture').length >= 1"
+        },
+        {
+          "description": "Al menos una imagen tiene loading=\"lazy\"",
+          "expression": "doc.querySelectorAll('img[loading=\"lazy\"]').length >= 1"
+        },
+        {
+          "description": "Existe .galeria-item.destacada en el DOM",
+          "expression": "!!doc.querySelector('.galeria-item.destacada')"
+        }
+      ],
+      "hints": [
+        "`grid-column: span 2` hace que el elemento ocupe 2 columnas. `grid-row: span 2` hace lo mismo con filas.",
+        "`aspect-ratio: 1` crea un cuadrado perfecto — el browser calcula la altura automáticamente según el ancho.",
+        "`object-fit: cover` necesita que el elemento tenga dimensiones explícitas — usa `width: 100%; height: 100%` en el img."
+      ]
+    }
+  ]
+}
