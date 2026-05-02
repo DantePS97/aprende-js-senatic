@@ -457,44 +457,44 @@ async function seed() {
   // Módulo 6 — Colecciones avanzadas
   await seedModule(jsIntermedio._id, 6, 'Colecciones avanzadas', 'Map, Set, WeakMap y WeakSet', [
     { order: 1, title: 'Map: el objeto mejorado',            xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-01-map' },
-    { order: 2, title: 'Set: valores únicos',                xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-02-set' },
-    { order: 3, title: 'WeakMap y WeakSet',                  xpReward: 55, contentId: 'javascript-intermedio/module-06-colecciones/lesson-03-weak' },
-    { order: 4, title: 'Iteración sobre colecciones',        xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-04-iteracion' },
+    { order: 2, title: 'Set: valores únicos',                xpReward: 40, contentId: 'javascript-intermedio/module-06-colecciones/lesson-02-set' },
+    { order: 3, title: 'WeakMap y WeakSet',                  xpReward: 45, contentId: 'javascript-intermedio/module-06-colecciones/lesson-03-weakmap-weakset' },
+    { order: 4, title: 'Iteración avanzada sobre colecciones', xpReward: 40, contentId: 'javascript-intermedio/module-06-colecciones/lesson-04-iteracion-avanzada' },
   ]);
   console.log('✅  Módulo JS-I 6 listo (4 lecciones)');
 
   // Módulo 7 — Iteradores y Generadores
-  await seedModule(jsIntermedio._id, 7, 'Iteradores y Generadores', 'El protocolo iterable y evaluación lazy', [
-    { order: 1, title: 'El protocolo iterable',              xpReward: 50, contentId: 'javascript-intermedio/module-07-generadores/lesson-01-iterable' },
-    { order: 2, title: 'function* y yield',                  xpReward: 55, contentId: 'javascript-intermedio/module-07-generadores/lesson-02-generators' },
-    { order: 3, title: 'Generadores infinitos y lazy',       xpReward: 60, contentId: 'javascript-intermedio/module-07-generadores/lesson-03-lazy' },
-    { order: 4, title: 'for...of bajo el capó',              xpReward: 50, contentId: 'javascript-intermedio/module-07-generadores/lesson-04-for-of' },
+  await seedModule(jsIntermedio._id, 7, 'Iteradores y Generadores', 'El protocolo iterable, generadores y evaluación lazy', [
+    { order: 1, title: 'El protocolo de iteración',          xpReward: 50, contentId: 'javascript-intermedio/module-07-iteradores/lesson-01-protocolo-iteracion' },
+    { order: 2, title: 'Generadores: function* y yield',     xpReward: 55, contentId: 'javascript-intermedio/module-07-iteradores/lesson-02-generadores' },
+    { order: 3, title: 'Generadores asíncronos',             xpReward: 60, contentId: 'javascript-intermedio/module-07-iteradores/lesson-03-generadores-async' },
+    { order: 4, title: 'Casos de uso avanzados',             xpReward: 55, contentId: 'javascript-intermedio/module-07-iteradores/lesson-04-casos-de-uso' },
   ]);
   console.log('✅  Módulo JS-I 7 listo (4 lecciones)');
 
   // Módulo 8 — Patrones de diseño
-  await seedModule(jsIntermedio._id, 8, 'Patrones de diseño en JavaScript', 'Soluciones probadas a problemas recurrentes', [
-    { order: 1, title: 'Module Pattern',                     xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-01-module-pattern' },
-    { order: 2, title: 'Observer y PubSub',                  xpReward: 60, contentId: 'javascript-intermedio/module-08-patrones/lesson-02-observer' },
-    { order: 3, title: 'Factory y Builder',                  xpReward: 60, contentId: 'javascript-intermedio/module-08-patrones/lesson-03-factory' },
-    { order: 4, title: 'Singleton',                          xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-04-singleton' },
+  await seedModule(jsIntermedio._id, 8, 'Patrones de diseño en JavaScript', 'Singleton, Factory, Observer, Strategy, Decorator, Proxy y Reflect', [
+    { order: 1, title: 'Singleton y Factory',                xpReward: 50, contentId: 'javascript-intermedio/module-08-patrones/lesson-01-singleton-factory' },
+    { order: 2, title: 'Observer y Pub/Sub',                 xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-02-observer-pubsub' },
+    { order: 3, title: 'Strategy y Decorator',               xpReward: 50, contentId: 'javascript-intermedio/module-08-patrones/lesson-03-strategy-decorator' },
+    { order: 4, title: 'Proxy y Reflect',                    xpReward: 55, contentId: 'javascript-intermedio/module-08-patrones/lesson-04-proxy-reflect' },
   ]);
   console.log('✅  Módulo JS-I 8 listo (4 lecciones)');
 
   // Módulo 9 — Expresiones regulares
   await seedModule(jsIntermedio._id, 9, 'Expresiones regulares', 'Busca, valida y transforma texto con regex', [
-    { order: 1, title: 'Sintaxis: clases, cuantificadores, grupos', xpReward: 50, contentId: 'javascript-intermedio/module-09-regex/lesson-01-sintaxis' },
-    { order: 2, title: 'test(), match(), replace() y exec()',       xpReward: 55, contentId: 'javascript-intermedio/module-09-regex/lesson-02-metodos' },
-    { order: 3, title: 'Casos reales: emails, teléfonos, slugs',    xpReward: 60, contentId: 'javascript-intermedio/module-09-regex/lesson-03-casos-reales' },
+    { order: 1, title: 'Fundamentos de regex',                     xpReward: 50, contentId: 'javascript-intermedio/module-09-regex/lesson-01-fundamentos-regex' },
+    { order: 2, title: 'Grupos de captura y reemplazos',           xpReward: 50, contentId: 'javascript-intermedio/module-09-regex/lesson-02-grupos-reemplazo' },
+    { order: 3, title: 'Regex avanzado: lookahead y rendimiento',  xpReward: 55, contentId: 'javascript-intermedio/module-09-regex/lesson-03-regex-avanzado' },
   ]);
   console.log('✅  Módulo JS-I 9 listo (3 lecciones)');
 
   // Módulo 10 — APIs del navegador avanzadas
-  await seedModule(jsIntermedio._id, 10, 'APIs del navegador avanzadas', 'Observadores y procesamiento en paralelo', [
-    { order: 1, title: 'IntersectionObserver: lazy loading',  xpReward: 55, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-01-intersection-observer' },
-    { order: 2, title: 'MutationObserver',                    xpReward: 55, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-02-mutation-observer' },
-    { order: 3, title: 'ResizeObserver',                      xpReward: 50, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-03-resize-observer' },
-    { order: 4, title: 'Introducción a Web Workers',          xpReward: 65, contentId: 'javascript-intermedio/module-10-browser-apis/lesson-04-web-workers' },
+  await seedModule(jsIntermedio._id, 10, 'APIs del navegador avanzadas', 'IntersectionObserver, Storage, Web Workers y Performance API', [
+    { order: 1, title: 'IntersectionObserver: lazy loading',  xpReward: 50, contentId: 'javascript-intermedio/module-10-apis-navegador/lesson-01-intersection-observer' },
+    { order: 2, title: 'Storage y Cache API',                 xpReward: 45, contentId: 'javascript-intermedio/module-10-apis-navegador/lesson-02-storage-cache' },
+    { order: 3, title: 'Web Workers: paralelismo en el navegador', xpReward: 55, contentId: 'javascript-intermedio/module-10-apis-navegador/lesson-03-web-workers' },
+    { order: 4, title: 'Performance API y optimización',      xpReward: 50, contentId: 'javascript-intermedio/module-10-apis-navegador/lesson-04-performance-apis' },
   ]);
   console.log('✅  Módulo JS-I 10 listo (4 lecciones)');
 
@@ -502,8 +502,19 @@ async function seed() {
 
   await seedAchievements();
 
-  const totalLecciones = 3 + 4 + 4 + 4 + 5 + 4 + 4 + 3 + 3 + 3 + 3 + 6 + 3 + 7 + 2 + 2;
-  const totalXP = 15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 + 40+40+50+45 + 40+45+50+55 + 50+55+60 + 45+45+50 + 45+60+65 + 40+50+55 + 15+15+20+20+25+25 + 15+20+20 + 20+25+30+25+30+35+30 + 35+40 + 25+35;
+  // JS básico: 3+4+4+4+5+4+4+3+3+3+3 = 40 lecciones
+  // HTML/CSS básico: 6+3+7+2+2 = 20 lecciones
+  // JS intermedio: 5+4+5+4+4+4+4+4+3+4 = 41 lecciones
+  const totalLecciones = 40 + 20 + 41; // 101
+  const totalXP =
+    // JS básico
+    15+15+20 + 20+25+25+30 + 25+25+30+35 + 30+35+35+40 + 35+40+45+45+50 +
+    40+40+50+45 + 40+45+50+55 + 50+55+60 + 45+45+50 + 45+60+65 + 40+50+55 +
+    // HTML/CSS básico
+    15+15+20+20+25+25 + 15+20+20 + 20+25+30+25+30+35+30 + 35+40 + 25+35 +
+    // JS intermedio
+    40+45+40+45+55 + 45+45+50+40 + 45+50+45+45+50 + 50+55+60+60 + 40+40+50+45 +
+    45+40+45+40 + 50+55+60+55 + 50+55+50+55 + 50+50+55 + 50+45+55+50;
   console.log(`\n🎉  Seed completado!`);
   console.log(`    ${totalLecciones} lecciones · ${totalXP} XP total disponible`);
   await mongoose.disconnect();
