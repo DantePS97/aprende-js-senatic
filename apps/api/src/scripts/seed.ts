@@ -16,8 +16,11 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 async function upsertLesson(moduleId: mongoose.Types.ObjectId, data: {
   order: number; title: string; xpReward: number; contentId: string;
 }) {
-  const exists = await LessonModel.findOne({ moduleId, order: data.order });
-  if (!exists) await LessonModel.create({ moduleId, ...data });
+  await LessonModel.findOneAndUpdate(
+    { moduleId, order: data.order },
+    { $set: { title: data.title, xpReward: data.xpReward, contentId: data.contentId } },
+    { upsert: true, new: true }
+  );
 }
 
 async function seedModule(
@@ -27,10 +30,11 @@ async function seedModule(
   description: string,
   lessons: { order: number; title: string; xpReward: number; contentId: string }[]
 ) {
-  let mod = await ModuleModel.findOne({ courseId, order });
-  if (!mod) {
-    mod = await ModuleModel.create({ courseId, order, title, description });
-  }
+  const mod = await ModuleModel.findOneAndUpdate(
+    { courseId, order },
+    { $set: { title, description } },
+    { upsert: true, new: true }
+  );
   for (const lesson of lessons) {
     await upsertLesson(mod._id as mongoose.Types.ObjectId, lesson);
   }
