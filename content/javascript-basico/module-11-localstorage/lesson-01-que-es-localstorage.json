@@ -23,7 +23,7 @@
     {
       "title": "Básico: Guardar y leer",
       "prompt": "Guarda el valor `'JavaScript'` en localStorage con la clave `'lenguaje'`. Luego léelo y asígnalo a `lenguajeLeido`.",
-      "starterCode": "// Guarda 'JavaScript' con clave 'lenguaje'\nlocalStorage.setItem('lenguaje', 'JavaScript');\n\n// Lee el valor y asígnalo a lenguajeLeido\nconst lenguajeLeido = localStorage.getItem('lenguaje');\n",
+      "starterCode": "// El sandbox no tiene navegador, así que simulamos localStorage:\nconst localStorage = (() => {\n  const store = new Map();\n  return {\n    setItem(k, v) { store.set(k, String(v)); },\n    getItem(k) { return store.has(k) ? store.get(k) : null; },\n    removeItem(k) { store.delete(k); },\n    clear() { store.clear(); },\n    get length() { return store.size; },\n  };\n})();\n\n// Guarda 'JavaScript' con clave 'lenguaje'\nlocalStorage.setItem('lenguaje', 'JavaScript');\n\n// Lee el valor y asígnalo a lenguajeLeido\nconst lenguajeLeido = localStorage.getItem('lenguaje');\n",
       "tests": [
         {
           "description": "lenguajeLeido es 'JavaScript'",
@@ -43,7 +43,7 @@
     {
       "title": "Práctica: Guardar objeto con JSON",
       "prompt": "Guarda el objeto `perfil` en localStorage bajo la clave `'perfil'` usando `JSON.stringify`. Luego recupéralo con `JSON.parse` y asígnalo a `perfilLeido`.",
-      "starterCode": "const perfil = { nombre: 'Sofía', nivel: 5, xp: 2300 };\n\n// Guarda el perfil como JSON\nlocalStorage.setItem('perfil', JSON.stringify(perfil));\n\n// Récuperalo y conviértelo a objeto\nconst perfilLeido = JSON.parse(localStorage.getItem('perfil'));\n",
+      "starterCode": "// El sandbox no tiene navegador, así que simulamos localStorage:\nconst localStorage = (() => {\n  const store = new Map();\n  return {\n    setItem(k, v) { store.set(k, String(v)); },\n    getItem(k) { return store.has(k) ? store.get(k) : null; },\n    removeItem(k) { store.delete(k); },\n    clear() { store.clear(); },\n    get length() { return store.size; },\n  };\n})();\n\nconst perfil = { nombre: 'Sofía', nivel: 5, xp: 2300 };\n\n// Guarda el perfil como JSON\nlocalStorage.setItem('perfil', JSON.stringify(perfil));\n\n// Récuperalo y conviértelo a objeto\nconst perfilLeido = JSON.parse(localStorage.getItem('perfil'));\n",
       "tests": [
         {
           "description": "perfilLeido es un objeto",
@@ -67,7 +67,7 @@
     {
       "title": "Aplicación: Leer con valor por defecto",
       "prompt": "Implementa `leerStorage(clave, porDefecto)`: lee la clave de localStorage, parsea el JSON, y retorna el valor por defecto si la clave no existe o el JSON es inválido.",
-      "starterCode": "function leerStorage(clave, porDefecto) {\n  const texto = localStorage.getItem(clave);\n  if (texto === null) return porDefecto;\n  try {\n    return JSON.parse(texto);\n  } catch {\n    return porDefecto;\n  }\n}\n\n// Pruebas\nlocalStorage.setItem('puntos', '750');\nlocalStorage.setItem('datos', 'json-invalido');\n\nconst puntos = leerStorage('puntos', 0);\nconst noExiste = leerStorage('clave-inexistente', 'default');\nconst invalido = leerStorage('datos', 99);\n",
+      "starterCode": "// El sandbox no tiene navegador, así que simulamos localStorage:\nconst localStorage = (() => {\n  const store = new Map();\n  return {\n    setItem(k, v) { store.set(k, String(v)); },\n    getItem(k) { return store.has(k) ? store.get(k) : null; },\n    removeItem(k) { store.delete(k); },\n    clear() { store.clear(); },\n    get length() { return store.size; },\n  };\n})();\n\nfunction leerStorage(clave, porDefecto) {\n  const texto = localStorage.getItem(clave);\n  if (texto === null) return porDefecto;\n  try {\n    return JSON.parse(texto);\n  } catch {\n    return porDefecto;\n  }\n}\n\n// Pruebas\nlocalStorage.setItem('puntos', '750');\nlocalStorage.setItem('datos', 'json-invalido');\n\nconst puntos = leerStorage('puntos', 0);\nconst noExiste = leerStorage('clave-inexistente', 'default');\nconst invalido = leerStorage('datos', 99);\n",
       "tests": [
         {
           "description": "puntos es 750 (número, no string)",

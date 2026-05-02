@@ -23,7 +23,7 @@
     {
       "title": "Básico: Explorar document",
       "prompt": "Usando el objeto `document`, crea una variable `tipo` que contenga el resultado de `typeof document`.\n\nLuego crea una variable `tieneBody` que sea `true` si `document.body` existe (no es `null` ni `undefined`).",
-      "starterCode": "// Crea las variables tipo y tieneBody\n",
+      "starterCode": "// En el navegador, 'document' es el objeto global que representa la página.\n// Como el sandbox no tiene navegador, lo simulamos:\nconst document = {\n  title: 'Mi Página',\n  URL: 'https://ejemplo.com',\n  body: { tagName: 'BODY', children: [] },\n  head: { tagName: 'HEAD' },\n};\n\n// Crea las variables tipo y tieneBody\n",
       "tests": [
         {
           "description": "tipo es el string 'object'",
