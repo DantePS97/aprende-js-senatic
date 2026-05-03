@@ -8,7 +8,7 @@ import { Console } from '@/components/editor/Console';
 import { TestRunner } from './TestRunner';
 import { HintSystem } from './HintSystem';
 import { runInSandbox, TestResult } from '@/lib/sandbox';
-import { runHtmlSandbox } from '@/lib/htmlSandbox';
+import { runHtmlSandbox, buildReactScaffold } from '@/lib/htmlSandbox';
 import { api } from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -198,9 +198,26 @@ export function ExercisePanel({
     return () => clearTimeout(id);
   }, [s.code, exercise.type]);
 
+  // Preview inicial al cambiar de ejercicio
   useEffect(() => {
-    if (exercise.type === 'html') setPreviewSrcdoc(exercise.starterCode ?? '');
+    if (exercise.type === 'html') {
+      setPreviewSrcdoc(exercise.starterCode ?? '');
+    } else if (exercise.type === 'react') {
+      setPreviewSrcdoc(buildReactScaffold(exercise.starterCode ?? ''));
+    } else {
+      setPreviewSrcdoc('');
+    }
   }, [exercise]);
+
+  // Preview React: se actualiza 800 ms después del último keystroke
+  // para no disparar la carga del CDN en cada tecla.
+  useEffect(() => {
+    if (exercise.type !== 'react') return;
+    const id = setTimeout(() => {
+      setPreviewSrcdoc(buildReactScaffold(s.code));
+    }, 800);
+    return () => clearTimeout(id);
+  }, [s.code, exercise.type]);
 
   // ─── Mutators ────────────────────────────────────────────────────────────────
 
@@ -211,8 +228,8 @@ export function ExercisePanel({
   const handleRun = useCallback(async () => {
     update({ isRunning: true, output: [], error: null, testResults: [] });
     const result =
-      exercise.type === 'html'
-        ? await runHtmlSandbox({ code: s.code, tests: exercise.tests })
+      exercise.type === 'html' || exercise.type === 'react'
+        ? await runHtmlSandbox({ code: s.code, tests: exercise.tests, exerciseType: exercise.type })
         : await runInSandbox({ code: s.code, tests: exercise.tests });
     update({ output: result.output, error: result.error, testResults: result.testResults, isRunning: false });
 
@@ -294,16 +311,19 @@ export function ExercisePanel({
         language={exercise.type === 'html' ? 'html' : 'javascript'}
       />
 
-      {exercise.type === 'html' && (
+      {(exercise.type === 'html' || exercise.type === 'react') && previewSrcdoc && (
         <div className="rounded-lg overflow-hidden border border-slate-700">
           <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border-b border-slate-700">
             <span className="text-xs text-slate-500 font-mono">preview</span>
+            {exercise.type === 'react' && (
+              <span className="text-xs text-blue-400 font-mono ml-auto">React {'⚛'}</span>
+            )}
           </div>
           <iframe
             srcDoc={previewSrcdoc}
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-same-origin"
             className="w-full h-48 bg-white"
-            title="Vista previa HTML"
+            title={exercise.type === 'react' ? 'Vista previa React' : 'Vista previa HTML'}
           />
         </div>
       )}

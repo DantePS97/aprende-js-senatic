@@ -6,7 +6,7 @@ export type { Tier, WeeklyLeagueEntry, UserLeagueStatus, WeeklyLeagueResponse } 
 
 export type CourseLevel = 'basic' | 'intermediate';
 
-export type ExerciseType = 'js' | 'html';
+export type ExerciseType = 'js' | 'html' | 'react';
 
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 

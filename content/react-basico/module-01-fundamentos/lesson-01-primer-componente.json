@@ -1,0 +1,46 @@
+{
+  "theory": {
+    "markdown": "## Tu primer componente React\n\nReact es una librería para construir interfaces de usuario. La idea central es simple: **la UI es una función de los datos**.\n\n### ¿Qué es un componente?\n\nUn componente es una función de JavaScript que devuelve JSX — una sintaxis que parece HTML pero es JavaScript:\n\n```jsx\nfunction Saludo() {\n  return <h1>Hola, mundo</h1>;\n}\n```\n\nPor convención, los componentes empiezan con **mayúscula**. Esto es lo que diferencia `<div>` (etiqueta HTML) de `<Saludo>` (componente React).\n\n---\n\n### JSX: reglas básicas\n\n```jsx\n// 1. Un solo elemento raíz (o Fragment <>)\nfunction App() {\n  return (\n    <div>            {/* ← raíz única */}\n      <h1>Título</h1>\n      <p>Texto</p>\n    </div>\n  );\n}\n\n// 2. Las etiquetas siempre se cierran\n<img src=\"foto.jpg\" />   // ← necesita />\n\n// 3. class → className\n<p className=\"destacado\">texto</p>\n\n// 4. Expresiones JS con llaves {}\n<h1>{'Hola'.toUpperCase()}</h1>\n<p>{2 + 2}</p>\n```\n\n---\n\n### Props: datos de entrada\n\n```jsx\nfunction Tarjeta({ titulo, descripcion }) {\n  return (\n    <div className=\"tarjeta\">\n      <h2>{titulo}</h2>\n      <p>{descripcion}</p>\n    </div>\n  );\n}\n\n// Uso:\n<Tarjeta titulo=\"React\" descripcion=\"Una librería para UI\" />\n```\n\nLas props son **inmutables** — el componente las recibe, pero no las modifica.\n\n---\n\n### Renderizado condicional\n\n```jsx\nfunction Mensaje({ logueado }) {\n  return (\n    <div>\n      {logueado ? <p>Bienvenido</p> : <p>Inicia sesión</p>}\n    </div>\n  );\n}\n```\n\n---\n\n### Listas con `.map()`\n\n```jsx\nconst frutas = ['Manzana', 'Pera', 'Uva'];\n\nfunction Lista() {\n  return (\n    <ul>\n      {frutas.map((fruta) => (\n        <li key={fruta}>{fruta}</li>  // key es obligatorio\n      ))}\n    </ul>\n  );\n}\n```",
+    "examples": [
+      {
+        "code": "function App() {\n  const nombre = 'Estudiante';\n  const cursos = ['HTML', 'CSS', 'JavaScript', 'React'];\n\n  return (\n    <div style={{ padding: '24px', fontFamily: 'sans-serif' }}>\n      <h1>Hola, {nombre} 👋</h1>\n      <p>Tus cursos:</p>\n      <ul>\n        {cursos.map((curso) => (\n          <li key={curso}>{curso}</li>\n        ))}\n      </ul>\n    </div>\n  );\n}",
+        "explanation": "Un componente simple con variables, expresiones JSX y una lista renderizada con .map(). Nota el key en cada <li> — React lo necesita para reconciliar la lista eficientemente."
+      },
+      {
+        "code": "function Badge({ texto, color }) {\n  return (\n    <span style={{\n      background: color,\n      color: 'white',\n      padding: '4px 12px',\n      borderRadius: '9999px',\n      fontSize: '0.875rem',\n      fontWeight: 600,\n    }}>\n      {texto}\n    </span>\n  );\n}\n\nfunction App() {\n  return (\n    <div style={{ padding: '24px', display: 'flex', gap: '8px' }}>\n      <Badge texto=\"React\" color=\"#61DAFB\" />\n      <Badge texto=\"CSS\" color=\"#264DE4\" />\n      <Badge texto=\"HTML\" color=\"#E44D26\" />\n    </div>\n  );\n}",
+        "explanation": "Componente Badge reutilizable con props. El mismo componente se usa tres veces con datos diferentes — esta es la esencia de React: composición."
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "title": "Tu primer componente",
+      "prompt": "Crea un componente `App` que muestre una tarjeta de perfil:\n\n1. Un `<div>` raíz con `className=\"perfil\"`.\n2. Un `<h2>` con tu nombre (cualquier texto).\n3. Un `<p>` con `className=\"bio\"` y algún texto de descripción.\n4. Una lista `<ul>` con al menos 3 `<li>` (habilidades, hobbies, lo que quieras), cada uno con una prop `key` única.",
+      "starterCode": "function App() {\n  return (\n    <div>\n      {/* Tu tarjeta de perfil aquí */}\n    </div>\n  );\n}",
+      "type": "react",
+      "tests": [
+        {
+          "description": "App renderiza un elemento con className=\"perfil\"",
+          "expression": "!!doc.querySelector('.perfil')"
+        },
+        {
+          "description": "Hay un <h2> con texto dentro del perfil",
+          "expression": "!!doc.querySelector('.perfil h2') && doc.querySelector('.perfil h2').textContent.trim().length > 0"
+        },
+        {
+          "description": "Hay un <p> con className=\"bio\"",
+          "expression": "!!doc.querySelector('p.bio')"
+        },
+        {
+          "description": "La lista tiene al menos 3 elementos <li>",
+          "expression": "doc.querySelectorAll('li').length >= 3"
+        }
+      ],
+      "hints": [
+        "JSX necesita un único elemento raíz. Envuelve todo en un <div> o en un Fragment (<>...</>).",
+        "Las clases en JSX se escriben `className`, no `class`.",
+        "Cada <li> necesita una prop `key` única: `<li key=\"html\">HTML</li>`."
+      ]
+    }
+  ]
+}
