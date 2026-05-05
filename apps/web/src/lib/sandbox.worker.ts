@@ -14,6 +14,20 @@ const BLOCKED_MSG = 'Esta función no está disponible en el sandbox';
 (self as any).importScripts = () => { throw new Error(BLOCKED_MSG); };
 (self as any).Notification = function () { throw new Error(BLOCKED_MSG); };
 
+// ─── Storage mock ─────────────────────────────────────────────────────────────
+
+function createStorageMock(): Storage {
+  const store = new Map<string, string>();
+  return {
+    setItem(k: string, v: string) { store.set(k, String(v)); },
+    getItem(k: string) { return store.has(k) ? store.get(k)! : null; },
+    removeItem(k: string) { store.delete(k); },
+    clear() { store.clear(); },
+    get length() { return store.size; },
+    key(n: number) { return [...store.keys()][n] ?? null; },
+  } as unknown as Storage;
+}
+
 // ─── Console proxy ────────────────────────────────────────────────────────────
 
 function buildConsoleProxy(): { proxy: typeof console; getLogs: () => LogEntry[] } {
@@ -108,8 +122,8 @@ self.onmessage = async (event: MessageEvent<SandboxRequest>) => {
   try {
     const wrapper = buildWrapper(code, tests);
     const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-    const fn = new AsyncFunction('console', wrapper);
-    const raw: WorkerTestResult[] = await fn(proxy);
+    const fn = new AsyncFunction('console', 'localStorage', 'sessionStorage', wrapper);
+    const raw: WorkerTestResult[] = await fn(proxy, createStorageMock(), createStorageMock());
     testResults = raw;
   } catch (e: any) {
     error = e.message ?? String(e);
