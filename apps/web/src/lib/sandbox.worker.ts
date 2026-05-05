@@ -47,7 +47,6 @@ function buildWrapper(
   tests: Array<{ description: string; expression: string }>,
 ): string {
   const isAsync = /\bawait\b/.test(code);
-  const body = isAsync ? `await (async () => { ${code} })();` : code;
 
   const testBlocks = tests
     .map(
@@ -61,8 +60,19 @@ function buildWrapper(
     )
     .join('\n');
 
+  if (isAsync) {
+    return `
+const __results = [];
+await (async () => {
+${code}
+${testBlocks}
+})();
+return __results;
+`;
+  }
+
   return `
-${body}
+${code}
 
 const __results = [];
 ${testBlocks}
