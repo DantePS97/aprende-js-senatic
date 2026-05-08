@@ -5,7 +5,10 @@ import { Trash2, Plus, X } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type ExerciseType = 'js' | 'html' | 'react';
+
 export interface ExerciseData {
+  type: ExerciseType;
   title: string;
   prompt: string;
   startCode: string;
@@ -71,6 +74,23 @@ export function ExerciseFieldset({
             <Trash2 className="w-4 h-4" />
           </button>
         )}
+      </div>
+
+      {/* Type */}
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-600">
+          Tipo de ejercicio <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.type}
+          onChange={(e) => update({ type: e.target.value as ExerciseType })}
+          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        >
+          <option value="js">JavaScript</option>
+          <option value="html">HTML / CSS</option>
+          <option value="react">React</option>
+        </select>
       </div>
 
       {/* Title */}
