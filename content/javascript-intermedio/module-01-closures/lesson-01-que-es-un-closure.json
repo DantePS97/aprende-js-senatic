@@ -83,11 +83,11 @@
         },
         {
           "description": "decrementar() reduce el valor",
-          "expression": (() => { const c = crearContador(); c.incrementar(); c.incrementar(); return c.decrementar() === 1; })()"
+          "expression": "(() => { const c = crearContador(); c.incrementar(); c.incrementar(); return c.decrementar() === 1; })()"
         },
         {
           "description": "reset() devuelve 0",
-          "expression": (() => { const c = crearContador(); c.incrementar(); return c.reset() === 0; })()"
+          "expression": "(() => { const c = crearContador(); c.incrementar(); return c.reset() === 0; })()"
         }
       ],
       "hints": [

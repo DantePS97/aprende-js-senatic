@@ -35,17 +35,26 @@ export default function LessonPage() {
 
   const [data, setData] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('theory');
 
   useEffect(() => {
     setActiveTab('theory');
     setLoading(true);
+    setError(null);
     api
       .get(`/courses/lessons/${params.lessonId}`)
       .then(({ data: res }) => setData(res.data))
-      .catch(() => router.push('/courses'))
+      .catch((err) => {
+        const msg: string =
+          (err?.response?.data as { error?: string })?.error ??
+          err?.message ??
+          'Error desconocido';
+        console.error('[LessonPage] failed to load lesson:', err);
+        setError(msg);
+      })
       .finally(() => setLoading(false));
-  }, [params.lessonId, router]);
+  }, [params.lessonId]);
 
   const handleComplete = async (passed: boolean, hintsUsed: number) => {
     if (!data) return;
@@ -93,6 +102,21 @@ export default function LessonPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 text-center space-y-4">
+        <p className="text-red-400 font-semibold">No se pudo cargar la lección</p>
+        <p className="text-slate-500 text-sm font-mono bg-slate-900 rounded px-3 py-2">{error}</p>
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-primary-400 hover:text-primary-300 underline"
+        >
+          Volver
+        </button>
       </div>
     );
   }

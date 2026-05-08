@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import mongoose from 'mongoose';
 import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
 import { LessonModel } from '../models/Lesson.model';
@@ -153,6 +154,11 @@ coursesRouter.get('/modules/:moduleId/lessons', requireAuth, async (req: AuthReq
 
 coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.lessonId)) {
+      res.status(404).json({ success: false, error: 'ID de lección inválido.' });
+      return;
+    }
+
     const lesson = await LessonModel.findById(req.params.lessonId);
     if (!lesson) {
       res.status(404).json({ success: false, error: 'Lección no encontrada.' });
@@ -268,7 +274,9 @@ coursesRouter.get('/lessons/:lessonId', requireAuth, async (req: AuthRequest, re
       },
     });
   } catch (err) {
-    console.error('[lessons/detail]', err);
-    res.status(500).json({ success: false, error: 'Error al obtener la lección.' });
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const errName = err instanceof Error ? err.name : 'UnknownError';
+    console.error('[lessons/detail]', { lessonId: req.params.lessonId, name: errName, message: errMsg });
+    res.status(500).json({ success: false, error: `Error al obtener la lección: [${errName}] ${errMsg}` });
   }
 });
