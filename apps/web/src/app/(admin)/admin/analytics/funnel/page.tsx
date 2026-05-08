@@ -55,10 +55,11 @@ export default function AnalyticsFunnelPage() {
           value={courseId}
           onChange={(e) => handleCourseChange(e.target.value)}
           className="bg-surface-700 border border-surface-600 text-white rounded-lg px-3 py-1.5 text-sm"
+          style={{ colorScheme: 'dark' }}
         >
-          <option value="">Seleccionar curso…</option>
+          <option value="" style={{ backgroundColor: '#1e293b', color: '#fff' }}>Seleccionar curso…</option>
           {courses.map((c) => (
-            <option key={c._id} value={c._id}>{c.title}</option>
+            <option key={c._id} value={c._id} style={{ backgroundColor: '#1e293b', color: '#fff' }}>{c.title}</option>
           ))}
         </select>
       </div>
