@@ -142,6 +142,7 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 const DEFAULT_EXERCISE: ExerciseData = {
+  type: 'js',
   title: '',
   prompt: '',
   startCode: '// Escribe tu código aquí\n',
@@ -178,6 +179,7 @@ export default function LessonContentPage() {
   type RawContent = {
     theory?: { markdown?: string; examples?: ExampleData[] };
     exercises?: Array<{
+      type?: string;
       title?: string;
       prompt?: string;
       startCode?: string;
@@ -189,6 +191,7 @@ export default function LessonContentPage() {
 
   const applyContent = useCallback((c: RawContent) => {
     const exercises: ExerciseData[] = (c.exercises ?? []).map((ex) => ({
+      type: (ex.type === 'html' || ex.type === 'react' ? ex.type : 'js') as ExerciseData['type'],
       title: ex.title ?? '',
       prompt: ex.prompt ?? '',
       startCode: ex.startCode ?? '',
@@ -271,6 +274,7 @@ export default function LessonContentPage() {
 
     // tests is stored and sent as a string (server expects z.string())
     const exercises = content.exercises.map((ex) => ({
+      type: ex.type,
       title: ex.title,
       prompt: ex.prompt,
       startCode: ex.startCode,

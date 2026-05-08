@@ -38,6 +38,7 @@ export default function AnalyticsLessonsPage() {
         {courses.length > 0 && (
           <select
             className="bg-surface-700 border border-surface-600 text-white rounded-lg px-3 py-1.5 text-sm"
+            style={{ colorScheme: 'dark' }}
             defaultValue={searchParams.get('courseId') ?? ''}
             onChange={(e) => {
               const params = new URLSearchParams(searchParams.toString());
@@ -46,9 +47,9 @@ export default function AnalyticsLessonsPage() {
               router.push(`?${params.toString()}`);
             }}
           >
-            <option value="">Todos los cursos</option>
+            <option value="" style={{ backgroundColor: '#1e293b', color: '#fff' }}>Todos los cursos</option>
             {courses.map(([id, title]) => (
-              <option key={id} value={id}>{title}</option>
+              <option key={id} value={id} style={{ backgroundColor: '#1e293b', color: '#fff' }}>{title}</option>
             ))}
           </select>
         )}

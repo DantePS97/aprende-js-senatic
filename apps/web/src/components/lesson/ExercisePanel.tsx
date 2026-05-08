@@ -11,6 +11,28 @@ import { runInSandbox, TestResult } from '@/lib/sandbox';
 import { runHtmlSandbox, buildReactScaffold } from '@/lib/htmlSandbox';
 import { api } from '@/lib/api';
 
+// ─── Code persistence ─────────────────────────────────────────────────────────
+
+function codeKey(lessonId: string, idx: number) {
+  return `senatic_code_${lessonId}_${idx}`;
+}
+
+function loadCode(lessonId: string | undefined, idx: number, fallback: string): string {
+  if (!lessonId) return fallback;
+  try {
+    return localStorage.getItem(codeKey(lessonId, idx)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistCode(lessonId: string | undefined, idx: number, code: string) {
+  if (!lessonId) return;
+  try {
+    localStorage.setItem(codeKey(lessonId, idx), code);
+  } catch {}
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ExerciseState {
@@ -36,9 +58,9 @@ interface ExercisePanelProps {
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
-function makeInitialState(exercise: LessonExercise): ExerciseState {
+function makeInitialState(exercise: LessonExercise, lessonId?: string, idx?: number): ExerciseState {
   return {
-    code: exercise.starterCode,
+    code: loadCode(lessonId, idx ?? 0, exercise.starterCode),
     output: [],
     error: null,
     testResults: [],
@@ -175,12 +197,19 @@ export function ExercisePanel({
   hasNext,
 }: ExercisePanelProps) {
   const [current, setCurrent] = useState(0);
-  const [states, setStates] = useState<ExerciseState[]>(() => exercises.map(makeInitialState));
+  const [states, setStates] = useState<ExerciseState[]>(() =>
+    exercises.map((ex, idx) => makeInitialState(ex, lessonId, idx))
+  );
 
   useEffect(() => {
     setCurrent(0);
-    setStates(exercises.map(makeInitialState));
-  }, [exercises]);
+    setStates(exercises.map((ex, idx) => makeInitialState(ex, lessonId, idx)));
+  }, [exercises, lessonId]);
+
+  // Persist code to localStorage on every change
+  useEffect(() => {
+    persistCode(lessonId, current, states[current].code);
+  }, [states[current].code, lessonId, current]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const s = states[current];
   const exercise = exercises[current];
@@ -246,6 +275,7 @@ export function ExercisePanel({
   }, [update, s.code, exercise.type, exercise.tests, exercise.title, current, lessonId, s.hintsUsed]);
 
   const handleReset = () => {
+    persistCode(lessonId, current, exercise.starterCode);
     update({ code: exercise.starterCode, output: [], error: null, testResults: [], submitted: false, passed: false, hintsUsed: 0 });
   };
 
@@ -307,7 +337,6 @@ export function ExercisePanel({
       <CodeEditor
         value={s.code}
         onChange={(v) => update({ code: v })}
-        readOnly={isCurrentCompleted}
         language={exercise.type === 'html' ? 'html' : 'javascript'}
       />
 
@@ -332,7 +361,7 @@ export function ExercisePanel({
       <div className="flex gap-2">
         <button
           onClick={handleRun}
-          disabled={s.isRunning || isCurrentCompleted}
+          disabled={s.isRunning}
           className="flex items-center gap-2 btn-primary flex-1"
           aria-label="Ejecutar código"
         >
@@ -342,7 +371,6 @@ export function ExercisePanel({
 
         <button
           onClick={handleReset}
-          disabled={isCurrentCompleted}
           className="p-3 border border-slate-700 rounded-lg text-slate-400 hover:text-white
                      hover:border-slate-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Reiniciar código"

@@ -172,10 +172,11 @@ export default function AnalyticsExercisesPage() {
           onChange={(e) => setSelectedLesson(e.target.value)}
           className="text-sm border border-gray-600 rounded-lg px-3 py-2 bg-surface-800 text-slate-200
                      focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-[220px]"
+          style={{ colorScheme: 'dark' }}
         >
-          <option value="">Todas las lecciones</option>
+          <option value="" style={{ backgroundColor: '#1e293b', color: '#e2e8f0' }}>Todas las lecciones</option>
           {lessonOptions.map((l) => (
-            <option key={l.id} value={l.id}>{l.title}</option>
+            <option key={l.id} value={l.id} style={{ backgroundColor: '#1e293b', color: '#e2e8f0' }}>{l.title}</option>
           ))}
         </select>
       </div>

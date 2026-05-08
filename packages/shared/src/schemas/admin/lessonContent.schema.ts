@@ -6,6 +6,7 @@ export const ExampleSchema = z.object({
 });
 
 export const ExerciseSchema = z.object({
+  type: z.enum(['js', 'html', 'react']).default('js'),
   title: z.string().default(''),
   prompt: z.string().default(''),
   startCode: z.string().min(1, 'startCode no puede estar vacío'),
