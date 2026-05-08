@@ -117,3 +117,48 @@ leaderboardRouter.get('/weekly', requireAuth, async (req: AuthRequest, res: Resp
     res.status(500).json({ success: false, error: 'Error al obtener el ranking.' });
   }
 });
+
+// ─── GET /api/leaderboard/alltime ─────────────────────────────────────────────
+
+leaderboardRouter.get('/alltime', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+
+    const top = await UserModel.find({ xp: { $gt: 0 } })
+      .sort({ xp: -1 })
+      .limit(100)
+      .select('displayName avatarUrl level xp');
+
+    const rankings = top.map((u, i) => ({
+      rank: i + 1,
+      userId: u._id.toString(),
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl ?? null,
+      level: u.level,
+      xp: u.xp,
+    }));
+
+    const currentIndex = rankings.findIndex((e) => e.userId === userId);
+    let currentUser = currentIndex !== -1 ? rankings[currentIndex] : null;
+
+    if (!currentUser) {
+      const user = await UserModel.findById(userId).select('displayName avatarUrl level xp');
+      if (user) {
+        const rank = await UserModel.countDocuments({ xp: { $gt: user.xp } }) + 1;
+        currentUser = {
+          rank,
+          userId,
+          displayName: user.displayName,
+          avatarUrl: user.avatarUrl ?? null,
+          level: user.level,
+          xp: user.xp,
+        };
+      }
+    }
+
+    res.json({ success: true, data: { rankings, currentUser } });
+  } catch (err) {
+    console.error('[leaderboard/alltime]', err);
+    res.status(500).json({ success: false, error: 'Error al obtener el ranking global.' });
+  }
+});
