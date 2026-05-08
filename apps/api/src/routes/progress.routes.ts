@@ -113,10 +113,11 @@ progressRouter.post('/exercise', requireAuth, async (req: AuthRequest, res: Resp
         $inc: { attempts: 1 },
         $set: {
           exerciseTitle: String(exerciseTitle ?? ''),
-          passed: Boolean(passed),
           hintsUsed: Number(hintsUsed ?? 0),
           lastAttemptAt: new Date(),
         },
+        // $max preserves true: once passed=true, subsequent failed runs don't revert it
+        $max: { passed: Boolean(passed) },
         $setOnInsert: { firstAttemptAt: new Date() },
       },
       { upsert: true },
