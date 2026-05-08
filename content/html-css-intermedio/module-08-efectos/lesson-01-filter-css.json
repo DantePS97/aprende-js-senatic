@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existen 6 elementos .imagen-contenedor",
-          "test": "doc.querySelectorAll('.imagen-contenedor').length === 6"
+          "expression": "doc.querySelectorAll('.imagen-contenedor').length === 6"
         },
         {
           "description": "CSS tiene una regla de filtro con grayscale",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('grayscale')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('grayscale')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene una regla de filtro con blur",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('blur')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('blur')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene una regla de filtro con brightness",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('brightness')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('brightness')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene una regla de filtro con sepia",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('sepia')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.style && r.style.filter && r.style.filter.includes('sepia')); } catch(e) { return false; } })"
         },
         {
           "description": "Existe el elemento .glassmorphism",
-          "test": "!!doc.querySelector('.glassmorphism')"
+          "expression": "!!doc.querySelector('.glassmorphism')"
         },
         {
           "description": "CSS de .glassmorphism tiene backdrop-filter",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.glassmorphism' && !!r.style.backdropFilter); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.glassmorphism' && !!r.style.backdropFilter); } catch(e) { return false; } })"
         }
       ],
       "hints": [

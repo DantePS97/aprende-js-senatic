@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existen al menos 5 elementos con clase .tarjeta",
-          "test": "doc.querySelectorAll('.tarjeta').length >= 5"
+          "expression": "doc.querySelectorAll('.tarjeta').length >= 5"
         },
         {
           "description": "La regla .tarjeta-traslada:hover tiene translate en su transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-traslada:hover' && r.style.transform && r.style.transform.includes('translate')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-traslada:hover' && r.style.transform && r.style.transform.includes('translate')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .tarjeta-rota:hover tiene rotate en su transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-rota:hover' && r.style.transform && r.style.transform.includes('rotate')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-rota:hover' && r.style.transform && r.style.transform.includes('rotate')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .tarjeta-escala:hover tiene scale en su transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-escala:hover' && r.style.transform && r.style.transform.includes('scale')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-escala:hover' && r.style.transform && r.style.transform.includes('scale')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .tarjeta-combo:hover tiene transform con múltiples funciones (translateY y rotate)",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-combo:hover' && r.style.transform && r.style.transform.includes('translateY') && (r.style.transform.includes('rotate') || r.style.transform.includes('scale'))); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-combo:hover' && r.style.transform && r.style.transform.includes('translateY') && (r.style.transform.includes('rotate') || r.style.transform.includes('scale'))); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .tarjeta tiene transition definida",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && !!r.style.transition); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta' && !!r.style.transition); } catch(e) { return false; } })"
         },
         {
           "description": "Existe una regla con transform-origin para .tarjeta-origen",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-origen' && !!r.style.transformOrigin); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-origen' && !!r.style.transformOrigin); } catch(e) { return false; } })"
         }
       ],
       "hints": [

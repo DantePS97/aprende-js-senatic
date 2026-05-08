@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "CSS tiene regla para input:focus",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:focus'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:focus'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para input:valid",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:valid'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'input:valid'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para input:invalid",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('input:invalid')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('input:invalid')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla con :focus-within",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':focus-within')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':focus-within')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla con :not(:placeholder-shown) para evitar error en campo vacío",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':placeholder-shown')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes(':placeholder-shown')); } catch(e) { return false; } })"
         },
         {
           "description": "Existen inputs required dentro del formulario",
-          "test": "doc.querySelectorAll('.formulario-reactivo input[required]').length >= 2"
+          "expression": "doc.querySelectorAll('.formulario-reactivo input[required]').length >= 2"
         },
         {
           "description": "Existen al menos 2 etiquetas label en el formulario",
-          "test": "doc.querySelectorAll('label').length >= 2"
+          "expression": "doc.querySelectorAll('label').length >= 2"
         }
       ],
       "hints": [

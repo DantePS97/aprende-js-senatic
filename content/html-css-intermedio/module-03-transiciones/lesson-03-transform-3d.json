@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe el elemento .escena",
-          "test": "doc.querySelector('.escena') !== null"
+          "expression": "doc.querySelector('.escena') !== null"
         },
         {
           "description": "La regla CSS de .escena define perspective",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.escena' && !!r.style.perspective); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.escena' && !!r.style.perspective); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .tarjeta-3d tiene transform-style: preserve-3d",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d' && r.style.transformStyle === 'preserve-3d'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d' && r.style.transformStyle === 'preserve-3d'); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .tarjeta-3d:hover tiene rotateY(180deg) en su transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d:hover' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tarjeta-3d:hover' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .cara tiene backface-visibility: hidden",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara' && r.style.backfaceVisibility === 'hidden'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara' && r.style.backfaceVisibility === 'hidden'); } catch(e) { return false; } })"
         },
         {
           "description": "La regla .cara-detras tiene rotateY(180deg) en su transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara-detras' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.cara-detras' && r.style.transform && r.style.transform.includes('rotateY') && r.style.transform.includes('180deg')); } catch(e) { return false; } })"
         },
         {
           "description": "Existen tanto .cara-frente como .cara-detras en el DOM",
-          "test": "doc.querySelector('.cara-frente') !== null && doc.querySelector('.cara-detras') !== null"
+          "expression": "doc.querySelector('.cara-frente') !== null && doc.querySelector('.cara-detras') !== null"
         }
       ],
       "hints": [

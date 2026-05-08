@@ -21,23 +21,23 @@
       "tests": [
         {
           "description": ".productos existe y tiene display: grid",
-          "test": "(function() { var el = doc.querySelector('.productos'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
+          "expression": "(function() { var el = doc.querySelector('.productos'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
         },
         {
           "description": "La regla CSS contiene auto-fill",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('auto-fill')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('auto-fill')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS contiene minmax",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('minmax')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.productos' && r.style.gridTemplateColumns.includes('minmax')); } catch(e) { return false; } })"
         },
         {
           "description": "Existen exactamente 5 elementos .producto",
-          "test": "doc.querySelectorAll('.producto').length === 5"
+          "expression": "doc.querySelectorAll('.producto').length === 5"
         },
         {
           "description": ".producto tiene altura de 150px",
-          "test": "(function() { var el = doc.querySelector('.producto'); if (!el) return false; return win.getComputedStyle(el).height === '150px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.producto'); if (!el) return false; return win.getComputedStyle(el).height === '150px'; })()"
         }
       ],
       "hints": [

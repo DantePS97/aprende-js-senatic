@@ -21,27 +21,27 @@
       "tests": [
         {
           "description": ":root define --bg",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--bg')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--bg')); } catch(e) { return false; } })"
         },
         {
           "description": "[data-tema=\"oscuro\"] sobreescribe --bg",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('data-tema') && r.cssText.includes('--bg')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.cssText.includes('data-tema') && r.cssText.includes('--bg')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .pagina usa var(--bg) en background",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.pagina' && r.style.background.includes('var(--bg)')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.pagina' && r.style.background.includes('var(--bg)')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .boton usa var(--acento) en background",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.boton' && r.style.background.includes('var(--acento)')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.boton' && r.style.background.includes('var(--acento)')); } catch(e) { return false; } })"
         },
         {
           "description": "Existe .pagina en el DOM",
-          "test": "!!doc.querySelector('.pagina')"
+          "expression": "!!doc.querySelector('.pagina')"
         },
         {
           "description": "Existe .boton dentro de .pagina",
-          "test": "!!doc.querySelector('.pagina .boton')"
+          "expression": "!!doc.querySelector('.pagina .boton')"
         }
       ],
       "hints": [

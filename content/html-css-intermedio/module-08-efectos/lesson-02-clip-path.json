@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe el elemento .poligono",
-          "test": "!!doc.querySelector('.poligono')"
+          "expression": "!!doc.querySelector('.poligono')"
         },
         {
           "description": "CSS de .poligono tiene clip-path con polygon",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .circulo tiene clip-path con circle",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.circulo' && r.style.clipPath && r.style.clipPath.includes('circle')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.circulo' && r.style.clipPath && r.style.clipPath.includes('circle')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .hexagono tiene clip-path con polygon",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.hexagono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.hexagono' && r.style.clipPath && r.style.clipPath.includes('polygon')); } catch(e) { return false; } })"
         },
         {
           "description": "Existe el elemento .diagonal con clip-path",
-          "test": "(function() { var el = doc.querySelector('.diagonal'); if (!el) return false; return Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.diagonal' && !!r.style.clipPath); } catch(e) { return false; } }); })()"
+          "expression": "(function() { var el = doc.querySelector('.diagonal'); if (!el) return false; return Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.diagonal' && !!r.style.clipPath); } catch(e) { return false; } }); })()"
         },
         {
           "description": "CSS tiene regla .poligono:hover con clip-path",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono:hover' && !!r.style.clipPath); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.poligono:hover' && !!r.style.clipPath); } catch(e) { return false; } })"
         },
         {
           "description": "Existe el contenedor .formas",
-          "test": "!!doc.querySelector('.formas')"
+          "expression": "!!doc.querySelector('.formas')"
         }
       ],
       "hints": [

@@ -21,23 +21,23 @@
       "tests": [
         {
           "description": ".tablero existe y tiene display: grid",
-          "test": "(function() { var el = doc.querySelector('.tablero'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
+          "expression": "(function() { var el = doc.querySelector('.tablero'); if (!el) return false; return win.getComputedStyle(el).display === 'grid'; })()"
         },
         {
           "description": ".tablero tiene place-items: center (o justify-items y align-items: center)",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && (r.style.placeItems === 'center' || (r.style.justifyItems === 'center' && r.style.alignItems === 'center'))); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && (r.style.placeItems === 'center' || (r.style.justifyItems === 'center' && r.style.alignItems === 'center'))); } catch(e) { return false; } })"
         },
         {
           "description": ".tablero tiene justify-content: center",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && r.style.justifyContent === 'center'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.tablero' && r.style.justifyContent === 'center'); } catch(e) { return false; } })"
         },
         {
           "description": "Existen exactamente 9 elementos .celda",
-          "test": "doc.querySelectorAll('.celda').length === 9"
+          "expression": "doc.querySelectorAll('.celda').length === 9"
         },
         {
           "description": ".celda tiene ancho de 80px",
-          "test": "(function() { var el = doc.querySelector('.celda'); if (!el) return false; return win.getComputedStyle(el).width === '80px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.celda'); if (!el) return false; return win.getComputedStyle(el).width === '80px'; })()"
         }
       ],
       "hints": [

@@ -21,27 +21,27 @@
       "tests": [
         {
           "description": ":root define --base",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--base')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.cssText && r.selectorText === ':root' && r.cssText.includes('--base')); } catch(e) { return false; } })"
         },
         {
           "description": ":root contiene calc() en sus variables",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.cssText.includes('calc(')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === ':root' && r.cssText.includes('calc(')); } catch(e) { return false; } })"
         },
         {
           "description": ".caja-sm tiene padding-top de 8px (1 × base)",
-          "test": "(function() { var el = doc.querySelector('.caja-sm'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '8px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.caja-sm'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '8px'; })()"
         },
         {
           "description": ".caja-md tiene padding-top de 16px (2 × base)",
-          "test": "(function() { var el = doc.querySelector('.caja-md'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '16px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.caja-md'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '16px'; })()"
         },
         {
           "description": ".caja-lg tiene padding-top de 32px (4 × base)",
-          "test": "(function() { var el = doc.querySelector('.caja-lg'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '32px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.caja-lg'); if (!el) return false; return win.getComputedStyle(el).paddingTop === '32px'; })()"
         },
         {
           "description": "Los tres elementos .caja-sm, .caja-md y .caja-lg existen",
-          "test": "!!doc.querySelector('.caja-sm') && !!doc.querySelector('.caja-md') && !!doc.querySelector('.caja-lg')"
+          "expression": "!!doc.querySelector('.caja-sm') && !!doc.querySelector('.caja-md') && !!doc.querySelector('.caja-lg')"
         }
       ],
       "hints": [

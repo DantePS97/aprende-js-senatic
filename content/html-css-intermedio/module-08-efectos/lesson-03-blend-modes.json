@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe el elemento .texto-blend",
-          "test": "!!doc.querySelector('.texto-blend')"
+          "expression": "!!doc.querySelector('.texto-blend')"
         },
         {
           "description": "CSS de .texto-blend tiene mix-blend-mode: overlay",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.texto-blend' && r.style.mixBlendMode === 'overlay'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.texto-blend' && r.style.mixBlendMode === 'overlay'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .blend-multiply tiene mix-blend-mode: multiply",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-multiply' && r.style.mixBlendMode === 'multiply'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-multiply' && r.style.mixBlendMode === 'multiply'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .blend-screen tiene mix-blend-mode: screen",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-screen' && r.style.mixBlendMode === 'screen'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-screen' && r.style.mixBlendMode === 'screen'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .blend-overlay tiene mix-blend-mode: overlay",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-overlay' && r.style.mixBlendMode === 'overlay'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.blend-overlay' && r.style.mixBlendMode === 'overlay'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS de .contexto tiene isolation: isolate",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.contexto' && r.style.isolation === 'isolate'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.contexto' && r.style.isolation === 'isolate'); } catch(e) { return false; } })"
         },
         {
           "description": "Existe el elemento .showcase",
-          "test": "!!doc.querySelector('.showcase')"
+          "expression": "!!doc.querySelector('.showcase')"
         }
       ],
       "hints": [

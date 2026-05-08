@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe el contenedor .galeria en el DOM",
-          "test": "!!doc.querySelector('.galeria')"
+          "expression": "!!doc.querySelector('.galeria')"
         },
         {
           "description": ".galeria tiene display: grid",
-          "test": "win.getComputedStyle(doc.querySelector('.galeria')).display === 'grid'"
+          "expression": "win.getComputedStyle(doc.querySelector('.galeria')).display === 'grid'"
         },
         {
           "description": "La regla CSS de .galeria contiene 1fr en grid-template-columns",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria' && r.style.gridTemplateColumns.includes('1fr')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.galeria' && r.style.gridTemplateColumns.includes('1fr')); } catch(e) { return false; } })"
         },
         {
           "description": ".galeria tiene gap de 16px",
-          "test": "(function() { var el = doc.querySelector('.galeria'); if (!el) return false; var st = win.getComputedStyle(el); return st.gap === '16px' || st.rowGap === '16px' || st.columnGap === '16px' || st.gridGap === '16px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.galeria'); if (!el) return false; var st = win.getComputedStyle(el); return st.gap === '16px' || st.rowGap === '16px' || st.columnGap === '16px' || st.gridGap === '16px'; })()"
         },
         {
           "description": "Existen exactamente 6 elementos .foto",
-          "test": "doc.querySelectorAll('.foto').length === 6"
+          "expression": "doc.querySelectorAll('.foto').length === 6"
         },
         {
           "description": "Los .foto son hijos directos de .galeria",
-          "test": "doc.querySelectorAll('.galeria > .foto').length === 6"
+          "expression": "doc.querySelectorAll('.galeria > .foto').length === 6"
         },
         {
           "description": ".foto tiene altura de 120px",
-          "test": "(function() { var el = doc.querySelector('.foto'); if (!el) return false; return win.getComputedStyle(el).height === '120px'; })()"
+          "expression": "(function() { var el = doc.querySelector('.foto'); if (!el) return false; return win.getComputedStyle(el).height === '120px'; })()"
         }
       ],
       "hints": [

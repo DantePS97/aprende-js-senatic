@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe un formulario con clase .formulario",
-          "test": "!!doc.querySelector('form.formulario')"
+          "expression": "!!doc.querySelector('form.formulario')"
         },
         {
           "description": "Existe un input con type=\"email\"",
-          "test": "!!doc.querySelector('input[type=\"email\"]')"
+          "expression": "!!doc.querySelector('input[type=\"email\"]')"
         },
         {
           "description": "El input de email tiene el atributo required",
-          "test": "!!doc.querySelector('input[type=\"email\"][required]')"
+          "expression": "!!doc.querySelector('input[type=\"email\"][required]')"
         },
         {
           "description": "El input de número tiene min=\"18\"",
-          "test": "!!doc.querySelector('input[type=\"number\"][min=\"18\"]')"
+          "expression": "!!doc.querySelector('input[type=\"number\"][min=\"18\"]')"
         },
         {
           "description": "El input de contraseña tiene el atributo pattern",
-          "test": "!!doc.querySelector('input[type=\"password\"][pattern]')"
+          "expression": "!!doc.querySelector('input[type=\"password\"][pattern]')"
         },
         {
           "description": "Existe un input con minlength=\"8\"",
-          "test": "!!doc.querySelector('input[minlength=\"8\"]')"
+          "expression": "!!doc.querySelector('input[minlength=\"8\"]')"
         },
         {
           "description": "Existe un botón o input de tipo submit",
-          "test": "!!doc.querySelector('input[type=\"submit\"], button[type=\"submit\"], button:not([type])')"
+          "expression": "!!doc.querySelector('input[type=\"submit\"], button[type=\"submit\"], button:not([type])')"
         }
       ],
       "hints": [

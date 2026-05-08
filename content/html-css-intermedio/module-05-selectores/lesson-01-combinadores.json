@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "CSS tiene la regla h2 + p",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 + p'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 + p'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene la regla h2 ~ p",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 ~ p'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'h2 ~ p'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene la regla article > p",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'article > p'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'article > p'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene la regla ul > li",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'ul > li'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'ul > li'); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla con combinador li + li o ul > li + li",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'li + li' || r.selectorText === 'ul > li + li'); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === 'li + li' || r.selectorText === 'ul > li + li'); } catch(e) { return false; } })"
         },
         {
           "description": "Existen elementos h2 en el DOM",
-          "test": "doc.querySelectorAll('article h2').length >= 2"
+          "expression": "doc.querySelectorAll('article h2').length >= 2"
         },
         {
           "description": "Existen elementos li dentro de ul en el DOM",
-          "test": "doc.querySelectorAll('ul > li').length >= 3"
+          "expression": "doc.querySelectorAll('ul > li').length >= 3"
         }
       ],
       "hints": [

@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "CSS tiene regla para a[href^=\"https://\"]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"https://\"]')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"https://\"]')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para a[href^=\"mailto:\"]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"mailto:\"')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"mailto:\"')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para a[href$=\".pdf\"]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href$=\".pdf\"]')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href$=\".pdf\"]')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para a[href^=\"tel:\"]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"tel:\"')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"tel:\"')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para a[href^=\"#\"]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"#\"]')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[href^=\"#\"]')); } catch(e) { return false; } })"
         },
         {
           "description": "CSS tiene regla para a[download]",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[download]')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('[download]')); } catch(e) { return false; } })"
         },
         {
           "description": "Existen 6 elementos <a> en el DOM",
-          "test": "doc.querySelectorAll('a').length >= 6"
+          "expression": "doc.querySelectorAll('a').length >= 6"
         }
       ],
       "hints": [

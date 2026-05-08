@@ -21,31 +21,31 @@
       "tests": [
         {
           "description": "Existe al menos un elemento con clase .btn",
-          "test": "doc.querySelector('.btn') !== null"
+          "expression": "doc.querySelector('.btn') !== null"
         },
         {
           "description": "La regla CSS de .btn tiene la propiedad transition con 0.3s",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn' && r.style.transition && r.style.transition.includes('0.3s')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn' && r.style.transition && r.style.transition.includes('0.3s')); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .btn:hover tiene la propiedad transform",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.transform); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.transform); } catch(e) { return false; } })"
         },
         {
           "description": "La regla CSS de .btn:hover cambia el color de fondo",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.backgroundColor); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn:hover' && !!r.style.backgroundColor); } catch(e) { return false; } })"
         },
         {
           "description": "Existe la clase .btn-bounce con cubic-bezier en su transition",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-bounce' && r.style.transition && r.style.transition.includes('cubic-bezier')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-bounce' && r.style.transition && r.style.transition.includes('cubic-bezier')); } catch(e) { return false; } })"
         },
         {
           "description": "Existe la clase .btn-delay con transición que incluye delay (múltiples valores)",
-          "test": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-delay' && r.style.transition && r.style.transition.includes(',')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText === '.btn-delay' && r.style.transition && r.style.transition.includes(',')); } catch(e) { return false; } })"
         },
         {
           "description": "Hay al menos 2 elementos con clase .btn en el DOM",
-          "test": "doc.querySelectorAll('.btn').length >= 2"
+          "expression": "doc.querySelectorAll('.btn').length >= 2"
         }
       ],
       "hints": [
