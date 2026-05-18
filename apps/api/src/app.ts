@@ -20,6 +20,9 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
 export const app = express();
 
+// Trust Railway's reverse proxy so express-rate-limit can read X-Forwarded-For
+app.set('trust proxy', 1);
+
 // ─── Security middleware ──────────────────────────────────────────────────────
 
 app.use(helmet());

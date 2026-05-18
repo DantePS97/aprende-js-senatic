@@ -56,7 +56,6 @@ const ChallengeSchema = new Schema<IChallenge>(
   { timestamps: true, versionKey: false }
 );
 
-ChallengeSchema.index({ slug: 1 });
 ChallengeSchema.index({ order: 1, published: 1 });
 ChallengeSchema.index({ difficulty: 1, published: 1 });
 ChallengeSchema.index({ tags: 1 });

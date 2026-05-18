@@ -52,7 +52,7 @@ const AdminAuditSchema = new Schema<IAdminAudit>(
       index: true,
     },
     metadata: { type: Schema.Types.Mixed, default: null },
-    timestamp: { type: Date, default: () => new Date(), index: true },
+    timestamp: { type: Date, default: () => new Date() },
   },
   { versionKey: false }
 );
