@@ -234,7 +234,7 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
         title: achievement.title,
         description: achievement.description,
         iconEmoji: achievement.iconEmoji,
-        condition: achievement.condition,
+        condition: achievement.condition as import('@senatic/shared').AchievementCondition,
       });
     }
   }

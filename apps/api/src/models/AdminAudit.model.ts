@@ -15,7 +15,8 @@ export type AdminAuditEntityType =
   | 'module'
   | 'lesson'
   | 'lessonContent'
-  | 'user';
+  | 'user'
+  | 'challenge';
 
 export interface IAdminAudit extends Document {
   adminId: mongoose.Types.ObjectId;
@@ -42,7 +43,7 @@ const AdminAuditSchema = new Schema<IAdminAudit>(
     entityType: {
       type: String,
       required: true,
-      enum: ['course', 'module', 'lesson', 'lessonContent', 'user'],
+      enum: ['course', 'module', 'lesson', 'lessonContent', 'user', 'challenge'],
       index: true,
     },
     entityId: {
