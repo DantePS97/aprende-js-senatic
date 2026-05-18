@@ -4,6 +4,8 @@ import { AchievementModel, UserAchievementModel } from '../models/Achievement.mo
 import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
 import { ModuleModel } from '../models/Module.model';
+import { ChallengeProgressModel } from '../models/ChallengeProgress.model';
+import { ChallengeModel } from '../models/Challenge.model';
 import type { Achievement } from '@senatic/shared';
 
 // ─── XP → Level mapping ───────────────────────────────────────────────────────
@@ -200,6 +202,24 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
       case 'lessons_in_day':
         earned = lessonsToday >= threshold;
         break;
+      case 'challenges_solved': {
+        const solvedCount = await ChallengeProgressModel.countDocuments({ userId, status: 'solved' });
+        earned = solvedCount >= threshold;
+        break;
+      }
+      case 'challenges_solved_difficulty': {
+        const diff = achievement.condition.difficulty;
+        const matchingIds = await ChallengeModel.find({ difficulty: diff, published: true })
+          .select('_id')
+          .then((cs) => cs.map((c) => c._id));
+        const solvedCount = await ChallengeProgressModel.countDocuments({
+          userId,
+          status: 'solved',
+          challengeId: { $in: matchingIds },
+        });
+        earned = solvedCount >= threshold;
+        break;
+      }
     }
 
     if (earned) {

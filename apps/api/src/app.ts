@@ -12,6 +12,8 @@ import { forumRouter } from './routes/forum.routes';
 import { leaderboardRouter } from './routes/leaderboard.routes';
 import { leaguesRouter } from './routes/leagues.routes';
 import { syncRouter } from './routes/sync.routes';
+import { challengesRouter } from './routes/challenges.routes';
+import { requireAuth } from './middleware/auth.middleware';
 import adminRouter from './routes/admin/index';
 
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
@@ -59,6 +61,7 @@ app.use('/api/forum', forumRouter);
 app.use('/api/leaderboard', leaderboardRouter);
 app.use('/api/leagues', leaguesRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/challenges', requireAuth, challengesRouter);
 app.use('/api/admin', adminRouter);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────

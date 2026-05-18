@@ -13,6 +13,8 @@ import type {
   LessonCreateInput,
   LessonUpdateInput,
   LessonContentInput,
+  AdminChallengeCreateInput,
+  AdminChallengeUpdateInput,
 } from '@senatic/shared';
 
 // ─── Structured error ─────────────────────────────────────────────────────────
@@ -167,6 +169,28 @@ const audit = {
   },
 };
 
+// ─── Challenges ───────────────────────────────────────────────────────────────
+
+const challenges = {
+  list: (params?: { page?: number; limit?: number; difficulty?: string; published?: boolean }) =>
+    call(api.get('/admin/challenges', { params })),
+
+  create: (data: AdminChallengeCreateInput) =>
+    call(api.post('/admin/challenges', data)),
+
+  get: (id: string) =>
+    call(api.get(`/admin/challenges/${id}`)),
+
+  update: (id: string, data: AdminChallengeUpdateInput) =>
+    call(api.patch(`/admin/challenges/${id}`, data)),
+
+  delete: (id: string) =>
+    call(api.delete(`/admin/challenges/${id}`)),
+
+  reorder: (id: string, direction: 'up' | 'down') =>
+    call(api.patch('/admin/challenges/reorder', { id, direction })),
+};
+
 // ─── Unified export ───────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -175,4 +199,5 @@ export const adminApi = {
   lessons,
   users,
   audit,
+  challenges,
 };

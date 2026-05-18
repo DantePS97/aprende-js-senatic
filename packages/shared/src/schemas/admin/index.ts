@@ -5,3 +5,4 @@ export * from './lessonContent.schema';
 export * from './reorder.schema';
 export * from './user.schema';
 export * from './audit.schema';
+export * from './challenge.schema';

@@ -7,6 +7,7 @@ import usersAdminRouter from './users.routes';
 import auditAdminRouter from './audit.routes';
 import analyticsRouter from './analytics.routes';
 import studentsRouter from './students.routes';
+import challengesAdminRouter from './challenges.routes';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/users', usersAdminRouter);
 router.use('/audit', auditAdminRouter);
 router.use('/analytics', analyticsRouter);
 router.use('/students', studentsRouter);
+router.use('/challenges', challengesAdminRouter);
 
 export default router;

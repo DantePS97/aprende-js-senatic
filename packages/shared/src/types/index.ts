@@ -16,7 +16,9 @@ export type AchievementConditionType =
   | 'xp'
   | 'module_completed'
   | 'no_hints'
-  | 'lessons_in_day';
+  | 'lessons_in_day'
+  | 'challenges_solved'
+  | 'challenges_solved_difficulty';
 
 // ─── User ─────────────────────────────────────────────────────────────────────
 
@@ -168,7 +170,23 @@ export interface AchievementCondition {
   threshold: number;
   lessonId?: string;
   moduleId?: string;
+  difficulty?: 'facil' | 'medio' | 'dificil';
 }
+
+// ─── Challenges ───────────────────────────────────────────────────────────────
+
+export type {
+  Difficulty,
+  TestCase,
+  Challenge,
+  ChallengeListItem,
+  ChallengeAttempt,
+  ChallengeProgress,
+  ChallengeProgressStatus,
+  SubmitChallengeInput,
+  SubmitChallengeResponse,
+  UnlockStatus,
+} from '../schemas/challenges.schema';
 
 export interface Achievement {
   _id: string;
