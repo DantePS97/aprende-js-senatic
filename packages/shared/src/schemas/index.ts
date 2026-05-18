@@ -95,6 +95,10 @@ export const updatePreferencesSchema = userPreferencesSchema.partial().strict();
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export type UpdatePreferencesInput = z.infer<typeof updatePreferencesSchema>;
 
+// ─── Challenges schemas ───────────────────────────────────────────────────────
+
+export * from './challenges.schema';
+
 // ─── League schemas ───────────────────────────────────────────────────────────
 
 export const tierSchema = z.enum(['gold', 'silver', 'bronze']);

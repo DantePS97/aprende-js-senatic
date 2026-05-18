@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Users, ClipboardList, BarChart2, GraduationCap, LogOut } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, ClipboardList, BarChart2, GraduationCap, LogOut, Swords } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', Icon: LayoutDashboard, exact: true },
   { href: '/admin/courses', label: 'Cursos', Icon: BookOpen, exact: false },
+  { href: '/admin/challenges', label: 'Retos', Icon: Swords, exact: false },
   { href: '/admin/users', label: 'Usuarios', Icon: Users, exact: false },
   { href: '/admin/students', label: 'Estudiantes', Icon: GraduationCap, exact: false },
   { href: '/admin/audit', label: 'Auditoría', Icon: ClipboardList, exact: false },

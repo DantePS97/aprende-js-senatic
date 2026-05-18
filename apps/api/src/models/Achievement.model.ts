@@ -13,6 +13,7 @@ export interface IAchievement extends Document {
     threshold: number;
     lessonId?: string;
     moduleId?: string;
+    difficulty?: string;
   };
   createdAt: Date;
 }
@@ -26,12 +27,16 @@ const AchievementSchema = new Schema<IAchievement>(
     condition: {
       type: {
         type: String,
-        enum: ['lessons_completed', 'streak', 'xp', 'module_completed', 'no_hints', 'lessons_in_day'],
+        enum: [
+          'lessons_completed', 'streak', 'xp', 'module_completed', 'no_hints',
+          'lessons_in_day', 'challenges_solved', 'challenges_solved_difficulty',
+        ],
         required: true,
       },
       threshold: { type: Number, required: true },
-      lessonId: { type: String, default: null },
-      moduleId: { type: String, default: null },
+      lessonId:  { type: String, default: null },
+      moduleId:  { type: String, default: null },
+      difficulty:{ type: String, default: null },
     },
   },
   { timestamps: { createdAt: true, updatedAt: false }, versionKey: false }

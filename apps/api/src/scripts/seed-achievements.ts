@@ -27,6 +27,8 @@ const defaults = [
   { key: 'module_completed_11', title: 'Maestro del Curso', description: 'Completaste todos los módulos del curso', iconEmoji: '🏅', condition: { type: 'module_completed', threshold: 11 } },
   { key: 'turbo_day', title: 'Modo Turbo', description: 'Completaste 3 lecciones en un solo día', iconEmoji: '⚡', condition: { type: 'lessons_in_day', threshold: 3 } },
   { key: 'marathon_day', title: 'Maratón de Código', description: 'Completaste 5 lecciones en un solo día', iconEmoji: '🏃', condition: { type: 'lessons_in_day', threshold: 5 } },
+  { key: 'primer_reto', title: 'Primer Reto', description: 'Resolviste tu primer reto de JavaScript', iconEmoji: '⚔️', condition: { type: 'challenges_solved', threshold: 1 } },
+  { key: 'maestro_dificil', title: 'Maestro del Desafío', description: 'Resolviste un reto de nivel difícil', iconEmoji: '🧗', condition: { type: 'challenges_solved_difficulty', threshold: 1, difficulty: 'dificil' } },
 ];
 
 export async function seedAchievements(): Promise<void> {
