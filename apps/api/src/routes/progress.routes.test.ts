@@ -46,6 +46,12 @@ vi.mock('../services/gamification.service', () => ({
   updateStreak: vi.fn(),
 }));
 
+vi.mock('../services/notification.service', () => ({
+  notifyAchievementUnlocked: vi.fn().mockResolvedValue(undefined),
+  notifyLevelUp: vi.fn().mockResolvedValue(undefined),
+  notifyStreakMilestone: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { LessonModel } from '../models/Lesson.model';
 import { ProgressModel } from '../models/Progress.model';
 import { UserModel } from '../models/User.model';

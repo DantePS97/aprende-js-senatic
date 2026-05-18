@@ -10,6 +10,7 @@ import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
+import { notifyAchievementUnlocked, notifyLevelUp, notifyStreakMilestone } from '../services/notification.service';
 
 export const progressRouter = Router();
 
@@ -70,6 +71,19 @@ progressRouter.post('/', requireAuth, validateBody(submitProgressSchema), async 
     }
 
     const newAchievements = await checkAchievements(userId);
+
+    // Notificaciones — fire and forget, no bloquean el response
+    if (newAchievements.length > 0) {
+      for (const ach of newAchievements) {
+        notifyAchievementUnlocked(userId, ach).catch(() => {});
+      }
+    }
+    if (leveledUp && newLevel !== undefined) {
+      notifyLevelUp(userId, newLevel).catch(() => {});
+    }
+    if (newStreak !== undefined) {
+      notifyStreakMilestone(userId, newStreak).catch(() => {});
+    }
 
     res.json({
       success: true,
