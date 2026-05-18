@@ -42,7 +42,7 @@ const authHeader = () => ({ Authorization: `Bearer ${signAccessToken(TEST_USER)}
 
 const UNLOCKED_STATUS = {
   unlocked: true,
-  requiredCourseSlug: 'javascript-basico',
+  requiredCourseSlug: 'javascript-basico' as const,
   completedLessons: 5,
   totalLessons: 5,
   progressPercent: 100,
@@ -50,7 +50,7 @@ const UNLOCKED_STATUS = {
 
 const LOCKED_STATUS = {
   unlocked: false,
-  requiredCourseSlug: 'javascript-basico',
+  requiredCourseSlug: 'javascript-basico' as const,
   completedLessons: 2,
   totalLessons: 5,
   progressPercent: 40,
