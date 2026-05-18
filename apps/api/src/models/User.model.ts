@@ -53,6 +53,8 @@ export interface IUser extends Document {
   passwordResetTokenHash?: string;
   passwordResetTokenExpiresAt?: Date;
   preferences: IUserPreferences;
+  lastLevelUpEmailDate?: Date;
+  lastStreakReminderSentAt?: Date;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -118,6 +120,14 @@ const UserSchema = new Schema<IUser>(
     preferences: {
       type: UserPreferencesSchema,
       default: () => ({}),
+    },
+    lastLevelUpEmailDate: {
+      type: Date,
+      default: null,
+    },
+    lastStreakReminderSentAt: {
+      type: Date,
+      default: null,
     },
   },
   {

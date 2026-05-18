@@ -3,11 +3,14 @@ import mongoose from 'mongoose';
 import { submitProgressSchema } from '@senatic/shared';
 import { ProgressModel } from '../models/Progress.model';
 import { LessonModel } from '../models/Lesson.model';
+import { ModuleModel } from '../models/Module.model';
+import { CourseModel } from '../models/Course.model';
 import { UserModel } from '../models/User.model';
 import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
+import { notifyAchievementUnlocked, notifyLevelUp, notifyStreakMilestone } from '../services/notification.service';
 
 export const progressRouter = Router();
 
@@ -68,6 +71,19 @@ progressRouter.post('/', requireAuth, validateBody(submitProgressSchema), async 
     }
 
     const newAchievements = await checkAchievements(userId);
+
+    // Notificaciones — fire and forget, no bloquean el response
+    if (newAchievements.length > 0) {
+      for (const ach of newAchievements) {
+        notifyAchievementUnlocked(userId, ach).catch(() => {});
+      }
+    }
+    if (leveledUp && newLevel !== undefined) {
+      notifyLevelUp(userId, newLevel).catch(() => {});
+    }
+    if (newStreak !== undefined) {
+      notifyStreakMilestone(userId, newStreak).catch(() => {});
+    }
 
     res.json({
       success: true,
@@ -173,5 +189,58 @@ progressRouter.get('/stats', requireAuth, async (req: AuthRequest, res: Response
   } catch (err) {
     console.error('[progress/stats]', err);
     res.status(500).json({ success: false, error: 'Error al obtener estadísticas.' });
+  }
+});
+
+// ─── GET /api/progress/courses ────────────────────────────────────────────────
+
+progressRouter.get('/courses', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+
+    // 1. Fetch all published courses
+    const courses = await CourseModel.find({ isPublished: true }).sort({ order: 1 });
+
+    // 2. For each course, get published modules → published lessons → completed count (parallel)
+    const courseProgress = await Promise.all(
+      courses.map(async (course) => {
+        const modules = await ModuleModel.find({ courseId: course._id, isPublished: true });
+        const moduleIds = modules.map((m) => m._id);
+
+        const lessons = await LessonModel.find({
+          moduleId: { $in: moduleIds },
+          isPublished: true,
+        });
+        const lessonIds = lessons.map((l) => l._id);
+        const totalLessons = lessonIds.length;
+
+        const completedLessons = totalLessons > 0
+          ? await ProgressModel.countDocuments({
+              userId,
+              lessonId: { $in: lessonIds },
+              status: 'completed',
+            })
+          : 0;
+
+        const percentageComplete = totalLessons > 0
+          ? Math.round((completedLessons / totalLessons) * 100)
+          : 0;
+
+        return {
+          courseId: (course._id as mongoose.Types.ObjectId).toString(),
+          courseSlug: course.slug,
+          courseTitle: course.title,
+          iconEmoji: course.iconEmoji,
+          completedLessons,
+          totalLessons,
+          percentageComplete,
+        };
+      })
+    );
+
+    res.json({ success: true, data: courseProgress });
+  } catch (err) {
+    console.error('[progress/courses]', err);
+    res.status(500).json({ success: false, error: 'Error al obtener progreso por curso.' });
   }
 });

@@ -50,6 +50,7 @@ export interface IUserAchievement extends Document {
   userId: mongoose.Types.ObjectId;
   achievementId: mongoose.Types.ObjectId;
   earnedAt: Date;
+  emailSentAt?: Date;
 }
 
 const UserAchievementSchema = new Schema<IUserAchievement>(
@@ -57,6 +58,7 @@ const UserAchievementSchema = new Schema<IUserAchievement>(
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     achievementId: { type: Schema.Types.ObjectId, ref: 'Achievement', required: true },
     earnedAt: { type: Date, default: () => new Date() },
+    emailSentAt: { type: Date, default: null },
   },
   { versionKey: false }
 );

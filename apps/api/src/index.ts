@@ -2,6 +2,7 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import { app } from './app';
 import { runLeagueCatchup, setupLeagueCron } from './lib/leagueCatchup';
+import { setupNotificationCrons } from './lib/notificationCrons';
 import { validateEnv } from './lib/env';
 
 const PORT = process.env.PORT || 4000;
@@ -31,6 +32,7 @@ async function bootstrap() {
   // ─── League scheduler + boot catch-up ────────────────────────────────────
   await runLeagueCatchup();
   setupLeagueCron();
+  setupNotificationCrons();
 
   app.listen(PORT, () => {
     console.log(`🚀  API corriendo en http://localhost:${PORT}`);
