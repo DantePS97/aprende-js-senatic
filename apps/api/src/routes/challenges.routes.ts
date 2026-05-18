@@ -85,7 +85,7 @@ challengesRouter.post(
   validateBody(submitChallengeSchema),
   async (req: AuthRequest, res: Response) => {
     try {
-      const result = await submitChallenge(req.user!.userId, req.params.slug, req.body.code);
+      const result = await submitChallenge(req.user!.userId, String(req.params.slug), req.body.code);
       res.json({ success: true, data: result });
     } catch (err) {
       const typed = err as { code?: string };
