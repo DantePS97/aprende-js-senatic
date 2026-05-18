@@ -11,7 +11,7 @@ export const testCaseSchema = z.object({
   input: z.string().min(1, 'El input es requerido'),
   expectedOutput: z.string().min(1, 'El output esperado es requerido'),
   hidden: z.boolean().default(false),
-  description: z.string().max(200).optional(),
+  description: z.string().max(200).nullish(),
 });
 export type TestCase = z.infer<typeof testCaseSchema>;
 
