@@ -11,7 +11,7 @@ vi.mock('../services/email.service', () => ({
 }));
 
 vi.mock('../models/Lesson.model', () => ({
-  LessonModel: { findById: vi.fn(), countDocuments: vi.fn() },
+  LessonModel: { findById: vi.fn(), countDocuments: vi.fn(), find: vi.fn() },
 }));
 
 vi.mock('../models/Progress.model', () => ({
@@ -31,6 +31,14 @@ vi.mock('../models/ExerciseAttempt.model', () => ({
   ExerciseAttemptModel: { findOneAndUpdate: vi.fn() },
 }));
 
+vi.mock('../models/Course.model', () => ({
+  CourseModel: { find: vi.fn() },
+}));
+
+vi.mock('../models/Module.model', () => ({
+  ModuleModel: { find: vi.fn() },
+}));
+
 vi.mock('../services/gamification.service', () => ({
   awardXp: vi.fn(),
   calculateXpReward: vi.fn(),
@@ -42,6 +50,8 @@ import { LessonModel } from '../models/Lesson.model';
 import { ProgressModel } from '../models/Progress.model';
 import { UserModel } from '../models/User.model';
 import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
+import { CourseModel } from '../models/Course.model';
+import { ModuleModel } from '../models/Module.model';
 import {
   awardXp,
   calculateXpReward,
@@ -316,6 +326,99 @@ describe('GET /api/progress/stats', () => {
 
     const res = await request(app)
       .get('/api/progress/stats')
+      .set(authHeader());
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+});
+
+// ─── GET /api/progress/courses ────────────────────────────────────────────────
+
+const COURSE_ID = '507f1f77bcf86cd799439033';
+const MODULE_ID = '507f1f77bcf86cd799439044';
+
+describe('GET /api/progress/courses', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns 401 without auth token', async () => {
+    const res = await request(app).get('/api/progress/courses');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns course progress array for the authenticated user', async () => {
+    vi.mocked(CourseModel.find).mockReturnValue({
+      sort: vi.fn().mockResolvedValue([
+        { _id: COURSE_ID, slug: 'javascript-basico', title: 'JavaScript Básico', iconEmoji: '📘', isPublished: true, order: 1 },
+      ]),
+    } as any);
+
+    vi.mocked(ModuleModel.find).mockResolvedValue([
+      { _id: MODULE_ID, courseId: COURSE_ID, isPublished: true },
+    ] as any);
+
+    vi.mocked(LessonModel.find).mockResolvedValue([
+      { _id: LESSON_ID, moduleId: MODULE_ID, isPublished: true },
+      { _id: '507f1f77bcf86cd799439055', moduleId: MODULE_ID, isPublished: true },
+    ] as any);
+
+    vi.mocked(ProgressModel.countDocuments).mockResolvedValue(1);
+
+    const res = await request(app)
+      .get('/api/progress/courses')
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toHaveLength(1);
+    const entry = res.body.data[0];
+    expect(entry.courseSlug).toBe('javascript-basico');
+    expect(entry.totalLessons).toBe(2);
+    expect(entry.completedLessons).toBe(1);
+    expect(entry.percentageComplete).toBe(50);
+  });
+
+  it('returns percentageComplete=0 when course has no lessons', async () => {
+    vi.mocked(CourseModel.find).mockReturnValue({
+      sort: vi.fn().mockResolvedValue([
+        { _id: COURSE_ID, slug: 'javascript-basico', title: 'JavaScript Básico', iconEmoji: '📘', isPublished: true, order: 1 },
+      ]),
+    } as any);
+
+    vi.mocked(ModuleModel.find).mockResolvedValue([{ _id: MODULE_ID }] as any);
+    vi.mocked(LessonModel.find).mockResolvedValue([] as any);
+
+    const res = await request(app)
+      .get('/api/progress/courses')
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0].percentageComplete).toBe(0);
+    expect(res.body.data[0].totalLessons).toBe(0);
+    // countDocuments should NOT be called when there are no lessons
+    expect(ProgressModel.countDocuments).not.toHaveBeenCalled();
+  });
+
+  it('returns empty array when there are no published courses', async () => {
+    vi.mocked(CourseModel.find).mockReturnValue({
+      sort: vi.fn().mockResolvedValue([]),
+    } as any);
+
+    const res = await request(app)
+      .get('/api/progress/courses')
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([]);
+  });
+
+  it('returns 500 when CourseModel throws', async () => {
+    vi.mocked(CourseModel.find).mockReturnValue({
+      sort: vi.fn().mockRejectedValue(new Error('DB error')),
+    } as any);
+
+    const res = await request(app)
+      .get('/api/progress/courses')
       .set(authHeader());
 
     expect(res.status).toBe(500);
