@@ -20,7 +20,7 @@ interface ChallengeRow {
 }
 
 interface ListResult {
-  items: ChallengeRow[];
+  challenges: ChallengeRow[];
   total: number;
 }
 
@@ -67,7 +67,7 @@ export default function AdminChallengesPage() {
     setLoading(true);
     try {
       const result = (await adminApi.challenges.list({ limit: 100 })) as ListResult;
-      setChallenges(result.items ?? []);
+      setChallenges(result.challenges ?? []);
     } catch {
       setError('No se pudieron cargar los retos.');
     } finally {
