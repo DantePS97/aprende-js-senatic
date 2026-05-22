@@ -21,7 +21,7 @@
       "tests": [
         {
           "description": "CSS tiene tr:nth-child(even)",
-          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nth-child(even)')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.querySelectorAll('style')).some(s => s.textContent.includes('nth-child(even)'))"
         },
         {
           "description": "CSS tiene :not(:last-child) en algún selector",
@@ -45,7 +45,7 @@
         },
         {
           "description": "CSS tiene tr:nth-child(odd)",
-          "expression": "Array.from(doc.styleSheets).some(ss => { try { return Array.from(ss.cssRules).some(r => r.selectorText && r.selectorText.includes('nth-child(odd)')); } catch(e) { return false; } })"
+          "expression": "Array.from(doc.querySelectorAll('style')).some(s => s.textContent.includes('nth-child(odd)'))"
         }
       ],
       "hints": [
