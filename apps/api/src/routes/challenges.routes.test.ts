@@ -16,7 +16,9 @@ vi.mock('../services/challengeUnlock.service', () => ({
 
 vi.mock('../services/challenge.service', () => ({
   listChallengesForUser: vi.fn(),
+  runChallenge: vi.fn(),
   submitChallenge: vi.fn(),
+  getNextHint: vi.fn(),
 }));
 
 vi.mock('../models/Challenge.model', () => ({
@@ -31,7 +33,7 @@ vi.mock('../models/ChallengeProgress.model', () => ({
 // We control unlocked/locked per test via the computeUnlockStatus mock.
 
 import { computeUnlockStatus } from '../services/challengeUnlock.service';
-import { listChallengesForUser, submitChallenge } from '../services/challenge.service';
+import { listChallengesForUser, runChallenge, submitChallenge, getNextHint } from '../services/challenge.service';
 import { ChallengeModel } from '../models/Challenge.model';
 import { ChallengeProgressModel } from '../models/ChallengeProgress.model';
 
@@ -42,7 +44,7 @@ const authHeader = () => ({ Authorization: `Bearer ${signAccessToken(TEST_USER)}
 
 const UNLOCKED_STATUS = {
   unlocked: true,
-  requiredCourseSlug: 'javascript-basico' as const,
+  requiredCourseSlug: 'javascript-basico',
   completedLessons: 5,
   totalLessons: 5,
   progressPercent: 100,
@@ -50,7 +52,7 @@ const UNLOCKED_STATUS = {
 
 const LOCKED_STATUS = {
   unlocked: false,
-  requiredCourseSlug: 'javascript-basico' as const,
+  requiredCourseSlug: 'javascript-basico',
   completedLessons: 2,
   totalLessons: 5,
   progressPercent: 40,
@@ -67,6 +69,7 @@ const MOCK_CHALLENGE_DOC = {
     { input: '1, 2', expectedOutput: '3', hidden: false, description: 'suma básica' },
     { input: '5, 7', expectedOutput: '12', hidden: true, description: 'test secreto' },
   ],
+  hints: ['Piensa en el operador de suma', 'Usa el operador +'],
   order: 1,
   published: true,
   tags: ['math'],
@@ -76,6 +79,7 @@ const MOCK_CHALLENGE_DOC = {
     return {
       ...this,
       testCases: this.testCases,
+      hints: this.hints,
     };
   },
 };
@@ -367,6 +371,160 @@ describe('POST /api/challenges/:slug/submit', () => {
       .post('/api/challenges/sum-two-numbers/submit')
       .set(authHeader())
       .send({ code: 'function solution(){}' });
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+});
+
+// ─── POST /api/challenges/:slug/run ──────────────────────────────────────────
+
+describe('POST /api/challenges/:slug/run', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns 401 without auth token', async () => {
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/run')
+      .send({ code: 'function solution(a,b){return a+b;}' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 when challenges are locked', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(LOCKED_STATUS);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/run')
+      .set(authHeader())
+      .send({ code: 'function solution(a,b){return a+b;}' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('CHALLENGES_LOCKED');
+  });
+
+  it('returns 400 when code field is missing', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/run')
+      .set(authHeader())
+      .send({});
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 200 with run results (no xpAwarded) when code is valid', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+
+    const mockResult = {
+      passed: true,
+      testsPassedCount: 2,
+      totalTests: 2,
+      testResults: [{ passed: true, description: 'suma básica' }, { passed: true }],
+    };
+    vi.mocked(runChallenge).mockResolvedValue(mockResult as any);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/run')
+      .set(authHeader())
+      .send({ code: 'function solution(a,b){return a+b;}' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.passed).toBe(true);
+    expect(res.body.data.xpAwarded).toBeUndefined();
+    expect(runChallenge).toHaveBeenCalledWith(
+      TEST_USER.userId, 'sum-two-numbers', 'function solution(a,b){return a+b;}'
+    );
+  });
+});
+
+// ─── POST /api/challenges/:slug/hint ─────────────────────────────────────────
+
+describe('POST /api/challenges/:slug/hint', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns 401 without auth token', async () => {
+    const res = await request(app).post('/api/challenges/sum-two-numbers/hint');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 when challenges are locked', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(LOCKED_STATUS);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/hint')
+      .set(authHeader());
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('CHALLENGES_LOCKED');
+  });
+
+  it('returns 200 with hint text and counter', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+    vi.mocked(getNextHint).mockResolvedValue({
+      hint: 'Piensa en el operador de suma',
+      hintsUsed: 1,
+      totalHints: 2,
+    });
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/hint')
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.hint).toBe('Piensa en el operador de suma');
+    expect(res.body.data.hintsUsed).toBe(1);
+    expect(res.body.data.totalHints).toBe(2);
+    expect(getNextHint).toHaveBeenCalledWith(TEST_USER.userId, 'sum-two-numbers');
+  });
+
+  it('returns 404 when challenge does not exist', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+    const err = Object.assign(new Error('CHALLENGE_NOT_FOUND'), { code: 'NOT_FOUND' });
+    vi.mocked(getNextHint).mockRejectedValue(err);
+
+    const res = await request(app)
+      .post('/api/challenges/non-existent/hint')
+      .set(authHeader());
+
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('returns 409 when challenge has no hints', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+    const err = Object.assign(new Error('NO_HINTS_AVAILABLE'), { code: 'NO_HINTS' });
+    vi.mocked(getNextHint).mockRejectedValue(err);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/hint')
+      .set(authHeader());
+
+    expect(res.status).toBe(409);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('returns 409 when all hints have already been revealed', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+    const err = Object.assign(new Error('NO_MORE_HINTS'), { code: 'NO_MORE_HINTS' });
+    vi.mocked(getNextHint).mockRejectedValue(err);
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/hint')
+      .set(authHeader());
+
+    expect(res.status).toBe(409);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('returns 500 on unexpected error', async () => {
+    vi.mocked(computeUnlockStatus).mockResolvedValue(UNLOCKED_STATUS);
+    vi.mocked(getNextHint).mockRejectedValue(new Error('DB timeout'));
+
+    const res = await request(app)
+      .post('/api/challenges/sum-two-numbers/hint')
+      .set(authHeader());
 
     expect(res.status).toBe(500);
     expect(res.body.success).toBe(false);

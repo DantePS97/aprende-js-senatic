@@ -4,7 +4,7 @@ import { validateBody } from '../middleware/validate.middleware';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { requireChallengesUnlocked } from '../middleware/challengesUnlock.middleware';
 import { computeUnlockStatus } from '../services/challengeUnlock.service';
-import { listChallengesForUser, submitChallenge } from '../services/challenge.service';
+import { listChallengesForUser, runChallenge, submitChallenge, getNextHint } from '../services/challenge.service';
 import { ChallengeModel } from '../models/Challenge.model';
 import { ChallengeProgressModel } from '../models/ChallengeProgress.model';
 
@@ -49,11 +49,16 @@ challengesRouter.get('/:slug', requireChallengesUnlocked, async (req: AuthReques
       challengeId: challenge._id,
     });
 
-    // Strip description from hidden test cases before sending to client
-    const challengeData = challenge.toObject();
-    challengeData.testCases = challengeData.testCases.map((tc) =>
-      tc.hidden ? { ...tc, description: undefined } : tc
-    );
+    // Build safe challenge payload: strip hints text (served one-at-a-time via /hint),
+    // add hintsCount so the frontend knows whether to show the hint button.
+    const { hints, ...challengeRaw } = challenge.toObject();
+    const challengeData = {
+      ...challengeRaw,
+      hintsCount: hints?.length ?? 0,
+      testCases: challengeRaw.testCases.map((tc) =>
+        tc.hidden ? { ...tc, description: undefined } : tc
+      ),
+    };
 
     res.json({
       success: true,
@@ -67,6 +72,7 @@ challengesRouter.get('/:slug', requireChallengesUnlocked, async (req: AuthReques
               status: progress.status,
               firstSolvedAt: progress.firstSolvedAt?.toISOString() ?? null,
               xpAwarded: progress.xpAwarded,
+              hintsUsed: progress.hintsUsed ?? 0,
             }
           : null,
       },
@@ -76,6 +82,53 @@ challengesRouter.get('/:slug', requireChallengesUnlocked, async (req: AuthReques
     res.status(500).json({ success: false, error: 'Error al obtener el reto.' });
   }
 });
+
+// ─── POST /:slug/hint ─────────────────────────────────────────────────────────
+
+challengesRouter.post(
+  '/:slug/hint',
+  requireChallengesUnlocked,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await getNextHint(req.user!.userId, String(req.params.slug));
+      res.json({ success: true, data: result });
+    } catch (err) {
+      const typed = err as { code?: string };
+      if (typed?.code === 'NOT_FOUND') {
+        res.status(404).json({ success: false, error: 'Reto no encontrado.' });
+        return;
+      }
+      if (typed?.code === 'NO_HINTS' || typed?.code === 'NO_MORE_HINTS') {
+        res.status(409).json({ success: false, error: 'No hay más pistas disponibles.' });
+        return;
+      }
+      console.error('[challenges/hint]', err);
+      res.status(500).json({ success: false, error: 'Error al obtener la pista.' });
+    }
+  }
+);
+
+// ─── POST /:slug/run ──────────────────────────────────────────────────────────
+
+challengesRouter.post(
+  '/:slug/run',
+  requireChallengesUnlocked,
+  validateBody(submitChallengeSchema),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await runChallenge(req.user!.userId, String(req.params.slug), req.body.code);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      const typed = err as { code?: string };
+      if (typed?.code === 'NOT_FOUND') {
+        res.status(404).json({ success: false, error: 'Reto no encontrado.' });
+        return;
+      }
+      console.error('[challenges/run]', err);
+      res.status(500).json({ success: false, error: 'Error al ejecutar el código.' });
+    }
+  }
+);
 
 // ─── POST /:slug/submit ───────────────────────────────────────────────────────
 

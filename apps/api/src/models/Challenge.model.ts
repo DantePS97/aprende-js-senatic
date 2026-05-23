@@ -16,6 +16,7 @@ export interface IChallenge extends Document {
   xpReward: number;
   starterCode: string;
   testCases: ITestCase[];
+  hints: string[];
   order: number;
   published: boolean;
   tags: string[];
@@ -47,6 +48,14 @@ const ChallengeSchema = new Schema<IChallenge>(
       validate: {
         validator: (v: ITestCase[]) => v.length >= 1 && v.length <= 20,
         message: 'Must have 1–20 test cases',
+      },
+    },
+    hints:       {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v: string[]) => v.length <= 5,
+        message: 'A challenge can have at most 5 hints',
       },
     },
     order:       { type: Number, required: true, min: 1 },

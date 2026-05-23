@@ -4,6 +4,7 @@ import { app } from './app';
 import { runLeagueCatchup, setupLeagueCron } from './lib/leagueCatchup';
 import { setupNotificationCrons } from './lib/notificationCrons';
 import { validateEnv } from './lib/env';
+import { initRedis } from './lib/redis';
 
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
@@ -15,6 +16,8 @@ async function bootstrap() {
     console.error('❌  Error de configuración:', (err as Error).message);
     process.exit(1);
   }
+
+  initRedis();
 
   if (!MONGODB_URI) {
     console.error('❌  MONGODB_URI no está configurado. Revisa tu archivo .env');

@@ -5,7 +5,9 @@ import type {
   ChallengeProgress,
   UnlockStatus,
   SubmitChallengeInput,
+  RunChallengeResponse,
   SubmitChallengeResponse,
+  HintResponse,
 } from '@senatic/shared';
 
 export interface ListResponse {
@@ -27,6 +29,12 @@ export const challengesService = {
 
   get: (slug: string): Promise<DetailResponse> =>
     api.get(`/challenges/${slug}`).then((r) => r.data.data),
+
+  hint: (slug: string): Promise<HintResponse> =>
+    api.post(`/challenges/${slug}/hint`).then((r) => r.data.data),
+
+  run: (slug: string, body: SubmitChallengeInput): Promise<RunChallengeResponse> =>
+    api.post(`/challenges/${slug}/run`, body).then((r) => r.data.data),
 
   submit: (slug: string, body: SubmitChallengeInput): Promise<SubmitChallengeResponse> =>
     api.post(`/challenges/${slug}/submit`, body).then((r) => r.data.data),

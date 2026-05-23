@@ -1,3 +1,11 @@
+/**
+ * Slug of the course users must complete before accessing challenges.
+ * Override with the REQUIRED_COURSE_SLUG env var when the platform adds new courses.
+ * Defaults to 'javascript-basico' so existing deployments need no change.
+ */
+export const REQUIRED_COURSE_SLUG =
+  process.env.REQUIRED_COURSE_SLUG ?? 'javascript-basico';
+
 const REQUIRED_SECRETS: Array<{ key: string; insecurePrefix?: string }> = [
   { key: 'JWT_ACCESS_SECRET', insecurePrefix: 'dev_' },
   { key: 'JWT_REFRESH_SECRET', insecurePrefix: 'dev_' },

@@ -2,9 +2,8 @@ import { CourseModel } from '../models/Course.model';
 import { ModuleModel } from '../models/Module.model';
 import { LessonModel } from '../models/Lesson.model';
 import { ProgressModel } from '../models/Progress.model';
+import { REQUIRED_COURSE_SLUG } from '../lib/env';
 import type { UnlockStatus } from '@senatic/shared';
-
-const REQUIRED_COURSE_SLUG = 'javascript-basico';
 
 export async function computeUnlockStatus(userId: string): Promise<UnlockStatus> {
   const course = await CourseModel.findOne({ slug: REQUIRED_COURSE_SLUG });

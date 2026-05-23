@@ -6,23 +6,21 @@ import { Search, ChevronRight, Flame, Trophy, BookOpen } from 'lucide-react';
 import { useStudentsStore } from '@/store/studentsStore';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import type { StudentSummary } from '@senatic/shared';
+import { getLevelTitle } from '@senatic/shared';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'Aprendiz',
-  2: 'Explorador',
-  3: 'Desarrollador',
-  4: 'Avanzado',
-  5: 'Experto',
-};
-
 const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-slate-700 text-slate-300',
-  2: 'bg-blue-900/50 text-blue-300',
-  3: 'bg-primary-600/20 text-primary-400',
-  4: 'bg-purple-900/50 text-purple-300',
-  5: 'bg-amber-900/50 text-amber-300',
+  1:  'bg-slate-700 text-slate-300',
+  2:  'bg-blue-900/50 text-blue-300',
+  3:  'bg-primary-600/20 text-primary-400',
+  4:  'bg-purple-900/50 text-purple-300',
+  5:  'bg-amber-900/50 text-amber-300',
+  6:  'bg-rose-900/50 text-rose-300',
+  7:  'bg-orange-900/50 text-orange-300',
+  8:  'bg-cyan-900/50 text-cyan-300',
+  9:  'bg-teal-900/50 text-teal-300',
+  10: 'bg-yellow-900/50 text-yellow-300',
 };
 
 function formatDate(iso: string | null): string {
@@ -61,7 +59,7 @@ function StudentRow({ student, onClick }: { student: StudentSummary; onClick: ()
       {/* Nivel */}
       <td className="px-4 py-3">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${LEVEL_COLORS[student.level] ?? LEVEL_COLORS[1]}`}>
-          {LEVEL_LABELS[student.level] ?? `Nivel ${student.level}`}
+          {getLevelTitle(student.level)}
         </span>
       </td>
 

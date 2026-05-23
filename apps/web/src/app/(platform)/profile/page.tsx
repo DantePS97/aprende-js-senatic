@@ -10,9 +10,22 @@ import { XPBar } from '@/components/gamification/XPBar';
 import { StreakCounter } from '@/components/gamification/StreakCounter';
 import { api } from '@/lib/api';
 import type { UserAchievement } from '@senatic/shared';
+import { getLevelTitle } from '@senatic/shared';
 
-const LEVEL_TITLES = ['', 'Aprendiz', 'Explorador', 'Programador', 'Desarrollador', 'Experto'];
-const LEVEL_COLORS = ['', 'text-slate-400', 'text-primary-400', 'text-xp-DEFAULT', 'text-success-DEFAULT', 'text-purple-400'];
+// Index 0 is unused (levels are 1-based). Extend when MAX_LEVEL increases.
+const LEVEL_COLORS = [
+  '',                    // 0 — unused
+  'text-slate-400',      // 1  Aprendiz
+  'text-primary-400',    // 2  Explorador
+  'text-xp-DEFAULT',     // 3  Programador
+  'text-success-DEFAULT',// 4  Desarrollador
+  'text-purple-400',     // 5  Experto
+  'text-rose-400',       // 6  Senior
+  'text-orange-400',     // 7  Líder
+  'text-cyan-400',       // 8  Arquitecto
+  'text-teal-400',       // 9  Maestro
+  'text-amber-400',      // 10 Leyenda
+];
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -75,7 +88,7 @@ export default function ProfilePage() {
             <h2 className="text-lg font-bold text-white truncate">{user.displayName}</h2>
             <p className="text-sm text-slate-400 truncate">{user.email}</p>
             <p className={`text-xs font-semibold mt-0.5 ${LEVEL_COLORS[level] ?? 'text-slate-400'}`}>
-              Nivel {level} — {LEVEL_TITLES[level] ?? 'Experto'}
+              Nivel {level} — {getLevelTitle(level)}
             </p>
           </div>
         </div>

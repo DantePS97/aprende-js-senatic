@@ -1,19 +1,17 @@
 'use client';
 
 import { useMemo } from 'react';
+import { LEVEL_MIN_XP, MAX_LEVEL, getLevelTitle } from '@senatic/shared';
 
 interface XPBarProps {
   xp: number;
   level: number;
 }
 
-const LEVEL_THRESHOLDS = [0, 101, 301, 601, 1001];
-const LEVEL_TITLES = ['Aprendiz', 'Explorador', 'Programador', 'Desarrollador', 'Experto'];
-
 export function XPBar({ xp, level }: XPBarProps) {
   const { currentLevelXp, nextLevelXp, progress } = useMemo(() => {
-    const currentMin = LEVEL_THRESHOLDS[level - 1] ?? 0;
-    const nextMin = LEVEL_THRESHOLDS[level] ?? xp + 1;
+    const currentMin = LEVEL_MIN_XP[level - 1] ?? 0;
+    const nextMin = LEVEL_MIN_XP[level] ?? xp + 1;
     const range = nextMin - currentMin;
     const earned = xp - currentMin;
     return {
@@ -23,8 +21,8 @@ export function XPBar({ xp, level }: XPBarProps) {
     };
   }, [xp, level]);
 
-  const title = LEVEL_TITLES[level - 1] ?? 'Experto';
-  const isMaxLevel = level >= 5;
+  const title = getLevelTitle(level);
+  const isMaxLevel = level >= MAX_LEVEL;
 
   return (
     <div className="space-y-1">
