@@ -26,6 +26,8 @@ export const challengeSchema = z.object({
   xpReward: z.number().int().min(1).max(500),
   starterCode: z.string().min(1).max(50000),
   testCases: z.array(testCaseSchema).min(1).max(20),
+  /** Number of hints available — text is NOT sent; use POST /:slug/hint to reveal one at a time */
+  hintsCount: z.number().int().min(0).default(0),
   order: z.number().int().min(1),
   published: z.boolean().default(false),
   tags: z.array(z.string().min(1).max(30)).max(10).default([]),
@@ -71,6 +73,7 @@ export const challengeProgressSchema = z.object({
   status: challengeProgressStatusSchema,
   firstSolvedAt: z.string().datetime().nullable(),
   xpAwarded: z.number().int().min(0),
+  hintsUsed: z.number().int().min(0).default(0),
 });
 export type ChallengeProgress = z.infer<typeof challengeProgressSchema>;
 
@@ -88,27 +91,45 @@ export type SubmitChallengeInput = z.infer<typeof submitChallengeSchema>;
 
 export const unlockStatusSchema = z.object({
   unlocked: z.boolean(),
-  requiredCourseSlug: z.literal('javascript-basico'),
+  requiredCourseSlug: z.string().min(1),
   completedLessons: z.number().int().min(0),
   totalLessons: z.number().int().min(0),
   progressPercent: z.number().min(0).max(100),
 });
 export type UnlockStatus = z.infer<typeof unlockStatusSchema>;
 
-// ─── Submit response ──────────────────────────────────────────────────────────
+// ─── Shared test-result shape ─────────────────────────────────────────────────
 
-export const submitChallengeResponseSchema = z.object({
+const testResultItemSchema = z.object({
+  passed: z.boolean(),
+  description: z.string().optional(),
+});
+
+// ─── Run response (no XP, no achievements) ────────────────────────────────────
+
+export const runChallengeResponseSchema = z.object({
   passed: z.boolean(),
   testsPassedCount: z.number().int().min(0),
   totalTests: z.number().int().min(1),
-  testResults: z.array(
-    z.object({
-      passed: z.boolean(),
-      description: z.string().optional(),
-    })
-  ),
+  testResults: z.array(testResultItemSchema),
+});
+export type RunChallengeResponse = z.infer<typeof runChallengeResponseSchema>;
+
+// ─── Submit response ──────────────────────────────────────────────────────────
+
+export const submitChallengeResponseSchema = runChallengeResponseSchema.extend({
   xpAwarded: z.number().int().min(0),
   firstSolve: z.boolean(),
   newAchievements: z.array(z.any()),
+  hintsUsed: z.number().int().min(0),
 });
 export type SubmitChallengeResponse = z.infer<typeof submitChallengeResponseSchema>;
+
+// ─── Hint response ────────────────────────────────────────────────────────────
+
+export const hintResponseSchema = z.object({
+  hint: z.string(),
+  hintsUsed: z.number().int().min(1),
+  totalHints: z.number().int().min(1),
+});
+export type HintResponse = z.infer<typeof hintResponseSchema>;

@@ -9,12 +9,7 @@ import { useStudentsStore } from '@/store/studentsStore';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { LineChartTrend } from '@/components/admin/charts/LineChartTrend';
 import type { StudentLessonProgress } from '@senatic/shared';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'Aprendiz', 2: 'Explorador', 3: 'Desarrollador', 4: 'Avanzado', 5: 'Experto',
-};
+import { getLevelTitle } from '@senatic/shared';
 
 const STATUS_STYLES: Record<StudentLessonProgress['status'], string> = {
   completed: 'text-green-600 bg-green-50',
@@ -179,7 +174,7 @@ export default function StudentProfilePage() {
               <h1 className="text-2xl font-bold text-gray-900 truncate">{d.displayName}</h1>
               <p className="text-sm text-gray-500 truncate">{d.email}</p>
               <span className="mt-1 inline-block px-2 py-0.5 bg-primary-50 text-primary-700 text-xs font-semibold rounded-full">
-                {LEVEL_LABELS[d.level] ?? `Nivel ${d.level}`}
+                {getLevelTitle(d.level)}
               </span>
             </div>
             {/* Progress ring (simplified) */}

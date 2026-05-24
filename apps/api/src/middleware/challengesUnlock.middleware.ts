@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth.middleware';
 import { computeUnlockStatus } from '../services/challengeUnlock.service';
+import { REQUIRED_COURSE_SLUG } from '../lib/env';
 
 export async function requireChallengesUnlocked(
   req: AuthRequest,
@@ -17,7 +18,7 @@ export async function requireChallengesUnlocked(
       res.status(403).json({
         success: false,
         error: 'CHALLENGES_LOCKED',
-        message: 'Debes completar el curso javascript-basico para acceder a los retos.',
+        message: `Debes completar el curso ${REQUIRED_COURSE_SLUG} para acceder a los retos.`,
       });
       return;
     }

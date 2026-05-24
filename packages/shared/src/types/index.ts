@@ -184,7 +184,9 @@ export type {
   ChallengeProgress,
   ChallengeProgressStatus,
   SubmitChallengeInput,
+  RunChallengeResponse,
   SubmitChallengeResponse,
+  HintResponse,
   UnlockStatus,
 } from '../schemas/challenges.schema';
 

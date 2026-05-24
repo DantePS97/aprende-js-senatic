@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ChallengeListItem, UnlockStatus, SubmitChallengeResponse } from '@senatic/shared';
+import type { ChallengeListItem, UnlockStatus } from '@senatic/shared';
 
 type DifficultyFilter = 'todos' | 'facil' | 'medio' | 'dificil';
 type StatusFilter = 'todos' | 'resueltos' | 'pendientes';
@@ -10,7 +10,6 @@ interface ChallengesState {
   difficultyFilter: DifficultyFilter;
   statusFilter: StatusFilter;
   solvedChallengeIds: Set<string>;
-  lastSubmit: SubmitChallengeResponse | null;
   submitting: boolean;
 
   setItems: (items: ChallengeListItem[]) => void;
@@ -19,7 +18,6 @@ interface ChallengesState {
   setStatusFilter: (f: StatusFilter) => void;
   markSolved: (challengeId: string) => void;
   setSubmitting: (v: boolean) => void;
-  setLastSubmit: (r: SubmitChallengeResponse | null) => void;
   reset: () => void;
 }
 
@@ -29,7 +27,6 @@ export const useChallengesStore = create<ChallengesState>((set) => ({
   difficultyFilter: 'todos',
   statusFilter: 'todos',
   solvedChallengeIds: new Set(),
-  lastSubmit: null,
   submitting: false,
 
   setItems: (items) =>
@@ -47,7 +44,6 @@ export const useChallengesStore = create<ChallengesState>((set) => ({
       return { solvedChallengeIds: next };
     }),
   setSubmitting: (submitting) => set({ submitting }),
-  setLastSubmit: (lastSubmit) => set({ lastSubmit }),
   reset: () =>
     set({
       items: [],
@@ -55,7 +51,6 @@ export const useChallengesStore = create<ChallengesState>((set) => ({
       difficultyFilter: 'todos',
       statusFilter: 'todos',
       solvedChallengeIds: new Set(),
-      lastSubmit: null,
       submitting: false,
     }),
 }));

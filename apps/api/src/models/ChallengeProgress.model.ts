@@ -7,6 +7,7 @@ export interface IChallengeProgress extends Document {
   status: ChallengeProgressStatus;
   firstSolvedAt: Date | null;
   xpAwarded: number;
+  hintsUsed: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,6 +19,7 @@ const ChallengeProgressSchema = new Schema<IChallengeProgress>(
     status:        { type: String, enum: ['unsolved', 'solved'], default: 'unsolved' },
     firstSolvedAt: { type: Date, default: null },
     xpAwarded:     { type: Number, default: 0, min: 0 },
+    hintsUsed:     { type: Number, default: 0, min: 0 },
   },
   { timestamps: true, versionKey: false }
 );
