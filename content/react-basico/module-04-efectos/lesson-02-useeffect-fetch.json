@@ -1,0 +1,33 @@
+{
+  "slug": "useeffect-fetch",
+  "title": "Fetch de datos con useEffect",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Fetch de datos con useEffect\n\nEl caso de uso más común de `useEffect` es cargar datos cuando el componente se monta.\n\n## Patrón estándar\n\n```jsx\nfunction ListaUsuarios() {\n  const [usuarios, setUsuarios] = useState([]);\n  const [cargando, setCargando] = useState(true);\n\n  useEffect(() => {\n    fetch('https://jsonplaceholder.typicode.com/users')\n      .then(res => res.json())\n      .then(data => {\n        setUsuarios(data);\n        setCargando(false);\n      });\n  }, []); // [] = solo al montar\n\n  if (cargando) return <p>Cargando...</p>;\n\n  return (\n    <ul>\n      {usuarios.map(u => (\n        <li key={u.id}>{u.name}</li>\n      ))}\n    </ul>\n  );\n}\n```\n\n## Los tres estados de un fetch\n\nSiempre maneja estos tres casos:\n\n```jsx\nconst [datos, setDatos] = useState(null);\nconst [cargando, setCargando] = useState(true);\nconst [error, setError] = useState(null);\n\nuseEffect(() => {\n  fetch(url)\n    .then(res => {\n      if (!res.ok) throw new Error('Error de red');\n      return res.json();\n    })\n    .then(data => {\n      setDatos(data);\n      setCargando(false);\n    })\n    .catch(err => {\n      setError(err.message);\n      setCargando(false);\n    });\n}, []);\n\nif (cargando) return <p>Cargando...</p>;\nif (error) return <p>Error: {error}</p>;\nreturn <div>{/* renderizar datos */}</div>;\n```\n\n## ¿Por qué no usar async/await directamente?\n\n```jsx\n// ❌ useEffect no puede ser async\nuseEffect(async () => { ... });\n\n// ✅ Define la función async adentro y llámala\nuseEffect(() => {\n  async function cargar() {\n    const res = await fetch(url);\n    const data = await res.json();\n    setDatos(data);\n  }\n  cargar();\n}, []);\n```\n\nLa razón: `useEffect` espera que su callback devuelva `undefined` o una función de limpieza. Las funciones `async` siempre devuelven una Promise, lo cual causaría un bug silencioso."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Titulo` que use `useEffect` para actualizar el título del documento (`document.title`) con el texto \"React Básico — SENATIC\" al montarse. Muestra un `<h1>` con ese mismo texto.",
+    "starterCode": "function Titulo() {\n  useEffect(() => {\n    // Actualiza document.title aquí\n  }, []);\n\n  return <h1>React Básico — SENATIC</h1>;\n}\n\nroot.render(<Titulo />);",
+    "tests": [
+      {
+        "description": "Existe un h1 en el DOM",
+        "expression": "container.querySelector('h1') !== null"
+      },
+      {
+        "description": "El h1 tiene el texto correcto",
+        "expression": "container.querySelector('h1').textContent === 'React Básico — SENATIC'"
+      },
+      {
+        "description": "document.title fue actualizado",
+        "expression": "document.title === 'React Básico — SENATIC'"
+      }
+    ],
+    "hints": [
+      "useEffect recibe una función y un array de dependencias",
+      "Usa document.title = 'texto' para actualizar el título del documento",
+      "El array vacío [] indica que el efecto solo se ejecuta al montarse"
+    ]
+  }
+}

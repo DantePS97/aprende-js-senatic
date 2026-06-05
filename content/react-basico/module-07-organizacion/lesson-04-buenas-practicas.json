@@ -1,0 +1,29 @@
+{
+  "slug": "buenas-practicas",
+  "title": "Buenas prácticas en React",
+  "order": 4,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Buenas prácticas en React\n\nConvenciones y patrones que hacen el código React más mantenible, legible, y predecible.\n\n## 1. Nombra las funciones de los handlers\n\n```jsx\n// ❌ Función anónima — difícil de debuggear\n<button onClick={() => {\n  setContador(prev => prev + 1);\n  registrarEvento('click');\n}}>+</button>\n\n// ✅ Función nombrada — descriptiva, fácil de seguir\nfunction handleIncrementar() {\n  setContador(prev => prev + 1);\n  registrarEvento('click');\n}\n<button onClick={handleIncrementar}>+</button>\n```\n\n## 2. Prefijo `handle` para handlers, `on` para props\n\n```jsx\n// Convención:\nfunction Componente({ onGuardar }) {        // prop: onX\n  function handleGuardar() { onGuardar(); } // handler: handleX\n  return <button onClick={handleGuardar}>Guardar</button>;\n}\n```\n\n## 3. Estado derivado, no duplicado\n\n```jsx\n// ❌ Estado duplicado — puede desincronizarse\nconst [items, setItems] = useState([...]);\nconst [total, setTotal] = useState(0); // Sincronizar esto es un bug esperando\n\n// ✅ Estado derivado — siempre consistente\nconst [items, setItems] = useState([...]);\nconst total = items.reduce((sum, item) => sum + item.precio, 0);\n```\n\n## 4. Un estado por concepto\n\n```jsx\n// ❌ Estado mezclado\nconst [state, setState] = useState({\n  datos: [],\n  cargando: false,\n  formulario: { nombre: '', email: '' }\n});\n\n// ✅ Estados separados por concepto\nconst [datos, setDatos] = useState([]);\nconst [cargando, setCargando] = useState(false);\nconst [form, setForm] = useState({ nombre: '', email: '' });\n```\n\n## 5. Evita efectos innecesarios\n\n```jsx\n// ❌ Efecto para calcular algo derivado\nuseEffect(() => {\n  setTotal(items.reduce((s, i) => s + i.precio, 0));\n}, [items]);\n\n// ✅ Simplemente calcúlalo\nconst total = items.reduce((s, i) => s + i.precio, 0);\n```\n\nSi algo se puede calcular durante el render, no necesita `useEffect`.\n\n## 6. Componentes pequeños\n\nSi un componente supera ~50-80 líneas de JSX o maneja más de 3-4 responsabilidades, es candidato a dividirse.\n\n## 7. Props desestructuradas\n\n```jsx\n// ❌\nfunction Card(props) {\n  return <h2>{props.titulo}</h2>;\n}\n\n// ✅\nfunction Card({ titulo }) {\n  return <h2>{titulo}</h2>;\n}\n```"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Carrito` con un array de productos `[{ id: 1, nombre: 'Laptop', precio: 1000 }, { id: 2, nombre: 'Mouse', precio: 25 }]` como estado. Muestra cada producto en un `<li>` con su nombre y precio, y un `<p>` al final con el total calculado como estado derivado (sin useState adicional).",
+    "starterCode": "function Carrito() {\n  const [productos, setProductos] = useState([\n    { id: 1, nombre: 'Laptop', precio: 1000 },\n    { id: 2, nombre: 'Mouse', precio: 25 }\n  ]);\n\n  // Calcula el total como estado derivado (sin useState)\n  const total = 0; // Cambia esto\n\n  return (\n    <div>\n      <ul>\n        {productos.map(p => (\n          <li key={p.id}>{p.nombre} - ${p.precio}</li>\n        ))}\n      </ul>\n      <p>Total: ${total}</p>\n    </div>\n  );\n}\n\nroot.render(<Carrito />);",
+    "tests": [
+      {
+        "description": "Hay 2 elementos li",
+        "expression": "container.querySelectorAll('li').length === 2"
+      },
+      {
+        "description": "El párrafo muestra el total correcto (1025)",
+        "expression": "container.querySelector('p').textContent === 'Total: $1025'"
+      }
+    ],
+    "hints": [
+      "Usa reduce para calcular el total: productos.reduce((sum, p) => sum + p.precio, 0)",
+      "El total es estado derivado — NO uses useState para él",
+      "Se calcula directamente durante el render, en cada cambio de productos"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "que-es-estado",
+  "title": "¿Qué es el estado?",
+  "order": 1,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# ¿Qué es el estado?\n\nHasta ahora, nuestros componentes son **estáticos**: siempre muestran lo mismo dado las mismas props. El **estado** es lo que permite que un componente cambie con el tiempo.\n\n## Props vs. Estado\n\n| Característica | Props | Estado |\n|----------------|-------|--------|\n| ¿Quién lo define? | El componente padre | El propio componente |\n| ¿Puede cambiar? | No (desde el hijo) | Sí |\n| ¿Para qué sirve? | Recibir datos externos | Datos internos que cambian |\n\n## ¿Cuándo necesitas estado?\n\nNecesitas estado cuando un componente necesita \"recordar\" algo entre renders:\n\n- Un contador que el usuario incrementa\n- Si un menú está abierto o cerrado\n- El texto que el usuario escribió en un input\n- Si un ítem está seleccionado o no\n\n## La regla fundamental\n\nEn React, cuando el estado cambia, React **vuelve a renderizar** el componente automáticamente. No tienes que tocar el DOM manualmente.\n\n```\nestado cambia → React re-renderiza → UI se actualiza\n```\n\n## ¿Por qué no usar una variable normal?\n\n```jsx\nfunction Contador() {\n  let cuenta = 0; // ❌ Variable normal\n\n  function incrementar() {\n    cuenta++; // Cambia la variable...\n    // ...pero React no lo sabe. No hay re-render.\n  }\n\n  return (\n    <div>\n      <p>{cuenta}</p>\n      <button onClick={incrementar}>+</button>\n    </div>\n  );\n}\n```\n\nEl problema: React no sabe que `cuenta` cambió. No hay re-render, la pantalla no se actualiza.\n\nLa solución es `useState`, que veremos en la próxima lección."
+  },
+  "exercise": null
+}

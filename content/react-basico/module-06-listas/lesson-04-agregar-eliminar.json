@@ -1,0 +1,33 @@
+{
+  "slug": "agregar-eliminar",
+  "title": "Agregar y eliminar de listas",
+  "order": 4,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Agregar y eliminar de listas\n\nManipular listas en React requiere crear nuevos arrays (inmutabilidad). Aquí están los patrones para las operaciones más comunes.\n\n## Agregar un elemento\n\n```jsx\nfunction agregarItem(nuevoItem) {\n  setItems(prev => [...prev, nuevoItem]);\n}\n```\n\n## Eliminar por ID\n\n```jsx\nfunction eliminarItem(id) {\n  setItems(prev => prev.filter(item => item.id !== id));\n}\n```\n\n## Actualizar un elemento\n\n```jsx\nfunction actualizarItem(id, nuevosDatos) {\n  setItems(prev =>\n    prev.map(item =>\n      item.id === id ? { ...item, ...nuevosDatos } : item\n    )\n  );\n}\n```\n\n## Ejemplo completo: lista de tareas\n\n```jsx\nfunction TodoList() {\n  const [tareas, setTareas] = useState([]);\n  const [texto, setTexto] = useState('');\n\n  function agregar() {\n    if (!texto.trim()) return;\n    setTareas(prev => [\n      ...prev,\n      { id: Date.now(), texto, completada: false }\n    ]);\n    setTexto('');\n  }\n\n  function eliminar(id) {\n    setTareas(prev => prev.filter(t => t.id !== id));\n  }\n\n  function toggle(id) {\n    setTareas(prev =>\n      prev.map(t =>\n        t.id === id ? { ...t, completada: !t.completada } : t\n      )\n    );\n  }\n\n  return (\n    <div>\n      <input\n        value={texto}\n        onChange={e => setTexto(e.target.value)}\n        placeholder=\"Nueva tarea\"\n      />\n      <button onClick={agregar}>Agregar</button>\n      <ul>\n        {tareas.map(t => (\n          <li key={t.id}>\n            <span\n              style={{ textDecoration: t.completada ? 'line-through' : 'none' }}\n              onClick={() => toggle(t.id)}\n            >\n              {t.texto}\n            </span>\n            <button onClick={() => eliminar(t.id)}>✕</button>\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n```\n\n## Date.now() como ID temporal\n\n`Date.now()` devuelve el timestamp actual en milisegundos. Es una solución rápida para IDs únicos en el cliente cuando no tienes un backend. En aplicaciones reales, el ID viene del servidor."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `ListaDinamica` con un input controlado y un botón \"Agregar\". Al hacer clic, agrega el texto del input a una lista `<ul>` y limpia el input. Cada `<li>` debe tener un botón \"✕\" que elimine ese elemento.",
+    "starterCode": "function ListaDinamica() {\n  const [items, setItems] = useState([]);\n  const [texto, setTexto] = useState('');\n\n  function agregar() {\n    if (!texto.trim()) return;\n    setItems(prev => [...prev, { id: Date.now(), texto }]);\n    setTexto('');\n  }\n\n  function eliminar(id) {\n    setItems(prev => prev.filter(item => item.id !== id));\n  }\n\n  return (\n    <div>\n      <input value={texto} onChange={e => setTexto(e.target.value)} />\n      <button onClick={agregar}>Agregar</button>\n      <ul>\n        {items.map(item => (\n          <li key={item.id}>\n            {item.texto}\n            <button onClick={() => eliminar(item.id)}>✕</button>\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n\nroot.render(<ListaDinamica />);",
+    "tests": [
+      {
+        "description": "Existe un input en el DOM",
+        "expression": "container.querySelector('input') !== null"
+      },
+      {
+        "description": "Existe un botón con el texto 'Agregar'",
+        "expression": "container.querySelector('button').textContent === 'Agregar'"
+      },
+      {
+        "description": "La lista empieza vacía",
+        "expression": "container.querySelectorAll('li').length === 0"
+      }
+    ],
+    "hints": [
+      "El código está casi completo — léelo y comprende cada función",
+      "agregar() usa spread [...prev, nuevoItem] para no mutar el array",
+      "eliminar() usa filter para crear un nuevo array sin el elemento eliminado"
+    ]
+  }
+}

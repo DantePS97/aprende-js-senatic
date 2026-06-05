@@ -1,0 +1,33 @@
+{
+  "slug": "multiples-campos",
+  "title": "Formularios con múltiples campos",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Formularios con múltiples campos\n\nCuando un formulario tiene varios campos, puedes manejarlos con un estado por campo, o con un único objeto de estado.\n\n## Estado por campo (simple y explícito)\n\n```jsx\nfunction FormularioRegistro() {\n  const [nombre, setNombre] = useState('');\n  const [email, setEmail] = useState('');\n  const [contrasena, setContrasena] = useState('');\n\n  return (\n    <form>\n      <input value={nombre} onChange={e => setNombre(e.target.value)} />\n      <input value={email} onChange={e => setEmail(e.target.value)} />\n      <input type=\"password\" value={contrasena} onChange={e => setContrasena(e.target.value)} />\n    </form>\n  );\n}\n```\n\nFunciona bien para formularios pequeños (2-4 campos).\n\n## Estado como objeto (escalable)\n\n```jsx\nfunction FormularioRegistro() {\n  const [form, setForm] = useState({\n    nombre: '',\n    email: '',\n    contrasena: ''\n  });\n\n  function manejarCambio(e) {\n    const { name, value } = e.target;\n    setForm(prev => ({ ...prev, [name]: value }));\n  }\n\n  return (\n    <form>\n      <input name=\"nombre\" value={form.nombre} onChange={manejarCambio} />\n      <input name=\"email\" value={form.email} onChange={manejarCambio} />\n      <input name=\"contrasena\" type=\"password\" value={form.contrasena} onChange={manejarCambio} />\n    </form>\n  );\n}\n```\n\nUn solo handler para todos los campos gracias a `name` y computed property key `[name]`.\n\n## Manejar el submit\n\n```jsx\nfunction handleSubmit(e) {\n  e.preventDefault(); // Evita que el navegador recargue la página\n  console.log('Datos del formulario:', form);\n  // Aquí haría fetch a la API\n}\n\nreturn (\n  <form onSubmit={handleSubmit}>\n    {/* campos */}\n    <button type=\"submit\">Registrarse</button>\n  </form>\n);\n```\n\n`e.preventDefault()` es fundamental — sin él, el form haría una petición GET al servidor y recarga la página."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `FormularioNombre` con un `<form>` que tenga un `<input>` para el nombre (controlado) y un `<button type=\"submit\">` con el texto \"Enviar\". Al hacer submit (con `e.preventDefault()`), actualiza un estado `enviado` con el nombre. Muestra un `<p>` con \"Enviado: \" + el nombre cuando `enviado` tenga valor.",
+    "starterCode": "function FormularioNombre() {\n  const [nombre, setNombre] = useState('');\n  const [enviado, setEnviado] = useState('');\n\n  function handleSubmit(e) {\n    // Tu código aquí\n  }\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input\n        value={nombre}\n        onChange={e => setNombre(e.target.value)}\n        placeholder=\"Tu nombre\"\n      />\n      <button type=\"submit\">Enviar</button>\n      {enviado && <p>Enviado: {enviado}</p>}\n    </form>\n  );\n}\n\nroot.render(<FormularioNombre />);",
+    "tests": [
+      {
+        "description": "Existe un form con un input y un button",
+        "expression": "container.querySelector('form input') !== null && container.querySelector('form button') !== null"
+      },
+      {
+        "description": "El botón es de tipo submit",
+        "expression": "container.querySelector('button').type === 'submit'"
+      },
+      {
+        "description": "El botón tiene el texto 'Enviar'",
+        "expression": "container.querySelector('button').textContent === 'Enviar'"
+      }
+    ],
+    "hints": [
+      "Llama e.preventDefault() al inicio del handleSubmit para evitar la recarga",
+      "Dentro del handleSubmit, llama setEnviado(nombre)",
+      "El párrafo solo se muestra cuando enviado tiene un valor (usa &&)"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "slug": "usestate",
+  "title": "useState: el hook de estado",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# useState: el hook de estado\n\n`useState` es un **hook** — una función especial de React que te permite añadir estado a un componente funcional.\n\n## Sintaxis\n\n```jsx\nconst [valor, setValor] = useState(valorInicial);\n```\n\n`useState` devuelve un array con exactamente dos elementos:\n1. El **valor actual** del estado\n2. La **función para actualizarlo** (setter)\n\n## Ejemplo: contador\n\n```jsx\nfunction Contador() {\n  const [cuenta, setCuenta] = useState(0);\n\n  function incrementar() {\n    setCuenta(cuenta + 1);\n  }\n\n  return (\n    <div>\n      <p>Cuenta: {cuenta}</p>\n      <button onClick={incrementar}>+1</button>\n    </div>\n  );\n}\n```\n\nCuando llamas a `setCuenta(nuevoValor)`, React:\n1. Guarda el nuevo valor\n2. Re-renderiza el componente\n3. La UI muestra el valor actualizado\n\n## El valor inicial\n\nEl argumento de `useState` solo se usa en el **primer render**. En los renders posteriores, se ignora:\n\n```jsx\nuseState(0)      // Empieza en 0\nuseState('')     // Empieza con string vacío\nuseState(false)  // Empieza en false\nuseState([])     // Empieza con array vacío\nuseState(null)   // Empieza en null\n```\n\n## Convención de nombres\n\nPor convención, el setter se llama `set` + nombre con mayúscula:\n\n```jsx\nconst [nombre, setNombre] = useState('');\nconst [activo, setActivo] = useState(false);\nconst [lista, setLista] = useState([]);\n```\n\n## Reglas de los hooks\n\n`useState` es un hook, y los hooks tienen dos reglas fundamentales:\n1. Solo se pueden llamar **al inicio del componente** (no dentro de ifs, loops, o funciones anidadas)\n2. Solo se pueden llamar dentro de **componentes de React** (no en funciones normales)"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Contador` con un estado `cuenta` que empiece en `0`. Muestra el valor en un `<p>` y un `<button>` con el texto \"+1\" que incremente el contador al hacer clic.",
+    "starterCode": "function Contador() {\n  // Declara el estado con useState\n  const [cuenta, setCuenta] = useState(0);\n\n  // Tu código aquí\n}\n\nroot.render(<Contador />);",
+    "tests": [
+      {
+        "description": "Existe un párrafo con el valor inicial 0",
+        "expression": "container.querySelector('p').textContent.includes('0')"
+      },
+      {
+        "description": "Existe un botón con el texto +1",
+        "expression": "container.querySelector('button').textContent === '+1'"
+      }
+    ],
+    "hints": [
+      "Importa useState con: const { useState } = React (ya disponible como global)",
+      "El setter es setCuenta — llámalo con setCuenta(cuenta + 1)",
+      "Asigna la función incrementadora al onClick del botón"
+    ]
+  }
+}

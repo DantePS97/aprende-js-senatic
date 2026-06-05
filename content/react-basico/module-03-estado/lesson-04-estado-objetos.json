@@ -1,0 +1,29 @@
+{
+  "slug": "estado-objetos",
+  "title": "Estado con objetos y arrays",
+  "order": 4,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Estado con objetos y arrays\n\nManejar objetos y arrays como estado requiere cuidado especial porque React usa **comparación por referencia** para detectar cambios.\n\n## Actualizar un objeto\n\nUsa el spread operator para crear un nuevo objeto con los cambios:\n\n```jsx\nconst [usuario, setUsuario] = useState({\n  nombre: 'Ana',\n  edad: 28,\n  ciudad: 'Madrid'\n});\n\n// Actualizar solo la edad\nfunction cumpleanos() {\n  setUsuario(prev => ({ ...prev, edad: prev.edad + 1 }));\n}\n```\n\nEl `...prev` copia todas las propiedades existentes. Luego sobreescribes solo las que necesitas cambiar.\n\n## Actualizar un array\n\nLas operaciones comunes con arrays de forma inmutable:\n\n```jsx\nconst [items, setItems] = useState(['manzana', 'pera']);\n\n// Agregar al final\nsetItems(prev => [...prev, 'naranja']);\n// → ['manzana', 'pera', 'naranja']\n\n// Eliminar por valor\nsetItems(prev => prev.filter(item => item !== 'pera'));\n// → ['manzana']\n\n// Actualizar un elemento específico\nsetItems(prev => prev.map(item =>\n  item === 'manzana' ? 'MANZANA' : item\n));\n// → ['MANZANA', 'pera']\n```\n\n## Patrón: lista de tareas\n\n```jsx\nfunction ListaTareas() {\n  const [tareas, setTareas] = useState([\n    { id: 1, texto: 'Estudiar React', completada: false },\n    { id: 2, texto: 'Practicar JSX', completada: true },\n  ]);\n\n  function toggleTarea(id) {\n    setTareas(prev =>\n      prev.map(tarea =>\n        tarea.id === id\n          ? { ...tarea, completada: !tarea.completada }\n          : tarea\n      )\n    );\n  }\n\n  return (\n    <ul>\n      {tareas.map(tarea => (\n        <li key={tarea.id} onClick={() => toggleTarea(tarea.id)}>\n          {tarea.completada ? '✓' : '○'} {tarea.texto}\n        </li>\n      ))}\n    </ul>\n  );\n}\n```\n\n## La prop key\n\nCuando renderizas listas, React necesita la prop `key` para identificar cada elemento. Usa un ID único, nunca el índice del array (a menos que la lista nunca cambie de orden)."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `ListaCompras` con un estado que contenga el array `['Pan', 'Leche']`. Muestra los ítems en una `<ul>` y agrega un `<button>` con el texto \"Agregar Huevos\" que añada 'Huevos' al array.",
+    "starterCode": "function ListaCompras() {\n  const [items, setItems] = useState(['Pan', 'Leche']);\n\n  // Tu código aquí\n}\n\nroot.render(<ListaCompras />);",
+    "tests": [
+      {
+        "description": "La lista inicial tiene 2 elementos",
+        "expression": "container.querySelectorAll('li').length === 2"
+      },
+      {
+        "description": "Existe un botón con el texto 'Agregar Huevos'",
+        "expression": "container.querySelector('button').textContent === 'Agregar Huevos'"
+      }
+    ],
+    "hints": [
+      "Renderiza los items con: {items.map(item => <li key={item}>{item}</li>)}",
+      "Para agregar un ítem: setItems(prev => [...prev, 'Huevos'])",
+      "No olvides la prop key en cada li — puedes usar el propio texto como key aquí"
+    ]
+  }
+}

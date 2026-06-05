@@ -1,0 +1,10 @@
+{
+  "slug": "estructura-archivos",
+  "title": "Estructura de archivos",
+  "order": 1,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Estructura de archivos\n\nConforme una aplicación React crece, la organización de archivos se vuelve crítica. No existe una estructura única correcta, pero sí hay principios probados.\n\n## Un componente por archivo\n\nLa convención estándar en React:\n\n```\nsrc/\n  components/\n    Boton.jsx\n    Tarjeta.jsx\n    Header.jsx\n  pages/\n    Inicio.jsx\n    Perfil.jsx\n  App.jsx\n  main.jsx\n```\n\nVentajas: fácil de encontrar, fácil de importar, fácil de reutilizar.\n\n## Organización por feature (escalable)\n\nCuando los componentes relacionados crecen, agrúpalos por funcionalidad:\n\n```\nsrc/\n  features/\n    auth/\n      LoginForm.jsx\n      RegisterForm.jsx\n      useAuth.js\n    products/\n      ProductCard.jsx\n      ProductList.jsx\n      useProducts.js\n    cart/\n      CartItem.jsx\n      CartSummary.jsx\n      useCart.js\n  shared/\n    components/\n      Button.jsx\n      Modal.jsx\n    hooks/\n      useDebounce.js\n```\n\nCada feature es autosuficiente: tiene sus componentes, hooks, y utilidades. Lo compartido va en `shared/`.\n\n## Naming conventions\n\n```\n# Componentes: PascalCase\nUserProfile.jsx\nProductCard.jsx\n\n# Custom hooks: camelCase con prefijo 'use'\nuseAuth.js\nuseProducts.js\n\n# Utilidades: camelCase\nformatPrice.js\ndateUtils.js\n```\n\n## index.js para exports limpios\n\n```js\n// features/auth/index.js\nexport { default as LoginForm } from './LoginForm';\nexport { default as RegisterForm } from './RegisterForm';\nexport { useAuth } from './useAuth';\n\n// Uso:\nimport { LoginForm, useAuth } from './features/auth';\n// En lugar de:\nimport LoginForm from './features/auth/LoginForm';\nimport { useAuth } from './features/auth/useAuth';\n```\n\nNo es obligatorio, pero mejora la ergonomía en features grandes."
+  },
+  "exercise": null
+}

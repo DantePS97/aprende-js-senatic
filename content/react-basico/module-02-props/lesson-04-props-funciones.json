@@ -1,0 +1,29 @@
+{
+  "slug": "props-funciones",
+  "title": "Props como funciones (callbacks)",
+  "order": 4,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Props como funciones (callbacks)\n\nLas props no solo pueden ser strings o números. Puedes pasar **funciones** como props. Esto es la base de la comunicación hijo → padre en React.\n\n## El patrón\n\n```jsx\n// Componente hijo: recibe una función como prop\nfunction Boton({ onClick, texto }) {\n  return <button onClick={onClick}>{texto}</button>;\n}\n\n// Componente padre: define la función y la pasa\nfunction App() {\n  function manejarClick() {\n    alert('¡Hiciste clic!');\n  }\n\n  return <Boton onClick={manejarClick} texto=\"Haz clic\" />;\n}\n```\n\n## ¿Por qué no definir el handler en el hijo?\n\nPorque el hijo no debería saber qué hacer con el evento — esa es responsabilidad del padre. El hijo solo sabe *cuándo* ocurrió el evento, no *qué hacer* al respecto.\n\nEsto mantiene al componente `Boton` reutilizable: el mismo botón puede hacer cosas completamente distintas dependiendo de quién lo use.\n\n## Pasar argumentos al callback\n\n```jsx\nfunction ListaProductos() {\n  function seleccionar(id) {\n    console.log('Seleccionado:', id);\n  }\n\n  return (\n    <div>\n      <ItemProducto id={1} nombre=\"Laptop\" onSeleccionar={seleccionar} />\n      <ItemProducto id={2} nombre=\"Mouse\" onSeleccionar={seleccionar} />\n    </div>\n  );\n}\n\nfunction ItemProducto({ id, nombre, onSeleccionar }) {\n  return (\n    <div onClick={() => onSeleccionar(id)}>\n      {nombre}\n    </div>\n  );\n}\n```\n\nNota el `() => onSeleccionar(id)`: usamos una función flecha para poder pasar el argumento `id`.\n\n## Convención de nombres\n\nPor convención, las props que son funciones de callback se nombran con el prefijo `on`:\n- `onClick`\n- `onChange`\n- `onSubmit`\n- `onSeleccionar`\n- `onCerrar`\n\nEsto deja claro que son handlers de eventos o callbacks."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `BotonAlerta` que reciba una prop `mensaje` (string) y muestre un `<button>` con el texto \"Mostrar alerta\". Al hacer clic, debe llamar a `alert(mensaje)`.",
+    "starterCode": "function BotonAlerta({ mensaje }) {\n  // Tu código aquí\n}\n\nroot.render(<BotonAlerta mensaje=\"¡Hola desde props!\" />);",
+    "tests": [
+      {
+        "description": "Existe un botón en el DOM",
+        "expression": "container.querySelector('button') !== null"
+      },
+      {
+        "description": "El botón tiene el texto correcto",
+        "expression": "container.querySelector('button').textContent === 'Mostrar alerta'"
+      }
+    ],
+    "hints": [
+      "El evento de clic en JSX se llama onClick (camelCase)",
+      "Puedes pasar una función flecha al onClick: onClick={() => alert(mensaje)}",
+      "La prop mensaje contiene el string que debes mostrar en el alert"
+    ]
+  }
+}

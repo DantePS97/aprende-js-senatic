@@ -1,0 +1,29 @@
+{
+  "slug": "primer-componente",
+  "title": "Tu primer componente",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Tu primer componente\n\nUn **componente** es la unidad básica de React. Es una función de JavaScript que devuelve JSX (la descripción de lo que debe mostrarse en pantalla).\n\n## Estructura de un componente\n\n```jsx\nfunction Saludo() {\n  return <h1>Hola, mundo</h1>;\n}\n```\n\nEso es todo. Un componente es simplemente una función que:\n1. Empieza con **mayúscula** (convención obligatoria)\n2. Devuelve **JSX**\n\n## Renderizar el componente\n\nPara mostrar el componente en pantalla, lo usas como si fuera una etiqueta HTML:\n\n```jsx\n<Saludo />\n```\n\nReact detecta que empieza con mayúscula, lo reconoce como componente, lo llama, y coloca el JSX que devuelve en el DOM.\n\n## Componente vs. función normal\n\n```js\n// Función normal — devuelve datos\nfunction obtenerNombre() {\n  return 'Ana';\n}\n\n// Componente — devuelve UI\nfunction Nombre() {\n  return <span>Ana</span>;\n}\n```\n\nLa diferencia no está en JavaScript, sino en la convención: mayúscula = componente.\n\n## Por qué los componentes son poderosos\n\nPuedes **reutilizarlos** tantas veces como quieras:\n\n```jsx\n<Saludo />\n<Saludo />\n<Saludo />\n```\n\nTres instancias, un solo componente. Si cambias la definición, cambian todos."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente llamado `Saludo` que muestre un `<h1>` con el texto \"¡Hola desde React!\".",
+    "starterCode": "function Saludo() {\n  // Tu código aquí\n}\n\nroot.render(<Saludo />);",
+    "tests": [
+      {
+        "description": "Existe un elemento h1 en el DOM",
+        "expression": "container.querySelector('h1') !== null"
+      },
+      {
+        "description": "El h1 contiene el texto correcto",
+        "expression": "container.querySelector('h1').textContent === '¡Hola desde React!'"
+      }
+    ],
+    "hints": [
+      "Un componente es una función que empieza con mayúscula",
+      "Debe devolver JSX — en este caso un <h1>",
+      "El texto dentro del h1 debe ser exactamente: ¡Hola desde React!"
+    ]
+  }
+}

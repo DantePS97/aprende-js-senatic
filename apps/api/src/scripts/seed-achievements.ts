@@ -29,6 +29,9 @@ const defaults = [
   { key: 'marathon_day', title: 'Maratón de Código', description: 'Completaste 5 lecciones en un solo día', iconEmoji: '🏃', condition: { type: 'lessons_in_day', threshold: 5 } },
   { key: 'primer_reto', title: 'Primer Reto', description: 'Resolviste tu primer reto de JavaScript', iconEmoji: '⚔️', condition: { type: 'challenges_solved', threshold: 1 } },
   { key: 'maestro_dificil', title: 'Maestro del Desafío', description: 'Resolviste un reto de nivel difícil', iconEmoji: '🧗', condition: { type: 'challenges_solved_difficulty', threshold: 1, difficulty: 'dificil' } },
+  { key: 'react-first-component', title: 'Primer Componente React', description: 'Completaste tu primera lección de React', iconEmoji: '⚛️', condition: { type: 'lessons_completed', threshold: 1 } },
+  { key: 'react-state-master', title: 'Maestro del Estado', description: 'Completaste el módulo de Estado en React Básico', iconEmoji: '🎣', condition: { type: 'module_completed', threshold: 1 } },
+  { key: 'react-basico-graduate', title: 'Graduado React Básico', description: 'Completaste las 35 lecciones del curso React Básico', iconEmoji: '🎓', condition: { type: 'lessons_completed', threshold: 35 } },
 ];
 
 export async function seedAchievements(): Promise<void> {

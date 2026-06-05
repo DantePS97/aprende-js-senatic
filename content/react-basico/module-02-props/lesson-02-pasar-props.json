@@ -1,0 +1,29 @@
+{
+  "slug": "pasar-props",
+  "title": "Pasar y recibir props",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Pasar y recibir props\n\n## Pasar múltiples props\n\nPuedes pasar todas las props que necesites:\n\n```jsx\nfunction PerfilUsuario({ nombre, edad, profesion }) {\n  return (\n    <div>\n      <h2>{nombre}</h2>\n      <p>{edad} años — {profesion}</p>\n    </div>\n  );\n}\n\n<PerfilUsuario nombre=\"Ana\" edad={28} profesion=\"Desarrolladora\" />\n```\n\n## Props con valores por defecto\n\nPuedes definir valores por defecto usando la desestructuración:\n\n```jsx\nfunction Boton({ texto = 'Aceptar', tipo = 'button' }) {\n  return <button type={tipo}>{texto}</button>;\n}\n\n// Sin props — usa defaults\n<Boton />\n// → <button type=\"button\">Aceptar</button>\n\n// Con props — usa los valores dados\n<Boton texto=\"Enviar\" tipo=\"submit\" />\n// → <button type=\"submit\">Enviar</button>\n```\n\n## Pasar objetos como props\n\nCuando tienes muchas props relacionadas, es común agruparlas en un objeto:\n\n```jsx\nconst usuario = {\n  nombre: 'Carlos',\n  edad: 34,\n  profesion: 'Diseñador'\n};\n\n// Forma manual\n<PerfilUsuario nombre={usuario.nombre} edad={usuario.edad} profesion={usuario.profesion} />\n\n// Forma con spread (más concisa)\n<PerfilUsuario {...usuario} />\n```\n\nEl operador spread `{...objeto}` expande todas las propiedades del objeto como props individuales.\n\n## Props son solo lectura\n\nEsta es la regla más importante de las props:\n\n> **Un componente nunca debe modificar sus propias props.**\n\n```jsx\nfunction Componente({ contador }) {\n  contador++; // ❌ NUNCA hagas esto\n  return <p>{contador}</p>;\n}\n```\n\nLas props vienen del componente padre. Modificarlas desde el hijo rompería el flujo de datos unidireccional de React. Si necesitas modificar el valor, usa **estado** (lo veremos en el siguiente módulo)."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `PerfilUsuario` que reciba las props `nombre` (string) y `profesion` (string), y muestre un `<div>` con un `<h2>` para el nombre y un `<p>` para la profesión. Luego renderízalo con nombre=\"Ana\" y profesion=\"Desarrolladora\".",
+    "starterCode": "function PerfilUsuario({ nombre, profesion }) {\n  // Tu código aquí\n}\n\nroot.render(<PerfilUsuario nombre=\"Ana\" profesion=\"Desarrolladora\" />);",
+    "tests": [
+      {
+        "description": "El h2 muestra el nombre correctamente",
+        "expression": "container.querySelector('h2').textContent === 'Ana'"
+      },
+      {
+        "description": "El párrafo muestra la profesión",
+        "expression": "container.querySelector('p').textContent === 'Desarrolladora'"
+      }
+    ],
+    "hints": [
+      "Desestructura las props en los parámetros: function PerfilUsuario({ nombre, profesion })",
+      "Usa {nombre} y {profesion} como expresiones JSX dentro del return",
+      "Recuerda envolver h2 y p en un único elemento raíz (div o fragment)"
+    ]
+  }
+}

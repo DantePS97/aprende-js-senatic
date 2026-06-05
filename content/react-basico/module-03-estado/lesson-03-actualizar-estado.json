@@ -1,0 +1,29 @@
+{
+  "slug": "actualizar-estado",
+  "title": "Actualizar estado correctamente",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Actualizar estado correctamente\n\nHay reglas importantes al actualizar el estado en React. Romperlas lleva a bugs difíciles de detectar.\n\n## Estado es inmutable\n\nNunca modifiques el estado directamente. Siempre usa el setter:\n\n```jsx\n// ❌ Mutación directa — React no detecta el cambio\nconst [usuario, setUsuario] = useState({ nombre: 'Ana', edad: 28 });\nusuario.edad = 29; // React no sabe que esto cambió\n\n// ✅ Correcto — nuevo objeto con el cambio\nsetUsuario({ ...usuario, edad: 29 });\n```\n\nLo mismo aplica para arrays:\n\n```jsx\nconst [lista, setLista] = useState([1, 2, 3]);\n\n// ❌ Mutación\nlista.push(4);\nsetLista(lista); // El array es el mismo objeto — React no re-renderiza\n\n// ✅ Nuevo array\nsetLista([...lista, 4]);\n```\n\n## La forma funcional del setter\n\nCuando el nuevo estado depende del anterior, usa la forma funcional:\n\n```jsx\n// ❌ Puede tener bugs en actualizaciones rápidas consecutivas\nsetCuenta(cuenta + 1);\n\n// ✅ Garantiza que usa el valor más reciente\nsetCuenta(prevCuenta => prevCuenta + 1);\n```\n\nLa forma funcional recibe el estado *actual* garantizado como argumento. Usa esta forma cuando:\n- El nuevo estado depende del anterior\n- Llamas al setter múltiples veces seguidas\n\n## Múltiples estados\n\nUn componente puede tener varios `useState`:\n\n```jsx\nfunction Formulario() {\n  const [nombre, setNombre] = useState('');\n  const [email, setEmail] = useState('');\n  const [enviado, setEnviado] = useState(false);\n\n  // ...\n}\n```\n\nCada `useState` es independiente. Cambiar uno no afecta los demás."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Interruptor` con un estado booleano `activo` que empiece en `false`. Muestra un `<p>` con el texto \"Estado: apagado\" o \"Estado: encendido\" según el valor, y un `<button>` con el texto \"Cambiar\" que alterne el estado.",
+    "starterCode": "function Interruptor() {\n  const [activo, setActivo] = useState(false);\n\n  // Tu código aquí\n}\n\nroot.render(<Interruptor />);",
+    "tests": [
+      {
+        "description": "Muestra 'Estado: apagado' cuando activo es false",
+        "expression": "container.querySelector('p').textContent === 'Estado: apagado'"
+      },
+      {
+        "description": "Existe un botón con el texto 'Cambiar'",
+        "expression": "container.querySelector('button').textContent === 'Cambiar'"
+      }
+    ],
+    "hints": [
+      "Usa el operador ternario para mostrar 'encendido' o 'apagado': {activo ? 'encendido' : 'apagado'}",
+      "Para alternar un booleano usa: setActivo(prev => !prev)",
+      "El texto completo del párrafo debe ser 'Estado: apagado' al inicio"
+    ]
+  }
+}

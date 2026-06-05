@@ -1,0 +1,29 @@
+{
+  "slug": "custom-hooks",
+  "title": "Custom hooks",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Custom hooks\n\nUn **custom hook** es una función JavaScript que empieza con `use` y puede llamar a otros hooks. Son la forma de extraer y reutilizar lógica con estado entre componentes.\n\n## ¿Cuándo crear un custom hook?\n\nCuando ves la misma lógica de estado/efecto repetida en dos o más componentes, es una señal de extraerla.\n\n## Ejemplo: useContador\n\n```jsx\n// Sin custom hook — lógica duplicada en cada componente\nfunction ComponenteA() {\n  const [cuenta, setCuenta] = useState(0);\n  const incrementar = () => setCuenta(prev => prev + 1);\n  const reiniciar = () => setCuenta(0);\n  // ...\n}\n\nfunction ComponenteB() {\n  const [cuenta, setCuenta] = useState(0);\n  const incrementar = () => setCuenta(prev => prev + 1);\n  const reiniciar = () => setCuenta(0);\n  // ...\n}\n```\n\n```jsx\n// Con custom hook — lógica extraída y reutilizable\nfunction useContador(inicial = 0) {\n  const [cuenta, setCuenta] = useState(inicial);\n\n  const incrementar = () => setCuenta(prev => prev + 1);\n  const decrementar = () => setCuenta(prev => prev - 1);\n  const reiniciar = () => setCuenta(inicial);\n\n  return { cuenta, incrementar, decrementar, reiniciar };\n}\n\n// Uso en cualquier componente\nfunction ComponenteA() {\n  const { cuenta, incrementar } = useContador(10);\n  return <button onClick={incrementar}>{cuenta}</button>;\n}\n```\n\n## Ejemplo: useLocalStorage\n\n```jsx\nfunction useLocalStorage(key, valorInicial) {\n  const [valor, setValor] = useState(() => {\n    const guardado = localStorage.getItem(key);\n    return guardado ? JSON.parse(guardado) : valorInicial;\n  });\n\n  function guardar(nuevoValor) {\n    setValor(nuevoValor);\n    localStorage.setItem(key, JSON.stringify(nuevoValor));\n  }\n\n  return [valor, guardar];\n}\n\n// Uso\nconst [tema, setTema] = useLocalStorage('tema', 'claro');\n```\n\n## Regla fundamental\n\nLos custom hooks **no comparten estado** entre componentes que los usan. Cada componente que llama a `useContador()` obtiene su propio contador independiente. Lo que se comparte es la **lógica**, no el estado."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un custom hook `useToggle` que reciba un valor inicial booleano y devuelva `[valor, toggle]`, donde `toggle` es una función que alterna el booleano. Luego úsalo en un componente `Demo` que muestre un `<p>` con 'activado' o 'desactivado' y un `<button>` que diga 'Toggle'.",
+    "starterCode": "function useToggle(inicial = false) {\n  // Tu implementación del custom hook\n}\n\nfunction Demo() {\n  const [activo, toggle] = useToggle(false);\n\n  return (\n    <div>\n      <p>{activo ? 'activado' : 'desactivado'}</p>\n      <button onClick={toggle}>Toggle</button>\n    </div>\n  );\n}\n\nroot.render(<Demo />);",
+    "tests": [
+      {
+        "description": "El párrafo inicial muestra 'desactivado'",
+        "expression": "container.querySelector('p').textContent === 'desactivado'"
+      },
+      {
+        "description": "Existe un botón con el texto 'Toggle'",
+        "expression": "container.querySelector('button').textContent === 'Toggle'"
+      }
+    ],
+    "hints": [
+      "useToggle debe usar useState internamente",
+      "La función toggle debe llamar a setValue(prev => !prev)",
+      "Devuelve un array: return [valor, toggle]"
+    ]
+  }
+}

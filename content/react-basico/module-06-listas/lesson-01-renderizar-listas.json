@@ -1,0 +1,33 @@
+{
+  "slug": "renderizar-listas",
+  "title": "Renderizar listas con map",
+  "order": 1,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Renderizar listas con map\n\nPara renderizar arrays de datos en React, usas el método `map` de JavaScript. Es el patrón más frecuente en cualquier aplicación real.\n\n## El patrón básico\n\n```jsx\nconst frutas = ['Manzana', 'Pera', 'Naranja'];\n\nfunction ListaFrutas() {\n  return (\n    <ul>\n      {frutas.map(fruta => (\n        <li>{fruta}</li>\n      ))}\n    </ul>\n  );\n}\n```\n\n`map` transforma cada elemento del array en un elemento JSX. React renderiza el array resultante.\n\n## La prop key (obligatoria)\n\nReact necesita identificar cada elemento de la lista para saber cuál cambió, agregó, o eliminó:\n\n```jsx\n// ❌ Sin key — React advierte y puede comportarse mal\n{frutas.map(fruta => <li>{fruta}</li>)}\n\n// ✅ Con key única\n{frutas.map(fruta => <li key={fruta}>{fruta}</li>)}\n```\n\n**La key debe ser única entre hermanos** (no globalmente). Lo ideal es usar un ID del dato:\n\n```jsx\nconst usuarios = [\n  { id: 1, nombre: 'Ana' },\n  { id: 2, nombre: 'Carlos' },\n];\n\n{usuarios.map(u => (\n  <li key={u.id}>{u.nombre}</li>\n))}\n```\n\n## ¿Por qué no usar el índice como key?\n\n```jsx\n// ❌ Problemático si la lista puede reordenarse o filtrarse\n{items.map((item, index) => (\n  <li key={index}>{item}</li>\n))}\n```\n\nSi el array cambia de orden, los índices cambian. React pensará que los elementos son los mismos pero con diferente contenido, lo que puede causar bugs visuales. Usa el índice solo si la lista es estática y nunca se reordena.\n\n## Listas de componentes\n\n```jsx\nfunction ListaProductos({ productos }) {\n  return (\n    <div>\n      {productos.map(p => (\n        <TarjetaProducto\n          key={p.id}\n          nombre={p.nombre}\n          precio={p.precio}\n        />\n      ))}\n    </div>\n  );\n}\n```\n\nLa `key` va en el componente que se repite, no adentro de él."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `ListaColores` que reciba un array de strings `colores` como prop y los renderice en una `<ul>`. Cada `<li>` debe mostrar el color y usar el propio string como key.",
+    "starterCode": "function ListaColores({ colores }) {\n  return (\n    <ul>\n      {/* Renderiza cada color como un li */}\n    </ul>\n  );\n}\n\nroot.render(\n  <ListaColores colores={['Rojo', 'Verde', 'Azul']} />\n);",
+    "tests": [
+      {
+        "description": "Hay exactamente 3 elementos li",
+        "expression": "container.querySelectorAll('li').length === 3"
+      },
+      {
+        "description": "El primer li contiene 'Rojo'",
+        "expression": "container.querySelectorAll('li')[0].textContent === 'Rojo'"
+      },
+      {
+        "description": "El último li contiene 'Azul'",
+        "expression": "container.querySelectorAll('li')[2].textContent === 'Azul'"
+      }
+    ],
+    "hints": [
+      "Usa colores.map(color => <li key={color}>{color}</li>)",
+      "Envuelve el map en {} dentro del JSX",
+      "La key puede ser el propio string del color en este caso"
+    ]
+  }
+}

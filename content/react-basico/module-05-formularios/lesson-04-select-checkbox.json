@@ -1,0 +1,33 @@
+{
+  "slug": "select-checkbox",
+  "title": "Select, checkbox y radio",
+  "order": 4,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Select, checkbox y radio\n\nTodos los controles de formulario pueden ser controlados por React, pero cada uno tiene sus particularidades.\n\n## Select\n\n```jsx\nfunction SelectorPais() {\n  const [pais, setPais] = useState('colombia');\n\n  return (\n    <select value={pais} onChange={e => setPais(e.target.value)}>\n      <option value=\"colombia\">Colombia</option>\n      <option value=\"mexico\">México</option>\n      <option value=\"argentina\">Argentina</option>\n    </select>\n  );\n}\n```\n\nEl `value` en el `<select>` controla cuál opción está seleccionada. React marca automáticamente el `<option>` correcto.\n\n## Checkbox\n\n```jsx\nfunction AceptarTerminos() {\n  const [aceptado, setAceptado] = useState(false);\n\n  return (\n    <label>\n      <input\n        type=\"checkbox\"\n        checked={aceptado}\n        onChange={e => setAceptado(e.target.checked)}\n      />\n      Acepto los términos\n    </label>\n  );\n}\n```\n\nPara checkboxes usa `checked` (no `value`) y `e.target.checked` (no `e.target.value`).\n\n## Radio buttons\n\n```jsx\nfunction SelectorTalla() {\n  const [talla, setTalla] = useState('M');\n  const tallas = ['S', 'M', 'L', 'XL'];\n\n  return (\n    <div>\n      {tallas.map(t => (\n        <label key={t}>\n          <input\n            type=\"radio\"\n            value={t}\n            checked={talla === t}\n            onChange={e => setTalla(e.target.value)}\n          />\n          {t}\n        </label>\n      ))}\n    </div>\n  );\n}\n```\n\nCada radio tiene su propio `value`. El `checked` se calcula comparando con el estado: `checked={talla === t}`.\n\n## Resumen\n\n| Control | Prop de valor | Prop de evento |\n|---------|---------------|----------------|\n| `<input type=\"text\">` | `value` | `e.target.value` |\n| `<textarea>` | `value` | `e.target.value` |\n| `<select>` | `value` | `e.target.value` |\n| `<input type=\"checkbox\">` | `checked` | `e.target.checked` |\n| `<input type=\"radio\">` | `checked` (comparado) | `e.target.value` |"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `FormPreferencias` con un `<select>` controlado con las opciones 'javascript', 'react' y 'typescript' (estado inicial: 'javascript'), y un `<p>` que muestre \"Tu lenguaje: \" seguido del valor seleccionado.",
+    "starterCode": "function FormPreferencias() {\n  const [lenguaje, setLenguaje] = useState('javascript');\n\n  return (\n    <div>\n      <select value={lenguaje} onChange={e => setLenguaje(e.target.value)}>\n        <option value=\"javascript\">JavaScript</option>\n        <option value=\"react\">React</option>\n        <option value=\"typescript\">TypeScript</option>\n      </select>\n      {/* Muestra el lenguaje seleccionado */}\n    </div>\n  );\n}\n\nroot.render(<FormPreferencias />);",
+    "tests": [
+      {
+        "description": "Existe un select en el DOM",
+        "expression": "container.querySelector('select') !== null"
+      },
+      {
+        "description": "El select tiene 3 opciones",
+        "expression": "container.querySelectorAll('option').length === 3"
+      },
+      {
+        "description": "El párrafo muestra el lenguaje inicial",
+        "expression": "container.querySelector('p').textContent === 'Tu lenguaje: javascript'"
+      }
+    ],
+    "hints": [
+      "El select ya está dado — solo agrega el párrafo con el lenguaje",
+      "El párrafo debe mostrar exactamente: 'Tu lenguaje: javascript' al inicio",
+      "Usa {lenguaje} como expresión JSX en el párrafo"
+    ]
+  }
+}

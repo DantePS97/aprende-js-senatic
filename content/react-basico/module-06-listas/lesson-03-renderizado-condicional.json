@@ -1,0 +1,29 @@
+{
+  "slug": "renderizado-condicional",
+  "title": "Renderizado condicional",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Renderizado condicional\n\nReact te permite mostrar u ocultar partes de la UI basándote en condiciones, usando técnicas puras de JavaScript.\n\n## Operador &&\n\nMuestra algo solo si la condición es verdadera:\n\n```jsx\n{estaLogueado && <PanelUsuario />}\n{mensajes.length > 0 && <ListaMensajes />}\n{cargando && <Spinner />}\n```\n\n**Trampa**: Si la condición es `0`, React renderiza el número `0`. Usa comparaciones explícitas:\n\n```jsx\n// ❌ Renderiza '0' si lista está vacía\n{lista.length && <Items lista={lista} />}\n\n// ✅ Renderiza nada si lista está vacía\n{lista.length > 0 && <Items lista={lista} />}\n```\n\n## Operador ternario\n\nMuestra A o B según la condición:\n\n```jsx\n{estaLogueado\n  ? <BotonCerrarSesion />\n  : <BotonIniciarSesion />\n}\n\n{cargando ? <Spinner /> : <Contenido datos={datos} />}\n```\n\n## Return temprano\n\nPara condiciones más complejas, el return temprano es más legible:\n\n```jsx\nfunction Perfil({ usuario }) {\n  if (!usuario) {\n    return <p>Usuario no encontrado</p>;\n  }\n\n  if (usuario.baneado) {\n    return <p>Esta cuenta ha sido suspendida</p>;\n  }\n\n  return (\n    <div>\n      <h2>{usuario.nombre}</h2>\n      <p>{usuario.email}</p>\n    </div>\n  );\n}\n```\n\nLos returns tempranos sacan los casos edge al principio y dejan el happy path al final, sin anidación.\n\n## null para no renderizar nada\n\n```jsx\nfunction Banner({ mensaje }) {\n  if (!mensaje) return null; // No renderiza nada\n  return <div className=\"banner\">{mensaje}</div>;\n}\n```\n\nDevolver `null` de un componente es perfectamente válido — el componente existe pero no produce HTML."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `PanelLogin` con un estado booleano `logueado` (inicial: `false`). Muestra un `<button>` que diga \"Iniciar sesión\" o \"Cerrar sesión\" según el estado, y cambie el estado al hacer clic. Además muestra un `<p>` con \"Bienvenido\" solo cuando `logueado` es `true`.",
+    "starterCode": "function PanelLogin() {\n  const [logueado, setLogueado] = useState(false);\n\n  return (\n    <div>\n      <button onClick={() => setLogueado(prev => !prev)}>\n        {/* Texto condicional del botón */}\n      </button>\n      {/* Párrafo condicional */}\n    </div>\n  );\n}\n\nroot.render(<PanelLogin />);",
+    "tests": [
+      {
+        "description": "El botón muestra 'Iniciar sesión' cuando logueado es false",
+        "expression": "container.querySelector('button').textContent === 'Iniciar sesión'"
+      },
+      {
+        "description": "No hay párrafo cuando logueado es false",
+        "expression": "container.querySelector('p') === null"
+      }
+    ],
+    "hints": [
+      "Usa ternario para el texto del botón: {logueado ? 'Cerrar sesión' : 'Iniciar sesión'}",
+      "Usa && para el párrafo: {logueado && <p>Bienvenido</p>}",
+      "El toggle ya está implementado: setLogueado(prev => !prev)"
+    ]
+  }
+}

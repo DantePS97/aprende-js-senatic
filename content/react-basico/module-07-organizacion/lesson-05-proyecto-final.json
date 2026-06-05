@@ -1,0 +1,33 @@
+{
+  "slug": "proyecto-final",
+  "title": "Proyecto final: Todo App",
+  "order": 5,
+  "xpReward": 30,
+  "theory": {
+    "markdown": "# Proyecto final: Todo App\n\nHas completado el curso de React Básico. En esta lección final construyes una aplicación completa integrando todos los conceptos aprendidos.\n\n## Lo que construirás\n\nUna aplicación de tareas (Todo App) con:\n- Agregar tareas\n- Completar/descompletar tareas\n- Eliminar tareas\n- Filtrar por estado (todas / activas / completadas)\n- Contador de tareas pendientes\n\n## Conceptos aplicados\n\n| Concepto | Dónde aplica |\n|----------|--------------|\n| `useState` | Estado de tareas, filtro, input |\n| `useEffect` | Guardar en localStorage (bonus) |\n| Props | Componente `ItemTarea` |\n| Callbacks | `onToggle`, `onEliminar` |\n| `.map()` | Renderizar lista de tareas |\n| `.filter()` | Filtrar por estado |\n| Estado derivado | Contador de pendientes, tareas filtradas |\n| Formulario controlado | Input de nueva tarea |\n| Renderizado condicional | Lista vacía |\n\n## Estructura sugerida\n\n```\nApp\n├── FormularioTarea (input + botón agregar)\n├── FiltrosTarea (botones todas/activas/completadas)\n├── ListaTareas\n│   └── ItemTarea (texto + checkbox + botón eliminar) × N\n└── ResumenTareas (\"X tareas pendientes\")\n```\n\n## Guía de implementación\n\n```jsx\nconst [tareas, setTareas] = useState([]);\nconst [filtro, setFiltro] = useState('todas'); // 'todas' | 'activas' | 'completadas'\nconst [nuevaTarea, setNuevaTarea] = useState('');\n\n// Estado derivado\nconst tareasFiltradas = tareas.filter(t => {\n  if (filtro === 'activas') return !t.completada;\n  if (filtro === 'completadas') return t.completada;\n  return true;\n});\n\nconst pendientes = tareas.filter(t => !t.completada).length;\n\n// Operaciones\nfunction agregar() {\n  if (!nuevaTarea.trim()) return;\n  setTareas(prev => [...prev, { id: Date.now(), texto: nuevaTarea, completada: false }]);\n  setNuevaTarea('');\n}\n\nfunction toggle(id) {\n  setTareas(prev =>\n    prev.map(t => t.id === id ? { ...t, completada: !t.completada } : t)\n  );\n}\n\nfunction eliminar(id) {\n  setTareas(prev => prev.filter(t => t.id !== id));\n}\n```\n\n## Siguiente paso\n\nEsta aplicación es el punto de partida. Puedes extenderla con:\n- Edición de tareas (doble clic para editar)\n- Drag & drop para reordenar\n- Sincronización con una API REST\n- Autenticación para tareas por usuario\n\nCada una de esas extensiones te llevará a aprender nuevos conceptos: `useRef`, librerías de estado global, React Query, y más. ¡Bienvenido al ecosistema React!"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Construye una Todo App completa. Debe tener: (1) un input controlado para agregar tareas, (2) un botón 'Agregar', (3) una lista de tareas donde cada ítem tiene un checkbox que la marca como completada, (4) un párrafo que muestre cuántas tareas hay pendientes con el formato 'X pendientes'.",
+    "starterCode": "function TodoApp() {\n  const [tareas, setTareas] = useState([]);\n  const [texto, setTexto] = useState('');\n\n  function agregar() {\n    if (!texto.trim()) return;\n    setTareas(prev => [...prev, { id: Date.now(), texto, completada: false }]);\n    setTexto('');\n  }\n\n  function toggle(id) {\n    setTareas(prev =>\n      prev.map(t => t.id === id ? { ...t, completada: !t.completada } : t)\n    );\n  }\n\n  const pendientes = tareas.filter(t => !t.completada).length;\n\n  return (\n    <div>\n      <input value={texto} onChange={e => setTexto(e.target.value)} placeholder=\"Nueva tarea\" />\n      <button onClick={agregar}>Agregar</button>\n      <ul>\n        {tareas.map(t => (\n          <li key={t.id}>\n            <input\n              type=\"checkbox\"\n              checked={t.completada}\n              onChange={() => toggle(t.id)}\n            />\n            {t.texto}\n          </li>\n        ))}\n      </ul>\n      <p>{pendientes} pendientes</p>\n    </div>\n  );\n}\n\nroot.render(<TodoApp />);",
+    "tests": [
+      {
+        "description": "Existe un input de texto",
+        "expression": "container.querySelector('input[type=\"text\"], input:not([type])') !== null"
+      },
+      {
+        "description": "Existe un botón 'Agregar'",
+        "expression": "container.querySelector('button').textContent === 'Agregar'"
+      },
+      {
+        "description": "El párrafo muestra '0 pendientes' al inicio",
+        "expression": "container.querySelector('p').textContent === '0 pendientes'"
+      }
+    ],
+    "hints": [
+      "El código ya está completo — léelo con atención y entiende cada parte",
+      "pendientes es estado derivado: se calcula con filter sin useState",
+      "toggle usa map para crear un nuevo array con la tarea actualizada"
+    ]
+  }
+}

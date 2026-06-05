@@ -1,0 +1,29 @@
+{
+  "slug": "dependencias",
+  "title": "Array de dependencias",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Array de dependencias\n\nEl array de dependencias es el segundo argumento de `useEffect`. Le dice a React **cuándo volver a ejecutar** el efecto.\n\n## Los tres comportamientos\n\n```jsx\n// 1. Sin array — se ejecuta en cada render\nuseEffect(() => {\n  console.log('Renderizó');\n});\n\n// 2. Array vacío — solo al montar\nuseEffect(() => {\n  console.log('Montó');\n}, []);\n\n// 3. Con valores — cuando esos valores cambien\nuseEffect(() => {\n  console.log('busqueda cambió a:', busqueda);\n}, [busqueda]);\n```\n\n## Ejemplo: refetch cuando cambia el ID\n\n```jsx\nfunction PerfilUsuario({ userId }) {\n  const [usuario, setUsuario] = useState(null);\n\n  useEffect(() => {\n    fetch(`/api/users/${userId}`)\n      .then(r => r.json())\n      .then(setUsuario);\n  }, [userId]); // Re-fetcha cuando userId cambia\n\n  if (!usuario) return <p>Cargando...</p>;\n  return <h2>{usuario.nombre}</h2>;\n}\n```\n\nCada vez que el padre pase un `userId` diferente, el efecto se vuelve a ejecutar y carga el nuevo usuario.\n\n## La regla de exhaustividad\n\nTodo valor externo que uses dentro del efecto debe estar en el array:\n\n```jsx\nuseEffect(() => {\n  // Usamos 'pagina' y 'filtro' — ambos deben estar en el array\n  fetch(`/api/items?page=${pagina}&filter=${filtro}`)\n    .then(r => r.json())\n    .then(setItems);\n}, [pagina, filtro]); // ✅ Ambos declarados\n```\n\nSi omites una dependencia, el efecto ejecutará código desactualizado (usa el valor de cuando se montó, no el actual). Esto es uno de los bugs más comunes en React.\n\n## Dependencias que no cambian\n\nNo necesitas incluir en el array:\n- Funciones setter de `useState` (son estables por garantía de React)\n- Funciones definidas fuera del componente\n- Constantes definidas fuera del componente"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Reloj` que muestre la hora actual en un `<p>`. Usa `useEffect` con `setInterval` para actualizar el estado `hora` cada 1000ms. El estado debe inicializarse con `new Date().toLocaleTimeString()`.",
+    "starterCode": "function Reloj() {\n  const [hora, setHora] = useState(new Date().toLocaleTimeString());\n\n  useEffect(() => {\n    // Crea un interval que actualice 'hora' cada segundo\n  }, []);\n\n  return <p>{hora}</p>;\n}\n\nroot.render(<Reloj />);",
+    "tests": [
+      {
+        "description": "Existe un párrafo en el DOM",
+        "expression": "container.querySelector('p') !== null"
+      },
+      {
+        "description": "El párrafo contiene texto con formato de hora",
+        "expression": "container.querySelector('p').textContent.includes(':')"
+      }
+    ],
+    "hints": [
+      "Usa setInterval(() => { ... }, 1000) para ejecutar código cada segundo",
+      "Dentro del interval llama: setHora(new Date().toLocaleTimeString())",
+      "El array vacío [] hace que el interval se cree solo una vez al montar"
+    ]
+  }
+}

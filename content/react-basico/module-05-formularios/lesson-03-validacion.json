@@ -1,0 +1,29 @@
+{
+  "slug": "validacion",
+  "title": "Validación de formularios",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Validación de formularios\n\nCon inputs controlados, tienes acceso al valor en todo momento, lo que permite validar de forma declarativa.\n\n## Validación al hacer submit\n\n```jsx\nfunction FormularioLogin() {\n  const [email, setEmail] = useState('');\n  const [errores, setErrores] = useState({});\n\n  function validar() {\n    const nuevosErrores = {};\n\n    if (!email) {\n      nuevosErrores.email = 'El email es requerido';\n    } else if (!email.includes('@')) {\n      nuevosErrores.email = 'Email inválido';\n    }\n\n    return nuevosErrores;\n  }\n\n  function handleSubmit(e) {\n    e.preventDefault();\n    const erroresEncontrados = validar();\n\n    if (Object.keys(erroresEncontrados).length > 0) {\n      setErrores(erroresEncontrados);\n      return; // No enviamos si hay errores\n    }\n\n    // Sin errores — proceder\n    console.log('Enviando:', email);\n  }\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input\n        value={email}\n        onChange={e => setEmail(e.target.value)}\n        placeholder=\"Email\"\n      />\n      {errores.email && <span className=\"error\">{errores.email}</span>}\n      <button type=\"submit\">Entrar</button>\n    </form>\n  );\n}\n```\n\n## Validación en tiempo real\n\n```jsx\n// Valida mientras el usuario escribe\nfunction manejarCambio(e) {\n  const valor = e.target.value;\n  setEmail(valor);\n\n  if (!valor.includes('@')) {\n    setError('Email inválido');\n  } else {\n    setError('');\n  }\n}\n```\n\n## Deshabilitar el botón dinámicamente\n\n```jsx\n// Calcula si el form es válido (derivado del estado)\nconst esValido = nombre.length > 0 && email.includes('@');\n\n<button type=\"submit\" disabled={!esValido}>\n  Enviar\n</button>\n```\n\nEsto es **estado derivado**: no guardas `esValido` en un `useState`, lo calculas directamente del estado existente. Menos estado = menos bugs.\n\n## Limpiar el form tras submit\n\n```jsx\nfunction handleSubmit(e) {\n  e.preventDefault();\n  // ... procesar ...\n  setNombre(''); // Limpiar campo\n  setEmail('');  // Limpiar campo\n}\n```"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `InputValidado` con un `<input>` controlado para un email y un `<p>` de error. Si el valor del input no contiene '@', muestra el `<p>` con el texto \"Email inválido\". Si contiene '@', el párrafo no debe aparecer.",
+    "starterCode": "function InputValidado() {\n  const [email, setEmail] = useState('');\n\n  const esValido = email.includes('@');\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        value={email}\n        onChange={e => setEmail(e.target.value)}\n        placeholder=\"Email\"\n      />\n      {/* Muestra el error solo cuando no es válido y hay texto */}\n    </div>\n  );\n}\n\nroot.render(<InputValidado />);",
+    "tests": [
+      {
+        "description": "Existe un input en el DOM",
+        "expression": "container.querySelector('input') !== null"
+      },
+      {
+        "description": "No hay párrafo de error con el input vacío",
+        "expression": "container.querySelector('p') === null"
+      }
+    ],
+    "hints": [
+      "Usa el operador && para renderizar el error condicionalmente: {!esValido && email && <p>Email inválido</p>}",
+      "esValido ya está calculado — úsalo directamente",
+      "El error solo debe aparecer si hay texto pero no es válido"
+    ]
+  }
+}

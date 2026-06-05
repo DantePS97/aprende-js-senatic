@@ -1,0 +1,29 @@
+{
+  "slug": "inputs-controlados",
+  "title": "Inputs controlados",
+  "order": 1,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Inputs controlados\n\nEn React, hay dos formas de manejar inputs de formulario: **controlados** y no controlados. Los inputs controlados son el patrón recomendado.\n\n## Input no controlado (DOM gestiona el valor)\n\n```jsx\n// El input gestiona su propio estado — React no sabe qué hay adentro\n<input type=\"text\" />\n```\n\nPara leer el valor, hay que acceder al DOM directamente. Funciona, pero pierde las ventajas de React.\n\n## Input controlado (React gestiona el valor)\n\n```jsx\nfunction CampoNombre() {\n  const [nombre, setNombre] = useState('');\n\n  return (\n    <input\n      type=\"text\"\n      value={nombre}\n      onChange={e => setNombre(e.target.value)}\n    />\n  );\n}\n```\n\nEl flujo:\n1. El estado `nombre` controla el valor del input\n2. Cuando el usuario escribe, `onChange` dispara\n3. `setNombre` actualiza el estado\n4. React re-renderiza con el nuevo valor\n\n## ¿Por qué es mejor?\n\n- **El estado siempre es la fuente de verdad**: sabes exactamente qué hay en el input\n- **Validación en tiempo real**: puedes reaccionar a cada keystroke\n- **Control total**: puedes limpiar el input, formatearlo, o bloquearlo condicionalmente\n\n## Ejemplo con feedback inmediato\n\n```jsx\nfunction BuscadorNombre() {\n  const [nombre, setNombre] = useState('');\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        value={nombre}\n        onChange={e => setNombre(e.target.value)}\n        placeholder=\"Escribe tu nombre\"\n      />\n      {nombre && <p>Hola, {nombre}</p>}\n    </div>\n  );\n}\n```\n\nEl `{nombre && <p>...</p>}` solo renderiza el párrafo cuando `nombre` no está vacío."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `InputEco` con un estado `texto` vacío. Muestra un `<input>` controlado y debajo un `<p>` que diga \"Escribiste: \" seguido del valor actual del input.",
+    "starterCode": "function InputEco() {\n  const [texto, setTexto] = useState('');\n\n  // Tu código aquí\n}\n\nroot.render(<InputEco />);",
+    "tests": [
+      {
+        "description": "Existe un input en el DOM",
+        "expression": "container.querySelector('input') !== null"
+      },
+      {
+        "description": "Existe un párrafo con el prefijo correcto",
+        "expression": "container.querySelector('p').textContent.startsWith('Escribiste: ')"
+      }
+    ],
+    "hints": [
+      "El input debe tener value={texto} y onChange={e => setTexto(e.target.value)}",
+      "El párrafo debe mostrar: 'Escribiste: ' + texto (o usando template literal)",
+      "Cuando el estado es vacío, el párrafo mostrará 'Escribiste: '"
+    ]
+  }
+}

@@ -32,7 +32,7 @@ interface RawExercise {
   startCode?: string;
   tests?: RawTest[] | string;
   hints?: string[];
-  type?: 'js' | 'html';
+  type?: 'js' | 'html' | 'react';
 }
 
 interface RawContent {

@@ -1,0 +1,10 @@
+{
+  "slug": "elevar-estado",
+  "title": "Elevar el estado",
+  "order": 5,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Elevar el estado\n\n**Elevar el estado** (lifting state up) es el patrón de mover el estado a un componente padre cuando varios hijos necesitan acceder o modificar los mismos datos.\n\n## El problema\n\n```jsx\n// ❌ Cada hijo tiene su propio contador — no se comunican\nfunction App() {\n  return (\n    <div>\n      <ContadorA />\n      <ContadorB />\n      <p>Total: ???</p> {/* ¿Cómo calculo el total? */}\n    </div>\n  );\n}\n```\n\nSi el estado vive en cada hijo por separado, el padre no puede acceder a él.\n\n## La solución: mover el estado al padre\n\n```jsx\nfunction App() {\n  // Estado elevado al padre\n  const [contadorA, setContadorA] = useState(0);\n  const [contadorB, setContadorB] = useState(0);\n\n  return (\n    <div>\n      <Contador\n        valor={contadorA}\n        onIncrement={() => setContadorA(prev => prev + 1)}\n        nombre=\"A\"\n      />\n      <Contador\n        valor={contadorB}\n        onIncrement={() => setContadorB(prev => prev + 1)}\n        nombre=\"B\"\n      />\n      <p>Total: {contadorA + contadorB}</p>\n    </div>\n  );\n}\n\nfunction Contador({ valor, onIncrement, nombre }) {\n  return (\n    <div>\n      <span>Contador {nombre}: {valor}</span>\n      <button onClick={onIncrement}>+1</button>\n    </div>\n  );\n}\n```\n\n## El flujo de datos en React\n\nReact tiene flujo de datos **unidireccional**:\n\n```\nPadre → Props → Hijo\nHijo  → Callbacks → Padre\n```\n\n- El padre pasa **datos** hacia abajo (props)\n- El hijo notifica **eventos** hacia arriba (callbacks)\n\nEste flujo predecible hace que las aplicaciones sean más fáciles de depurar: siempre sabes de dónde viene un dato.\n\n## ¿Cuándo elevar el estado?\n\nEleva el estado cuando:\n- Dos o más componentes necesitan los mismos datos\n- Necesitas calcular algo a partir de estados de múltiples hijos\n- La acción de un hijo debe afectar a un hermano\n\nNo eleves más de lo necesario — solo hasta el ancestro común más cercano."
+  },
+  "exercise": null
+}

@@ -1,0 +1,10 @@
+{
+  "slug": "composicion",
+  "title": "Composición de componentes",
+  "order": 5,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Composición de componentes\n\nLa **composición** es el principio de construir componentes complejos combinando componentes simples. Es la forma fundamental de reutilizar lógica y UI en React.\n\n## De simples a complejos\n\n```jsx\n// Componentes simples\nfunction Avatar({ src, nombre }) {\n  return <img src={src} alt={nombre} className=\"avatar\" />;\n}\n\nfunction NombreUsuario({ nombre, rol }) {\n  return (\n    <div>\n      <strong>{nombre}</strong>\n      <span>{rol}</span>\n    </div>\n  );\n}\n\n// Compuesto\nfunction TarjetaUsuario({ src, nombre, rol }) {\n  return (\n    <div className=\"tarjeta-usuario\">\n      <Avatar src={src} nombre={nombre} />\n      <NombreUsuario nombre={nombre} rol={rol} />\n    </div>\n  );\n}\n```\n\n## Composición vs. herencia\n\nEn otros lenguajes o frameworks, la reutilización se logra con herencia de clases. React favorece la composición porque:\n\n- Es más flexible (puedes componer cualquier combinación)\n- Es más explícita (ves exactamente qué está incluido)\n- Evita el problema de la jerarquía de herencia profunda\n\n## El árbol de componentes\n\nUna aplicación React es un árbol de componentes:\n\n```\nApp\n├── Header\n│   ├── Logo\n│   └── Nav\n├── Main\n│   ├── TarjetaUsuario\n│   │   ├── Avatar\n│   │   └── NombreUsuario\n│   └── Lista\n│       ├── Item\n│       ├── Item\n│       └── Item\n└── Footer\n```\n\nCada nodo es un componente. Los de abajo son más simples y específicos; los de arriba son más complejos y generales.\n\n## Regla práctica\n\nCuando un componente tiene más de 3-4 responsabilidades distintas o su JSX tiene más de ~20 líneas, es señal de que debe dividirse en subcomponentes."
+  },
+  "exercise": null
+}

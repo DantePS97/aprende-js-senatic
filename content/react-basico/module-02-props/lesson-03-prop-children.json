@@ -1,0 +1,29 @@
+{
+  "slug": "prop-children",
+  "title": "La prop children",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# La prop children\n\n`children` es una prop especial que React pasa automáticamente a todo componente. Contiene todo lo que está entre las etiquetas de apertura y cierre del componente.\n\n## Sin children: componente de auto-cierre\n\n```jsx\n<MiComponente /> // Sin contenido interno\n```\n\n## Con children: componente con contenido\n\n```jsx\n<Contenedor>\n  <h2>Título</h2>\n  <p>Este texto es children</p>\n</Contenedor>\n```\n\nDentro de `Contenedor`, puedes renderizar ese contenido:\n\n```jsx\nfunction Contenedor({ children }) {\n  return (\n    <div className=\"contenedor\">\n      {children}\n    </div>\n  );\n}\n```\n\n## ¿Para qué sirve?\n\nChildren es ideal para componentes que actúan como **envoltorios** o **layouts**:\n\n```jsx\n// Tarjeta reutilizable con cualquier contenido\nfunction Tarjeta({ titulo, children }) {\n  return (\n    <div className=\"tarjeta\">\n      <h3>{titulo}</h3>\n      <div className=\"contenido\">\n        {children}\n      </div>\n    </div>\n  );\n}\n\n// Uso con distintos contenidos\n<Tarjeta titulo=\"Perfil\">\n  <img src=\"foto.jpg\" alt=\"Perfil\" />\n  <p>Ana García</p>\n</Tarjeta>\n\n<Tarjeta titulo=\"Estadísticas\">\n  <span>100 puntos</span>\n  <span>5 niveles</span>\n</Tarjeta>\n```\n\nEl mismo componente `Tarjeta` sirve para ambos casos porque no asume nada sobre su contenido interno.\n\n## Children puede ser cualquier cosa\n\n```jsx\n// Texto\n<Parrafo>Hola mundo</Parrafo>\n\n// Múltiples elementos\n<Lista>\n  <li>Elemento 1</li>\n  <li>Elemento 2</li>\n</Lista>\n\n// Otros componentes\n<Modal>\n  <FormularioLogin />\n</Modal>\n```"
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Caja` que reciba `children` y los muestre dentro de un `<div>` con la clase `caja`. Luego úsalo para envolver un `<p>` con el texto \"Contenido de la caja\".",
+    "starterCode": "function Caja({ children }) {\n  // Tu código aquí\n}\n\nroot.render(\n  <Caja>\n    <p>Contenido de la caja</p>\n  </Caja>\n);",
+    "tests": [
+      {
+        "description": "Existe un div con clase 'caja'",
+        "expression": "container.querySelector('div.caja') !== null"
+      },
+      {
+        "description": "El div contiene el párrafo con el texto correcto",
+        "expression": "container.querySelector('div.caja p').textContent === 'Contenido de la caja'"
+      }
+    ],
+    "hints": [
+      "Recibe children como prop: function Caja({ children })",
+      "Renderiza {children} dentro del div",
+      "La clase del div debe ser exactamente: caja"
+    ]
+  }
+}

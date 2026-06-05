@@ -1,0 +1,33 @@
+{
+  "slug": "jsx",
+  "title": "JSX: HTML dentro de JavaScript",
+  "order": 3,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# JSX: HTML dentro de JavaScript\n\n**JSX** (JavaScript XML) es la sintaxis que te permite escribir algo que parece HTML dentro de tus funciones JavaScript.\n\n```jsx\nfunction Tarjeta() {\n  return (\n    <div className=\"tarjeta\">\n      <h2>Título</h2>\n      <p>Contenido de la tarjeta</p>\n    </div>\n  );\n}\n```\n\n## JSX no es HTML\n\nAunque se parece, hay diferencias importantes:\n\n| HTML | JSX |\n|------|-----|\n| `class=\"...\"` | `className=\"...\"` |\n| `for=\"...\"` | `htmlFor=\"...\"` |\n| `onclick=\"...\"` | `onClick={...}` |\n| Tags opcionales abiertos | Todos los tags deben cerrarse |\n\nEl motivo: JSX se compila a JavaScript, y `class` es palabra reservada en JS.\n\n## Un solo elemento raíz\n\nCada componente debe devolver **un solo elemento raíz**:\n\n```jsx\n// ❌ Error — dos elementos raíz\nfunction Mal() {\n  return (\n    <h1>Título</h1>\n    <p>Párrafo</p>\n  );\n}\n\n// ✅ Correcto — envueltos en un div\nfunction Bien() {\n  return (\n    <div>\n      <h1>Título</h1>\n      <p>Párrafo</p>\n    </div>\n  );\n}\n```\n\n## ¿Cómo funciona JSX?\n\nBabel transforma tu JSX en llamadas `React.createElement`:\n\n```jsx\n// Lo que escribes\n<h1>Hola</h1>\n\n// Lo que ejecuta el navegador\nReact.createElement('h1', null, 'Hola')\n```\n\nTú escribes JSX, Babel lo transforma, React lo convierte en nodos del DOM."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Tarjeta` que muestre un `<div>` con la clase `tarjeta`, que contenga un `<h2>` con el texto \"Mi primera tarjeta\" y un `<p>` con el texto \"Contenido de la tarjeta\".",
+    "starterCode": "function Tarjeta() {\n  // Tu código aquí\n}\n\nroot.render(<Tarjeta />);",
+    "tests": [
+      {
+        "description": "Existe un div con clase 'tarjeta'",
+        "expression": "container.querySelector('div.tarjeta') !== null"
+      },
+      {
+        "description": "El h2 tiene el texto correcto",
+        "expression": "container.querySelector('h2').textContent === 'Mi primera tarjeta'"
+      },
+      {
+        "description": "El párrafo tiene el texto correcto",
+        "expression": "container.querySelector('p').textContent === 'Contenido de la tarjeta'"
+      }
+    ],
+    "hints": [
+      "En JSX, la clase se escribe className, no class",
+      "Recuerda que el div debe contener tanto el h2 como el p",
+      "Todos los tags en JSX deben estar correctamente cerrados"
+    ]
+  }
+}

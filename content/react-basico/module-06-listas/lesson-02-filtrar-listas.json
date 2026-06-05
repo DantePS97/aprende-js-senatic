@@ -1,0 +1,29 @@
+{
+  "slug": "filtrar-listas",
+  "title": "Filtrar y transformar listas",
+  "order": 2,
+  "xpReward": 20,
+  "theory": {
+    "markdown": "# Filtrar y transformar listas\n\nJavaScript tiene métodos de array de primera clase que se integran perfectamente con React: `filter`, `map`, `reduce`, y `sort`.\n\n## filter + map\n\nEl patrón más común: filtrar primero, luego renderizar:\n\n```jsx\nfunction ListaTareas({ tareas, mostrarCompletadas }) {\n  const tareasFiltradas = mostrarCompletadas\n    ? tareas\n    : tareas.filter(t => !t.completada);\n\n  return (\n    <ul>\n      {tareasFiltradas.map(t => (\n        <li key={t.id}>{t.texto}</li>\n      ))}\n    </ul>\n  );\n}\n```\n\n## Búsqueda en tiempo real\n\n```jsx\nfunction BuscadorProductos({ productos }) {\n  const [busqueda, setBusqueda] = useState('');\n\n  const productosFiltrados = productos.filter(p =>\n    p.nombre.toLowerCase().includes(busqueda.toLowerCase())\n  );\n\n  return (\n    <div>\n      <input\n        value={busqueda}\n        onChange={e => setBusqueda(e.target.value)}\n        placeholder=\"Buscar...\"\n      />\n      <ul>\n        {productosFiltrados.map(p => (\n          <li key={p.id}>{p.nombre}</li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n```\n\n`productosFiltrados` es **estado derivado** — no usa `useState`, se calcula a partir de `busqueda` y `productos` en cada render.\n\n## Lista vacía\n\nSiempre maneja el caso donde el resultado está vacío:\n\n```jsx\n{productosFiltrados.length === 0\n  ? <p>No se encontraron resultados</p>\n  : productosFiltrados.map(p => <li key={p.id}>{p.nombre}</li>)\n}\n```\n\n## Ordenar listas\n\n```jsx\n// Copia + sort (nunca mutes el array de estado)\nconst ordenados = [...productos].sort((a, b) =>\n  a.nombre.localeCompare(b.nombre)\n);\n```\n\n`[...productos]` crea una copia porque `sort` muta el array original. Mutar el estado directamente en React = bug."
+  },
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `ListaFiltrada` con un array de números `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]` como estado, y un `<button>` con el texto \"Solo pares\" que filtre la lista para mostrar solo los números pares. Renderiza los números en `<li>` dentro de una `<ul>`.",
+    "starterCode": "function ListaFiltrada() {\n  const [numeros, setNumeros] = useState([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);\n\n  function filtrarPares() {\n    setNumeros(prev => prev.filter(n => n % 2 === 0));\n  }\n\n  return (\n    <div>\n      <button onClick={filtrarPares}>Solo pares</button>\n      <ul>\n        {numeros.map(n => <li key={n}>{n}</li>)}\n      </ul>\n    </div>\n  );\n}\n\nroot.render(<ListaFiltrada />);",
+    "tests": [
+      {
+        "description": "La lista inicial tiene 10 elementos",
+        "expression": "container.querySelectorAll('li').length === 10"
+      },
+      {
+        "description": "Existe un botón con el texto 'Solo pares'",
+        "expression": "container.querySelector('button').textContent === 'Solo pares'"
+      }
+    ],
+    "hints": [
+      "El código ya está casi completo — léelo y asegúrate de entenderlo",
+      "filter(n => n % 2 === 0) devuelve solo los números divisibles entre 2",
+      "Al actualizar el estado con el array filtrado, React re-renderiza la lista"
+    ]
+  }
+}

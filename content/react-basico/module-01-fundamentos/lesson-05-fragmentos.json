@@ -1,0 +1,10 @@
+{
+  "slug": "fragmentos",
+  "title": "Fragmentos",
+  "order": 5,
+  "xpReward": 10,
+  "theory": {
+    "markdown": "# Fragmentos\n\nYa aprendiste que cada componente necesita un solo elemento raíz. El problema es que a veces no quieres agregar un `<div>` innecesario al DOM.\n\n## El problema del div extra\n\n```jsx\n// Funciona, pero agrega un div innecesario al HTML\nfunction Lista() {\n  return (\n    <div>\n      <h2>Título</h2>\n      <ul>\n        <li>Item 1</li>\n      </ul>\n    </div>\n  );\n}\n```\n\nEse `<div>` contamina el HTML semántico y puede romper layouts de CSS.\n\n## La solución: Fragmentos\n\nReact provee el componente `Fragment` (y su sintaxis corta `<>`) para agrupar elementos sin agregar nodos al DOM:\n\n```jsx\nfunction Lista() {\n  return (\n    <>\n      <h2>Título</h2>\n      <ul>\n        <li>Item 1</li>\n      </ul>\n    </>\n  );\n}\n```\n\nEl `<>...</>` no genera ningún elemento en el HTML final. Es invisible para el navegador.\n\n## Cuándo usar cada uno\n\n| Situación | Usar |\n|-----------|------|\n| Necesitas una envoltura con estilos o clase | `<div>` |\n| Solo necesitas agrupar para React | `<>` |\n| Necesitas pasar una `key` al grupo | `<React.Fragment key={id}>` |\n\n## La forma larga\n\nLa sintaxis `<>` es un atajo para `<React.Fragment>`:\n\n```jsx\nimport { Fragment } from 'react';\n\nfunction Ejemplo() {\n  return (\n    <Fragment>\n      <p>Párrafo 1</p>\n      <p>Párrafo 2</p>\n    </Fragment>\n  );\n}\n```\n\nUsarás `<React.Fragment>` (la forma explícita) cuando necesites agregar la prop `key`, por ejemplo al renderizar listas."
+  },
+  "exercise": null
+}
