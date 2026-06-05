@@ -6,5 +6,24 @@
   "theory": {
     "markdown": "# ¿Qué es useEffect?\n\n`useEffect` es el hook que te permite sincronizar un componente con un sistema externo. Se ejecuta **después de que React actualiza el DOM**.\n\n## ¿Qué es un efecto?\n\nUn **efecto** es cualquier operación que ocurre fuera del flujo de renderizado puro:\n\n- Peticiones HTTP (fetch de datos)\n- Suscripciones a eventos\n- Manipulación directa del DOM\n- Timers (setTimeout, setInterval)\n- Integración con librerías de terceros\n\n## Renderizado puro vs. efectos\n\n```\nRenderizado puro:\n  props + estado → JSX\n  Sin side effects. Sin peticiones. Sin timers.\n\nEfectos:\n  Cosas que deben ocurrir DESPUÉS de renderizar.\n  Interacción con el mundo exterior.\n```\n\n## Sintaxis básica\n\n```jsx\nuseEffect(() => {\n  // Código del efecto\n});\n```\n\nEste efecto se ejecuta después de CADA render. Casi nunca es lo que quieres.\n\n## El array de dependencias\n\nEl segundo argumento controla cuándo se ejecuta el efecto:\n\n```jsx\n// Sin array: se ejecuta en cada render\nuseEffect(() => { ... });\n\n// Array vacío: solo en el primer render (mount)\nuseEffect(() => { ... }, []);\n\n// Con dependencias: cuando cambien los valores listados\nuseEffect(() => { ... }, [id, filtro]);\n```\n\nEl array vacío `[]` es el caso más común para peticiones de datos: fetch solo cuando el componente aparece en pantalla."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Mensaje` con un estado `visible` (inicio: `false`). Usa `useEffect` con array vacío para cambiar `visible` a `true` al montarse. Muestra un `<p>` con el texto \"Componente montado\" solo cuando `visible` sea `true`.",
+    "starterCode": "function Mensaje() {\n  const [visible, setVisible] = useState(false);\n\n  useEffect(() => {\n    // Cambia visible a true al montarse\n  }, []);\n\n  return (\n    <div>\n      {/* Muestra el párrafo solo cuando visible sea true */}\n    </div>\n  );\n}\n\nroot.render(<Mensaje />);",
+    "tests": [
+      {
+        "description": "Existe un div en el DOM",
+        "expression": "container.querySelector('div') !== null"
+      },
+      {
+        "description": "El párrafo 'Componente montado' aparece tras el efecto",
+        "expression": "container.querySelector('p') !== null && container.querySelector('p').textContent === 'Componente montado'"
+      }
+    ],
+    "hints": [
+      "Dentro del useEffect llama setVisible(true)",
+      "El array vacío [] hace que el efecto solo corra al montarse",
+      "Usa {visible && <p>Componente montado</p>} para el renderizado condicional"
+    ]
+  }
 }

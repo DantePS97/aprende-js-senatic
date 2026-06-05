@@ -6,5 +6,28 @@
   "theory": {
     "markdown": "# ¿Qué es React?\n\nReact es una **biblioteca de JavaScript** creada por Meta (Facebook) en 2013 para construir interfaces de usuario.\n\n## ¿Por qué React?\n\nAntes de React, actualizar la pantalla era un proceso manual y propenso a errores. Cada vez que cambiaban los datos, había que encontrar el elemento en el DOM y actualizarlo a mano:\n\n```js\ndocument.getElementById('contador').textContent = nuevoValor;\n```\n\nCon miles de elementos, esto se volvía imposible de mantener.\n\n## La idea central: UI = f(estado)\n\nReact propone un cambio de perspectiva: en lugar de *decirle* al navegador qué cambiar, tú **describes cómo debe verse** la UI dado un estado, y React se encarga del resto.\n\n```\nUI = f(estado)\n```\n\nEsto se llama **programación declarativa**: describes el *qué*, no el *cómo*.\n\n## ¿Qué NO es React?\n\n- No es un framework completo (no incluye router, ni gestión de estado global por defecto)\n- No es la única opción (existen Vue, Angular, Svelte)\n- No reemplaza HTML, CSS, ni JavaScript — los usa\n\n## El ecosistema React\n\nReact se enfoca en **una sola cosa**: renderizar componentes de forma eficiente. El resto (rutas, estado global, peticiones HTTP) lo cubren librerías del ecosistema como React Router, Redux, o React Query.\n\n## ¿Dónde se usa React?\n\n- Aplicaciones web (React DOM)\n- Aplicaciones móviles (React Native)\n- Aplicaciones de escritorio (Electron + React)\n- Sitios estáticos (Next.js, Gatsby)\n\nEn este curso nos enfocamos en React para la web."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Tu primer componente React. Crea un componente llamado `App` que muestre un `<h1>` con el texto \"¡Hola, React!\" y un `<p>` con el texto \"Mi primera app\".",
+    "starterCode": "function App() {\n  // Tu código aquí\n}\n\nroot.render(<App />);",
+    "tests": [
+      {
+        "description": "Existe un h1 en el DOM",
+        "expression": "container.querySelector('h1') !== null"
+      },
+      {
+        "description": "El h1 dice '¡Hola, React!'",
+        "expression": "container.querySelector('h1').textContent === '¡Hola, React!'"
+      },
+      {
+        "description": "Existe un párrafo con 'Mi primera app'",
+        "expression": "container.querySelector('p').textContent === 'Mi primera app'"
+      }
+    ],
+    "hints": [
+      "Un componente es una función que empieza con mayúscula y devuelve JSX",
+      "Para devolver dos elementos usa un Fragment: <> ... </>",
+      "El texto debe ser exactamente: ¡Hola, React! y Mi primera app"
+    ]
+  }
 }

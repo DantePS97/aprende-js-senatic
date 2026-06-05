@@ -6,5 +6,24 @@
   "theory": {
     "markdown": "# ¿Qué son las props?\n\n**Props** (abreviatura de *properties*) son la forma en que los componentes reciben datos desde afuera. Son los argumentos de los componentes.\n\n## El problema sin props\n\nSin props, cada componente es un bloque rígido que siempre muestra lo mismo:\n\n```jsx\nfunction Saludo() {\n  return <h1>Hola, Ana</h1>;\n}\n```\n\n¿Qué pasa si necesito saludar a diez personas distintas? ¿Creo diez componentes?\n\n## La solución: props\n\n```jsx\nfunction Saludo({ nombre }) {\n  return <h1>Hola, {nombre}</h1>;\n}\n\n// Uso:\n<Saludo nombre=\"Ana\" />\n<Saludo nombre=\"Carlos\" />\n<Saludo nombre=\"María\" />\n```\n\nUn componente, múltiples variantes. Eso es reutilización real.\n\n## ¿Cómo se pasan las props?\n\nIgual que los atributos HTML, pero pueden ser cualquier tipo de JavaScript:\n\n```jsx\n// String (sin llaves)\n<Componente texto=\"Hola\" />\n\n// Número, booleano, objeto, función — con llaves\n<Componente numero={42} activo={true} lista={[1, 2, 3]} />\n```\n\n## ¿Cómo se reciben?\n\nEl componente recibe un objeto `props` como primer argumento:\n\n```jsx\n// Forma 1: objeto completo\nfunction Saludo(props) {\n  return <h1>Hola, {props.nombre}</h1>;\n}\n\n// Forma 2: desestructuración (más común)\nfunction Saludo({ nombre }) {\n  return <h1>Hola, {nombre}</h1>;\n}\n```\n\nAmbas son equivalentes. La desestructuración es más limpia y la verás en la mayoría de los proyectos."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `Etiqueta` que reciba una prop `texto` (string) y la muestre dentro de un `<span>`. Renderízalo con `texto=\"React\"` .",
+    "starterCode": "function Etiqueta({ texto }) {\n  // Tu código aquí\n}\n\nroot.render(<Etiqueta texto=\"React\" />);",
+    "tests": [
+      {
+        "description": "Existe un span en el DOM",
+        "expression": "container.querySelector('span') !== null"
+      },
+      {
+        "description": "El span muestra el valor de la prop",
+        "expression": "container.querySelector('span').textContent === 'React'"
+      }
+    ],
+    "hints": [
+      "Desestructura la prop en los parámetros: function Etiqueta({ texto })",
+      "Usa {texto} como expresión JSX dentro del span",
+      "El componente ya se renderiza con texto=\"React\" en la última línea"
+    ]
+  }
 }

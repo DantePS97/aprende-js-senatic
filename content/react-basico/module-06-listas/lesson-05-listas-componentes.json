@@ -6,5 +6,28 @@
   "theory": {
     "markdown": "# Listas de componentes\n\nEn la práctica, los ítems de una lista no son elementos simples sino componentes reutilizables. Este es el patrón más común en aplicaciones reales.\n\n## El patrón lista + ítem\n\n```jsx\n// Componente para cada ítem\nfunction TarjetaProducto({ id, nombre, precio, onAgregar }) {\n  return (\n    <div className=\"tarjeta\">\n      <h3>{nombre}</h3>\n      <p>${precio}</p>\n      <button onClick={() => onAgregar(id)}>Agregar al carrito</button>\n    </div>\n  );\n}\n\n// Componente lista — delega el renderizado al ítem\nfunction ListaProductos({ productos, onAgregar }) {\n  return (\n    <div className=\"lista\">\n      {productos.map(p => (\n        <TarjetaProducto\n          key={p.id}\n          id={p.id}\n          nombre={p.nombre}\n          precio={p.precio}\n          onAgregar={onAgregar}\n        />\n      ))}\n    </div>\n  );\n}\n```\n\n## Separación de responsabilidades\n\n- `TarjetaProducto`: sabe cómo mostrar un producto. No sabe nada de la lista ni del carrito.\n- `ListaProductos`: sabe cómo renderizar la colección. No sabe el detalle visual de cada ítem.\n- El padre: tiene el estado (lista de productos, carrito) y las funciones.\n\nCada componente tiene una única responsabilidad.\n\n## Estado vacío\n\nSiempre incluye un estado vacío claro:\n\n```jsx\nfunction ListaProductos({ productos, onAgregar }) {\n  if (productos.length === 0) {\n    return <p className=\"vacio\">No hay productos disponibles.</p>;\n  }\n\n  return (\n    <div className=\"lista\">\n      {productos.map(p => (\n        <TarjetaProducto key={p.id} {...p} onAgregar={onAgregar} />\n      ))}\n    </div>\n  );\n}\n```\n\n## El spread de props {...p}\n\n```jsx\n// En lugar de pasar cada prop por separado:\n<TarjetaProducto key={p.id} id={p.id} nombre={p.nombre} precio={p.precio} />\n\n// Puedes hacer spread del objeto:\n<TarjetaProducto key={p.id} {...p} />\n```\n\nÚtil cuando el componente hijo acepta exactamente las mismas props que tiene el objeto. Pero ten cuidado de no pasar props innecesarias."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `ItemProducto` que reciba `nombre` (string) y `precio` (number) y muestre un `<li>` con el texto `\"{nombre} - ${precio}\"`. Luego crea `ListaProductos` que renderice tres `ItemProducto` con los datos: Laptop/$1000, Mouse/$25, Teclado/$45.",
+    "starterCode": "function ItemProducto({ nombre, precio }) {\n  return <li>{nombre} - ${precio}</li>;\n}\n\nfunction ListaProductos() {\n  const productos = [\n    { id: 1, nombre: 'Laptop', precio: 1000 },\n    { id: 2, nombre: 'Mouse', precio: 25 },\n    { id: 3, nombre: 'Teclado', precio: 45 },\n  ];\n\n  return (\n    <ul>\n      {productos.map(p => (\n        <ItemProducto key={p.id} nombre={p.nombre} precio={p.precio} />\n      ))}\n    </ul>\n  );\n}\n\nroot.render(<ListaProductos />);",
+    "tests": [
+      {
+        "description": "Hay exactamente 3 elementos li",
+        "expression": "container.querySelectorAll('li').length === 3"
+      },
+      {
+        "description": "El primer li contiene 'Laptop'",
+        "expression": "container.querySelectorAll('li')[0].textContent.includes('Laptop')"
+      },
+      {
+        "description": "El último li contiene 'Teclado'",
+        "expression": "container.querySelectorAll('li')[2].textContent.includes('Teclado')"
+      }
+    ],
+    "hints": [
+      "El código ya está completo — entiende cómo ItemProducto recibe sus props",
+      "La key va en el componente que se repite (ItemProducto), no adentro",
+      "El patrón lista + ítem es uno de los más usados en aplicaciones reales"
+    ]
+  }
 }

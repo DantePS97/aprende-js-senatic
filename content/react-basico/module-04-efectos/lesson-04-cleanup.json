@@ -6,5 +6,24 @@
   "theory": {
     "markdown": "# Limpieza de efectos (cleanup)\n\nAlgunos efectos crean recursos que deben liberarse cuando el componente se desmonta o antes de que el efecto se vuelva a ejecutar. Eso es el **cleanup**.\n\n## La función de retorno\n\n```jsx\nuseEffect(() => {\n  // Efecto\n  const interval = setInterval(() => {\n    console.log('tick');\n  }, 1000);\n\n  // Cleanup: se ejecuta antes del siguiente efecto o al desmontar\n  return () => {\n    clearInterval(interval);\n  };\n}, []);\n```\n\nLa función que devuelves del efecto es el cleanup. React la llama:\n1. Antes de volver a ejecutar el efecto (si las dependencias cambian)\n2. Cuando el componente se desmonta\n\n## ¿Por qué es importante?\n\nSin cleanup, creas **memory leaks** y bugs:\n\n```jsx\n// ❌ Sin cleanup — el interval sigue corriendo aunque el componente no existe\nuseEffect(() => {\n  setInterval(() => setHora(new Date()), 1000);\n}, []);\n// Cuando el componente se desmonta, el interval sigue\n// y llama a setHora en un componente que ya no existe.\n\n// ✅ Con cleanup — el interval se detiene al desmontar\nuseEffect(() => {\n  const id = setInterval(() => setHora(new Date()), 1000);\n  return () => clearInterval(id);\n}, []);\n```\n\n## Otros recursos que necesitan cleanup\n\n```jsx\n// Event listeners\nuseEffect(() => {\n  window.addEventListener('resize', manejarResize);\n  return () => window.removeEventListener('resize', manejarResize);\n}, []);\n\n// WebSockets\nuseEffect(() => {\n  const ws = new WebSocket(url);\n  return () => ws.close();\n}, [url]);\n\n// Suscripciones\nuseEffect(() => {\n  const sub = observable.subscribe(handler);\n  return () => sub.unsubscribe();\n}, []);\n```\n\n## Regla práctica\n\nSi el efecto crea algo (interval, listener, conexión), el cleanup debe destruirlo. Uno crea, el otro destruye."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Crea un componente `RelojConCleanup` con un estado `segundos` (inicio: `0`). Usa `useEffect` para incrementar `segundos` cada 1000ms con `setInterval`. Devuelve una función de cleanup que llame a `clearInterval`. Muestra los segundos en un `<p>`.",
+    "starterCode": "function RelojConCleanup() {\n  const [segundos, setSegundos] = useState(0);\n\n  useEffect(() => {\n    const id = setInterval(() => {\n      setSegundos(prev => prev + 1);\n    }, 1000);\n\n    // Devuelve la función de cleanup\n    return () => clearInterval(id);\n  }, []);\n\n  return <p>Segundos: {segundos}</p>;\n}\n\nroot.render(<RelojConCleanup />);",
+    "tests": [
+      {
+        "description": "Existe un párrafo en el DOM",
+        "expression": "container.querySelector('p') !== null"
+      },
+      {
+        "description": "El párrafo empieza con 'Segundos:'",
+        "expression": "container.querySelector('p').textContent.startsWith('Segundos:')"
+      }
+    ],
+    "hints": [
+      "El código ya está completo — léelo y entiende el patrón",
+      "clearInterval(id) dentro del return detiene el interval al desmontar",
+      "Sin el return, el interval seguiría corriendo aunque el componente no exista"
+    ]
+  }
 }

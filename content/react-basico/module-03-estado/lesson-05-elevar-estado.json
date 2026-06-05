@@ -6,5 +6,24 @@
   "theory": {
     "markdown": "# Elevar el estado\n\n**Elevar el estado** (lifting state up) es el patrón de mover el estado a un componente padre cuando varios hijos necesitan acceder o modificar los mismos datos.\n\n## El problema\n\n```jsx\n// ❌ Cada hijo tiene su propio contador — no se comunican\nfunction App() {\n  return (\n    <div>\n      <ContadorA />\n      <ContadorB />\n      <p>Total: ???</p> {/* ¿Cómo calculo el total? */}\n    </div>\n  );\n}\n```\n\nSi el estado vive en cada hijo por separado, el padre no puede acceder a él.\n\n## La solución: mover el estado al padre\n\n```jsx\nfunction App() {\n  // Estado elevado al padre\n  const [contadorA, setContadorA] = useState(0);\n  const [contadorB, setContadorB] = useState(0);\n\n  return (\n    <div>\n      <Contador\n        valor={contadorA}\n        onIncrement={() => setContadorA(prev => prev + 1)}\n        nombre=\"A\"\n      />\n      <Contador\n        valor={contadorB}\n        onIncrement={() => setContadorB(prev => prev + 1)}\n        nombre=\"B\"\n      />\n      <p>Total: {contadorA + contadorB}</p>\n    </div>\n  );\n}\n\nfunction Contador({ valor, onIncrement, nombre }) {\n  return (\n    <div>\n      <span>Contador {nombre}: {valor}</span>\n      <button onClick={onIncrement}>+1</button>\n    </div>\n  );\n}\n```\n\n## El flujo de datos en React\n\nReact tiene flujo de datos **unidireccional**:\n\n```\nPadre → Props → Hijo\nHijo  → Callbacks → Padre\n```\n\n- El padre pasa **datos** hacia abajo (props)\n- El hijo notifica **eventos** hacia arriba (callbacks)\n\nEste flujo predecible hace que las aplicaciones sean más fáciles de depurar: siempre sabes de dónde viene un dato.\n\n## ¿Cuándo elevar el estado?\n\nEleva el estado cuando:\n- Dos o más componentes necesitan los mismos datos\n- Necesitas calcular algo a partir de estados de múltiples hijos\n- La acción de un hijo debe afectar a un hermano\n\nNo eleves más de lo necesario — solo hasta el ancestro común más cercano."
   },
-  "exercise": null
+  "exercise": {
+    "type": "react",
+    "description": "Eleva el estado. Crea un componente `Boton` que reciba `valor` (number) y `onIncrementar` (function) y muestre un `<button>` con el texto `+1 (valor actual: {valor})`. Luego crea `App` con dos estados `a` y `b` (inicio en 0), renderiza dos `<Boton>` y un `<p>` que diga \"Total: {a + b}\".",
+    "starterCode": "function Boton({ valor, onIncrementar }) {\n  return (\n    <button onClick={onIncrementar}>\n      +1 (valor actual: {valor})\n    </button>\n  );\n}\n\nfunction App() {\n  const [a, setA] = useState(0);\n  const [b, setB] = useState(0);\n\n  return (\n    <div>\n      <Boton valor={a} onIncrementar={() => setA(prev => prev + 1)} />\n      <Boton valor={b} onIncrementar={() => setB(prev => prev + 1)} />\n      <p>Total: {a + b}</p>\n    </div>\n  );\n}\n\nroot.render(<App />);",
+    "tests": [
+      {
+        "description": "Hay dos botones en el DOM",
+        "expression": "container.querySelectorAll('button').length === 2"
+      },
+      {
+        "description": "El párrafo muestra 'Total: 0' al inicio",
+        "expression": "container.querySelector('p').textContent === 'Total: 0'"
+      }
+    ],
+    "hints": [
+      "El código ya está casi completo — léelo con atención",
+      "El estado vive en App (el padre) y se pasa hacia abajo como props",
+      "onIncrementar es un callback que el padre define y el hijo ejecuta"
+    ]
+  }
 }
