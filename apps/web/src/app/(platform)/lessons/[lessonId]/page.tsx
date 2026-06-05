@@ -158,38 +158,44 @@ export default function LessonPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-700">
-        {[
-          { id: 'theory' as Tab, label: 'Teoría', Icon: BookOpen },
-          { id: 'exercise' as Tab, label: 'Ejercicios', Icon: Code2 },
-        ].map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === id
-                ? 'border-primary-500 text-primary-400'
-                : 'border-transparent text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-            {id === 'exercise' && exercises.length > 1 && (
-              <span className="ml-1 text-xs bg-slate-700 text-slate-400 rounded-full px-1.5 py-0.5 leading-none">
-                {exercises.length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Tabs — solo se muestran si hay ejercicios */}
+      {exercises.length > 0 && (
+        <div className="flex border-b border-slate-700">
+          {[
+            { id: 'theory' as Tab, label: 'Teoría', Icon: BookOpen },
+            { id: 'exercise' as Tab, label: 'Ejercicios', Icon: Code2 },
+          ].map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === id
+                  ? 'border-primary-500 text-primary-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              {id === 'exercise' && exercises.length > 1 && (
+                <span className="ml-1 text-xs bg-slate-700 text-slate-400 rounded-full px-1.5 py-0.5 leading-none">
+                  {exercises.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Content */}
       {activeTab === 'theory' ? (
         <TheoryPanel
           theory={data.content.theory}
-          onStartExercise={() => setActiveTab('exercise')}
+          onStartExercise={exercises.length > 0 ? () => setActiveTab('exercise') : undefined}
           exerciseCount={exercises.length}
+          onComplete={exercises.length === 0 ? () => handleComplete(true, 0) : undefined}
+          isCompleted={isCompleted}
+          onNextLesson={handleNextLesson}
+          hasNext={hasNext}
         />
       ) : (
         <ExercisePanel

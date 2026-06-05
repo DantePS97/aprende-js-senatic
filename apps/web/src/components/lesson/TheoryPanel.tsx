@@ -2,7 +2,7 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle } from 'lucide-react';
 import type { LessonTheory } from '@senatic/shared';
 import type { Components } from 'react-markdown';
 
@@ -10,6 +10,10 @@ interface TheoryPanelProps {
   theory: LessonTheory;
   onStartExercise?: () => void;
   exerciseCount?: number;
+  onComplete?: () => void;
+  isCompleted?: boolean;
+  onNextLesson?: () => void;
+  hasNext?: boolean;
 }
 
 const mdComponents: Components = {
@@ -130,7 +134,15 @@ const mdComponents: Components = {
   ),
 };
 
-export function TheoryPanel({ theory, onStartExercise, exerciseCount = 1 }: TheoryPanelProps) {
+export function TheoryPanel({
+  theory,
+  onStartExercise,
+  exerciseCount = 1,
+  onComplete,
+  isCompleted,
+  onNextLesson,
+  hasNext,
+}: TheoryPanelProps) {
   return (
     <div className="space-y-6">
       {/* Contenido markdown */}
@@ -193,6 +205,43 @@ export function TheoryPanel({ theory, onStartExercise, exerciseCount = 1 }: Theo
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
+      )}
+
+      {/* CTA: completar lección sin ejercicio */}
+      {onComplete && (
+        <div className="space-y-3">
+          {!isCompleted ? (
+            <button
+              onClick={onComplete}
+              className="w-full flex items-center justify-between px-5 py-4 rounded-xl
+                         bg-success-DEFAULT/10 hover:bg-success-DEFAULT/20 border border-success-DEFAULT/30
+                         hover:border-success-DEFAULT/60 transition-all duration-200 group"
+            >
+              <div className="text-left">
+                <p className="text-sm font-semibold text-success-400 group-hover:text-success-300 transition-colors">
+                  ¡Lección leída!
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">Marca como completada para ganar XP</p>
+              </div>
+              <div className="flex items-center gap-2 text-success-400 group-hover:text-success-300 transition-colors">
+                <span className="text-sm font-medium">Completar</span>
+                <CheckCircle className="w-4 h-4" />
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={onNextLesson}
+              className="w-full flex items-center justify-between px-5 py-4 rounded-xl
+                         bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/30
+                         hover:border-primary-500/60 transition-all duration-200 group"
+            >
+              <p className="text-sm font-semibold text-primary-300 group-hover:text-primary-200 transition-colors">
+                {hasNext ? 'Siguiente lección' : 'Volver al curso'}
+              </p>
+              <ArrowRight className="w-4 h-4 text-primary-400 group-hover:translate-x-1 transition-transform" />
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
