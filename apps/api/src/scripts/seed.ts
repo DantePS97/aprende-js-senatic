@@ -616,51 +616,51 @@ async function seed() {
   ]);
 
   await seedModule(reactBasico._id, 2, 'Props y composición', 'Pasa datos entre componentes con props y compón interfaces complejas', [
-    { order: 1, title: '¿Qué son las props?',         xpReward: 10, contentId: 'react-basico/module-02-props/lesson-01-que-son-props' },
-    { order: 2, title: 'Pasando props a componentes', xpReward: 20, contentId: 'react-basico/module-02-props/lesson-02-pasando-props' },
-    { order: 3, title: 'Destructuring de props',      xpReward: 20, contentId: 'react-basico/module-02-props/lesson-03-destructuring-props' },
-    { order: 4, title: 'La prop especial children',   xpReward: 20, contentId: 'react-basico/module-02-props/lesson-04-children' },
-    { order: 5, title: 'Composición de componentes',  xpReward: 30, contentId: 'react-basico/module-02-props/lesson-05-composicion' },
+    { order: 1, title: '¿Qué son las props?',          xpReward: 10, contentId: 'react-basico/module-02-props/lesson-01-que-son-props' },
+    { order: 2, title: 'Pasar y recibir props',        xpReward: 20, contentId: 'react-basico/module-02-props/lesson-02-pasar-props' },
+    { order: 3, title: 'La prop children',             xpReward: 20, contentId: 'react-basico/module-02-props/lesson-03-prop-children' },
+    { order: 4, title: 'Props como funciones',         xpReward: 20, contentId: 'react-basico/module-02-props/lesson-04-props-funciones' },
+    { order: 5, title: 'Composición de componentes',   xpReward: 10, contentId: 'react-basico/module-02-props/lesson-05-composicion' },
   ]);
 
   await seedModule(reactBasico._id, 3, 'Estado con useState', 'Haz que tus componentes recuerden y actualicen información con el hook useState', [
-    { order: 1, title: '¿Qué es el estado?',                 xpReward: 10, contentId: 'react-basico/module-03-estado/lesson-01-que-es-estado' },
-    { order: 2, title: 'useState: tu primer hook',           xpReward: 20, contentId: 'react-basico/module-03-estado/lesson-02-usestate' },
-    { order: 3, title: 'Inmutabilidad: por qué importa',     xpReward: 20, contentId: 'react-basico/module-03-estado/lesson-03-inmutabilidad' },
-    { order: 4, title: 'Múltiples estados en un componente', xpReward: 30, contentId: 'react-basico/module-03-estado/lesson-04-multiples-estados' },
-    { order: 5, title: 'Estado con objetos y arrays',        xpReward: 30, contentId: 'react-basico/module-03-estado/lesson-05-estado-complejo' },
+    { order: 1, title: '¿Qué es el estado?',              xpReward: 10, contentId: 'react-basico/module-03-estado/lesson-01-que-es-estado' },
+    { order: 2, title: 'useState: el hook de estado',     xpReward: 20, contentId: 'react-basico/module-03-estado/lesson-02-usestate' },
+    { order: 3, title: 'Actualizar estado correctamente', xpReward: 20, contentId: 'react-basico/module-03-estado/lesson-03-actualizar-estado' },
+    { order: 4, title: 'Estado con objetos y arrays',     xpReward: 20, contentId: 'react-basico/module-03-estado/lesson-04-estado-objetos' },
+    { order: 5, title: 'Elevar el estado',                xpReward: 10, contentId: 'react-basico/module-03-estado/lesson-05-elevar-estado' },
   ]);
 
-  await seedModule(reactBasico._id, 4, 'Eventos y formularios', 'Responde a la interacción del usuario y maneja formularios controlados', [
-    { order: 1, title: 'Manejo de eventos en React',       xpReward: 20, contentId: 'react-basico/module-04-eventos/lesson-01-eventos' },
-    { order: 2, title: 'Pasando argumentos a handlers',    xpReward: 20, contentId: 'react-basico/module-04-eventos/lesson-02-argumentos-handlers' },
-    { order: 3, title: 'Inputs controlados',               xpReward: 20, contentId: 'react-basico/module-04-eventos/lesson-03-inputs-controlados' },
-    { order: 4, title: 'Formulario completo con onSubmit', xpReward: 20, contentId: 'react-basico/module-04-eventos/lesson-04-formulario-onsubmit' },
-    { order: 5, title: 'Validación de formularios',        xpReward: 30, contentId: 'react-basico/module-04-eventos/lesson-05-validacion' },
+  await seedModule(reactBasico._id, 4, 'Efectos con useEffect', 'Sincroniza tu componente con el mundo exterior: timers, fetch y limpieza', [
+    { order: 1, title: '¿Qué es useEffect?',              xpReward: 10, contentId: 'react-basico/module-04-efectos/lesson-01-que-es-useeffect' },
+    { order: 2, title: 'Fetch de datos con useEffect',    xpReward: 20, contentId: 'react-basico/module-04-efectos/lesson-02-useeffect-fetch' },
+    { order: 3, title: 'Array de dependencias',           xpReward: 20, contentId: 'react-basico/module-04-efectos/lesson-03-dependencias' },
+    { order: 4, title: 'Limpieza de efectos (cleanup)',   xpReward: 20, contentId: 'react-basico/module-04-efectos/lesson-04-cleanup' },
+    { order: 5, title: 'Reglas de los hooks',             xpReward: 10, contentId: 'react-basico/module-04-efectos/lesson-05-reglas-hooks' },
   ]);
 
-  await seedModule(reactBasico._id, 5, 'Listas y renderizado condicional', 'Renderiza listas dinámicas, aplica keys correctamente y muestra contenido condicional', [
-    { order: 1, title: 'Renderizando listas con .map()',    xpReward: 20, contentId: 'react-basico/module-05-listas/lesson-01-map' },
-    { order: 2, title: 'La prop key y por qué es crítica',  xpReward: 20, contentId: 'react-basico/module-05-listas/lesson-02-keys' },
-    { order: 3, title: 'Renderizado condicional',           xpReward: 20, contentId: 'react-basico/module-05-listas/lesson-03-condicional' },
-    { order: 4, title: 'Componentes dinámicos desde datos', xpReward: 20, contentId: 'react-basico/module-05-listas/lesson-04-componentes-dinamicos' },
-    { order: 5, title: 'Filtrar y ordenar listas en UI',    xpReward: 30, contentId: 'react-basico/module-05-listas/lesson-05-filtrar-ordenar' },
+  await seedModule(reactBasico._id, 5, 'Formularios', 'Maneja entradas del usuario con inputs controlados, validación y submit', [
+    { order: 1, title: 'Inputs controlados',               xpReward: 10, contentId: 'react-basico/module-05-formularios/lesson-01-inputs-controlados' },
+    { order: 2, title: 'Formularios con múltiples campos', xpReward: 20, contentId: 'react-basico/module-05-formularios/lesson-02-multiples-campos' },
+    { order: 3, title: 'Validación de formularios',        xpReward: 20, contentId: 'react-basico/module-05-formularios/lesson-03-validacion' },
+    { order: 4, title: 'Select, checkbox y radio',         xpReward: 20, contentId: 'react-basico/module-05-formularios/lesson-04-select-checkbox' },
+    { order: 5, title: 'Formulario completo',              xpReward: 10, contentId: 'react-basico/module-05-formularios/lesson-05-formulario-completo' },
   ]);
 
-  await seedModule(reactBasico._id, 6, 'Efectos con useEffect', 'Sincroniza tu componente con el mundo exterior: timers, fetch y limpieza', [
-    { order: 1, title: '¿Qué es un efecto secundario?', xpReward: 10, contentId: 'react-basico/module-06-efectos/lesson-01-que-es-efecto' },
-    { order: 2, title: 'useEffect: primer encuentro',   xpReward: 20, contentId: 'react-basico/module-06-efectos/lesson-02-useeffect' },
-    { order: 3, title: 'Array de dependencias',         xpReward: 30, contentId: 'react-basico/module-06-efectos/lesson-03-dependencias' },
-    { order: 4, title: 'Función de cleanup',            xpReward: 30, contentId: 'react-basico/module-06-efectos/lesson-04-cleanup' },
-    { order: 5, title: 'Fetch de datos con useEffect',  xpReward: 30, contentId: 'react-basico/module-06-efectos/lesson-05-fetch' },
+  await seedModule(reactBasico._id, 6, 'Listas y renderizado condicional', 'Renderiza listas dinámicas, filtra contenido y muestra UI condicional', [
+    { order: 1, title: 'Renderizar listas con map',        xpReward: 10, contentId: 'react-basico/module-06-listas/lesson-01-renderizar-listas' },
+    { order: 2, title: 'Filtrar y transformar listas',     xpReward: 20, contentId: 'react-basico/module-06-listas/lesson-02-filtrar-listas' },
+    { order: 3, title: 'Renderizado condicional',          xpReward: 20, contentId: 'react-basico/module-06-listas/lesson-03-renderizado-condicional' },
+    { order: 4, title: 'Agregar y eliminar de listas',     xpReward: 20, contentId: 'react-basico/module-06-listas/lesson-04-agregar-eliminar' },
+    { order: 5, title: 'Listas de componentes',            xpReward: 10, contentId: 'react-basico/module-06-listas/lesson-05-listas-componentes' },
   ]);
 
-  await seedModule(reactBasico._id, 7, 'Organización de proyectos React', 'Estructura componentes, levanta estado y construye una Todo App como proyecto final', [
-    { order: 1, title: 'Separación de componentes',                    xpReward: 20, contentId: 'react-basico/module-07-organizacion/lesson-01-separacion' },
-    { order: 2, title: 'Lifting state up',                             xpReward: 30, contentId: 'react-basico/module-07-organizacion/lesson-02-lifting-state' },
-    { order: 3, title: 'Componentes presentacionales vs contenedores', xpReward: 30, contentId: 'react-basico/module-07-organizacion/lesson-03-presentacional-contenedor' },
-    { order: 4, title: 'Estructura de carpetas en proyectos React',    xpReward: 20, contentId: 'react-basico/module-07-organizacion/lesson-04-estructura-carpetas' },
-    { order: 5, title: 'Proyecto integrador: Todo App',                xpReward: 30, contentId: 'react-basico/module-07-organizacion/lesson-05-proyecto-todo' },
+  await seedModule(reactBasico._id, 7, 'Organización de proyectos React', 'Estructura componentes, crea custom hooks y construye una Todo App como proyecto final', [
+    { order: 1, title: 'Estructura de archivos',               xpReward: 10, contentId: 'react-basico/module-07-organizacion/lesson-01-estructura-archivos' },
+    { order: 2, title: 'Custom hooks',                         xpReward: 20, contentId: 'react-basico/module-07-organizacion/lesson-02-custom-hooks' },
+    { order: 3, title: 'Separar responsabilidades',            xpReward: 20, contentId: 'react-basico/module-07-organizacion/lesson-03-separar-responsabilidades' },
+    { order: 4, title: 'Buenas prácticas en React',            xpReward: 20, contentId: 'react-basico/module-07-organizacion/lesson-04-buenas-practicas' },
+    { order: 5, title: 'Proyecto final: Todo App',             xpReward: 30, contentId: 'react-basico/module-07-organizacion/lesson-05-proyecto-final' },
   ]);
 
   // ─── Logros ───────────────────────────────────────────────────────────────
