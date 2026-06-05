@@ -10,7 +10,7 @@ import { ExerciseAttemptModel } from '../models/ExerciseAttempt.model';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { awardXp, calculateXpReward, checkAchievements, updateStreak } from '../services/gamification.service';
-import { notifyAchievementUnlocked, notifyLevelUp, notifyStreakMilestone } from '../services/notification.service';
+import { notifyStreakMilestone, dispatchNotification } from '../services/notification.service';
 
 export const progressRouter = Router();
 
@@ -73,13 +73,26 @@ progressRouter.post('/', requireAuth, validateBody(submitProgressSchema), async 
     const newAchievements = await checkAchievements(userId);
 
     // Notificaciones — fire and forget, no bloquean el response
-    if (newAchievements.length > 0) {
-      for (const ach of newAchievements) {
-        notifyAchievementUnlocked(userId, ach).catch(() => {});
+    if (newAchievements.length > 0 || (leveledUp && newLevel !== undefined)) {
+      const userDoc = await UserModel.findById(userId).select('email displayName preferences level streak lastLevelUpEmailDate');
+      if (userDoc) {
+        for (const ach of newAchievements) {
+          dispatchNotification(userDoc, 'achievement_unlocked', {
+            title: 'Logro desbloqueado',
+            body: `Has desbloqueado: ${ach.title}`,
+            tag: `achievement-${String(ach._id)}`,
+            data: { url: '/achievements', type: 'achievement_unlocked', achievementId: String(ach._id) },
+          }).catch(() => {});
+        }
+        if (leveledUp && newLevel !== undefined) {
+          dispatchNotification(userDoc, 'level_up', {
+            title: '¡Subiste de nivel!',
+            body: `Ahora estás en nivel ${newLevel}`,
+            tag: `level-${newLevel}`,
+            data: { url: '/profile', type: 'level_up', level: newLevel },
+          }).catch(() => {});
+        }
       }
-    }
-    if (leveledUp && newLevel !== undefined) {
-      notifyLevelUp(userId, newLevel).catch(() => {});
     }
     if (newStreak !== undefined) {
       notifyStreakMilestone(userId, newStreak).catch(() => {});

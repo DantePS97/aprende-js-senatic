@@ -3,11 +3,18 @@ import bcrypt from 'bcryptjs';
 
 // ─── Preferences sub-document ─────────────────────────────────────────────────
 
+export interface IUserPushPreferences {
+  achievements: boolean;
+  levelUp: boolean;
+  streakReminder: boolean;
+}
+
 export interface IUserPreferences {
   theme: 'light' | 'dark' | 'system';
   accentColor: 'indigo' | 'emerald' | 'rose' | 'amber' | 'violet';
   editorTheme: 'oneDark' | 'dracula' | 'githubLight' | 'material';
   fontSize: 'normal' | 'large';
+  push?: IUserPushPreferences;
 }
 
 const UserPreferencesSchema = new Schema<IUserPreferences>(
@@ -31,6 +38,11 @@ const UserPreferencesSchema = new Schema<IUserPreferences>(
       type: String,
       enum: ['normal', 'large'],
       default: 'normal',
+    },
+    push: {
+      achievements: { type: Boolean, default: true },
+      levelUp: { type: Boolean, default: true },
+      streakReminder: { type: Boolean, default: true },
     },
   },
   { _id: false },

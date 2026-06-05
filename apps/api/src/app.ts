@@ -15,6 +15,8 @@ import { syncRouter } from './routes/sync.routes';
 import { challengesRouter } from './routes/challenges.routes';
 import { requireAuth } from './middleware/auth.middleware';
 import adminRouter from './routes/admin/index';
+import { pushRouter } from './routes/push.routes';
+import './lib/webPush';
 
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
@@ -66,6 +68,7 @@ app.use('/api/leagues', leaguesRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/challenges', requireAuth, challengesRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/push', pushRouter);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 

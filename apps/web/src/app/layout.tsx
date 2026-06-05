@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import ServiceWorkerRegister from "@/components/layout/ServiceWorkerRegister";
+import { PushOptInBanner } from "@/components/notifications/PushOptInBanner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -124,6 +125,7 @@ export default function RootLayout({
 			</head>
 			<body className={`${inter.variable} font-sans`}>
 				<ServiceWorkerRegister />
+				<PushOptInBanner />
 				{children}
 			</body>
 		</html>

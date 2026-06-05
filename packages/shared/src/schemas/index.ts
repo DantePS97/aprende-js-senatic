@@ -83,11 +83,18 @@ export const validateResetTokenSchema = z.object({
 
 // ─── Preferences schemas ──────────────────────────────────────────────────────
 
+export const pushPreferencesSchema = z.object({
+  achievements: z.boolean().default(true),
+  levelUp: z.boolean().default(true),
+  streakReminder: z.boolean().default(true),
+});
+
 export const userPreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']).default('dark'),
   accentColor: z.enum(['indigo', 'emerald', 'rose', 'amber', 'violet']).default('indigo'),
   editorTheme: z.enum(['oneDark', 'dracula', 'githubLight', 'material']).default('oneDark'),
   fontSize: z.enum(['normal', 'large']).default('normal'),
+  push: pushPreferencesSchema.optional(),
 });
 
 export const updatePreferencesSchema = userPreferencesSchema.partial().strict();

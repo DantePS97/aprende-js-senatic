@@ -1,11 +1,14 @@
 // Despachador centralizado de notificaciones. Todas las funciones son fire-and-forget
 // (nunca lanzan excepciones al caller) y loggean errores internamente.
 
-import { UserModel } from '../models/User.model';
+import { UserModel, IUser } from '../models/User.model';
 import { UserAchievementModel } from '../models/Achievement.model';
 import { ProgressModel } from '../models/Progress.model';
+import { PushSubscription } from '../models/PushSubscription.model';
 import { emailService } from './email.service';
-import type { Achievement } from '@senatic/shared';
+import { pushDedup } from '../lib/pushDedup';
+import { sendToUser } from './push.service';
+import type { Achievement, PushEventType, PushNotificationPayload } from '@senatic/shared';
 
 // ─── Achievement notification ─────────────────────────────────────────────────
 
@@ -105,7 +108,7 @@ export async function sendStreakReminders(): Promise<void> {
         { lastStreakReminderSentAt: null },
         { lastStreakReminderSentAt: { $lt: todayStart } },
       ],
-    }).select('email displayName streak lastStreakReminderSentAt');
+    }).select('email displayName streak lastStreakReminderSentAt preferences');
 
     let remindersSent = 0;
 
@@ -124,10 +127,11 @@ export async function sendStreakReminders(): Promise<void> {
 
             if (completedToday) return;
 
-            await emailService.sendStreakReminderEmail({
-              to: user.email,
-              displayName: user.displayName,
-              streakDays: user.streak,
+            await dispatchNotification(user, 'streak_reminder', {
+              title: 'Tu racha está en riesgo',
+              body: `Tu racha de ${user.streak} días peligra. ¡Practica hoy!`,
+              tag: 'streak-reminder',
+              data: { url: '/', type: 'streak_reminder' },
             });
 
             user.lastStreakReminderSentAt = new Date();
@@ -143,5 +147,78 @@ export async function sendStreakReminders(): Promise<void> {
     console.log(`[cron/streak-reminder] ${remindersSent} recordatorios enviados`);
   } catch (err) {
     console.error('[notify/streak-reminder]', err);
+  }
+}
+
+// ─── dispatchNotification ─────────────────────────────────────────────────────
+// Tries push first; falls back to email when push is disabled, no subscriptions,
+// or all sends fail. Fire-and-forget safe — never throws.
+
+const PREF_KEY_MAP: Record<PushEventType, keyof NonNullable<IUser['preferences']['push']>> = {
+  achievement_unlocked: 'achievements',
+  level_up: 'levelUp',
+  streak_reminder: 'streakReminder',
+};
+
+export async function dispatchNotification(
+  user: IUser,
+  type: PushEventType,
+  payload: PushNotificationPayload
+): Promise<void> {
+  try {
+    const userId = String(user._id);
+    const prefKey = PREF_KEY_MAP[type];
+    const pushEnabled = user.preferences?.push?.[prefKey] ?? false;
+
+    if (!pushEnabled) {
+      await emailFallback(user, type, payload);
+      return;
+    }
+
+    const subCount = await PushSubscription.countDocuments({ userId });
+    if (subCount === 0) {
+      await emailFallback(user, type, payload);
+      return;
+    }
+
+    if (type === 'achievement_unlocked') {
+      if (pushDedup.shouldSkip(userId, type)) return;
+      pushDedup.mark(userId, type);
+    }
+
+    const { successCount } = await sendToUser(userId, payload, type);
+
+    if (successCount < 1) {
+      await emailFallback(user, type, payload);
+    }
+  } catch (err) {
+    console.error('[notify/dispatch]', err);
+  }
+}
+
+async function emailFallback(
+  user: IUser,
+  type: PushEventType,
+  payload: PushNotificationPayload
+): Promise<void> {
+  const userId = String(user._id);
+  try {
+    if (type === 'level_up') {
+      const level = typeof payload.data.level === 'number' ? payload.data.level : undefined;
+      if (level !== undefined) {
+        await notifyLevelUp(userId, level);
+      }
+    } else if (type === 'streak_reminder') {
+      await emailService.sendStreakReminderEmail({
+        to: user.email,
+        displayName: user.displayName,
+        streakDays: user.streak,
+      });
+    } else if (type === 'achievement_unlocked') {
+      // achievement email requires the full Achievement object — skip gracefully
+      console.info('[notify/dispatch] achievement_unlocked email fallback skipped (no achievement object)');
+    }
+  } catch (err) {
+    console.error('[notify/emailFallback]', err);
   }
 }
