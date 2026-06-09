@@ -48,15 +48,26 @@ export function buildReactScaffold(studentCode: string): string {
       Fragment,
     } = React;
 
+    // container -> div#root (usado por los tests: container.querySelector)
+    const container = document.getElementById('root');
+
+    // root -> objeto con render() que el estudiante llama: root.render(<X />)
+    // Interceptamos para envolver en flushSync y garantizar DOM pintado
+    // antes de enviar el postMessage.
+    const _reactRoot = ReactDOM.createRoot(container);
+    let _renderCalled = false;
+    const root = {
+      render(element) {
+        _renderCalled = true;
+        ReactDOM.flushSync(() => {
+          _reactRoot.render(element);
+        });
+      }
+    };
+
     // ── Código del estudiante ──────────────────────────────────────────────
     ${safeCode}
     // ── Fin del código del estudiante ──────────────────────────────────────
-
-    // flushSync garantiza que React confirme el render antes de retornar,
-    // de modo que el DOM ya está pintado cuando el mensaje llega al padre.
-    ReactDOM.flushSync(() => {
-      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-    });
 
     // Señal al sandbox: el DOM de React ya está listo para los tests.
     window.parent.postMessage('__react_ready__', '*');
@@ -122,11 +133,13 @@ export function runHtmlSandbox(
         const doc = iframe.contentDocument!;
         const win = iframe.contentWindow!;
 
+        const container = doc.getElementById('root');
+
         for (const test of options.tests) {
           try {
             // eslint-disable-next-line no-new-func
-            const fn = new Function('doc', 'win', `return Boolean(${test.expression});`);
-            const passed = fn(doc, win) as boolean;
+            const fn = new Function('doc', 'win', 'container', `return Boolean(${test.expression});`);
+            const passed = fn(doc, win, container) as boolean;
             testResults.push({ description: test.description, passed });
           } catch (e: unknown) {
             testResults.push({
