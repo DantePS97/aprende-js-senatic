@@ -25,6 +25,8 @@ interface RawTest {
 
 interface RawExercise {
   title?: string;
+  /** Alias used in some lesson JSONs */
+  description?: string;
   prompt?: string;
   /** Legacy field name used in filesystem JSONs */
   starterCode?: string;
@@ -40,7 +42,10 @@ interface RawContent {
     markdown?: string;
     examples?: Array<{ code?: string; explanation?: string }>;
   };
+  /** Array form */
   exercises?: RawExercise[];
+  /** Singular form used in React course JSONs — normalized to array */
+  exercise?: RawExercise | null;
 }
 
 interface MigrationStats {
@@ -114,9 +119,17 @@ async function migrate(): Promise<MigrationStats> {
       })),
     };
 
-    const exercises = (raw.exercises ?? []).map((ex) => ({
-      title: ex.title ?? '',
-      prompt: ex.prompt ?? '',
+    // Normalize: support both "exercises" (array) and "exercise" (singular object)
+    const rawExercises: RawExercise[] =
+      Array.isArray(raw.exercises) && raw.exercises.length > 0
+        ? raw.exercises
+        : raw.exercise
+        ? [raw.exercise]
+        : [];
+
+    const exercises = rawExercises.map((ex) => ({
+      title: ex.title ?? ex.description ?? '',
+      prompt: ex.prompt ?? ex.description ?? '',
       // Normalize: filesystem uses starterCode, DB model uses startCode
       startCode: ex.startCode ?? ex.starterCode ?? '',
       tests: normalizeTests(ex.tests),
