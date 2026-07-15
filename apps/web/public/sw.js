@@ -89,9 +89,15 @@ async function staleWhileRevalidate(request, cacheName) {
   const fetchPromise = fetch(request).then((response) => {
     if (response.ok) cache.put(request, response.clone());
     return response;
-  }).catch(() => cached);
+  }).catch(() => undefined);
 
-  return cached || fetchPromise;
+  const response = cached || (await fetchPromise);
+  if (response) return response;
+
+  // Sin cache y sin red: nunca resolver a undefined (event.respondWith(undefined)
+  // hace que el navegador reporte network error / ERR_FAILED en vez de mostrar algo).
+  const offline = await cache.match('/offline');
+  return offline || Response.error();
 }
 
 // ─── Intercepción de peticiones ───────────────────────────────────────────────
