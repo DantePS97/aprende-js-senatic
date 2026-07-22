@@ -4,6 +4,7 @@ import { LessonModel } from '../../models/Lesson.model';
 import { validateBody } from '../../middleware/validate.middleware';
 import { writeAudit } from '../../services/audit.service';
 import { reorderEntity } from '../../services/reorder.service';
+import { provisionModuleBadge } from '../../services/reward.service';
 import {
   ModuleCreateSchema,
   ModuleUpdateSchema,
@@ -54,6 +55,10 @@ router.post('/', validateBody(ModuleCreateSchema), async (req: AuthRequest, res:
       entityId: module._id,
       metadata: { courseId, title: module.title },
     });
+
+    if (module.isPublished === true) {
+      provisionModuleBadge(module._id.toString(), module.title);
+    }
 
     res.status(201).json({ success: true, data: module });
   } catch (err) {
@@ -114,6 +119,10 @@ router.put('/:id', validateBody(ModuleUpdateSchema), async (req: AuthRequest, re
       entityId: module._id,
       metadata: { title: module.title },
     });
+
+    if (module.isPublished === true) {
+      provisionModuleBadge(module._id.toString(), module.title);
+    }
 
     res.json({ success: true, data: module });
   } catch (err) {

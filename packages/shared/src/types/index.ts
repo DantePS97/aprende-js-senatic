@@ -15,6 +15,7 @@ export type AchievementConditionType =
   | 'streak'
   | 'xp'
   | 'module_completed'
+  | 'module_completed_specific'
   | 'no_hints'
   | 'lessons_in_day'
   | 'challenges_solved'

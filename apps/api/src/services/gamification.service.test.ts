@@ -326,3 +326,137 @@ describe('checkAchievements — idempotent upsert', () => {
     expect(UserAchievementModel.findOneAndUpdate).not.toHaveBeenCalled();
   });
 });
+
+// ─── checkAchievements — module_completed_specific ────────────────────────────
+
+const MODULE_A = 'module-a';
+const MODULE_B = 'module-b';
+
+const PER_MODULE_ACHIEVEMENT = {
+  _id: { toString: () => 'ach-module-a' },
+  key: 'module-completed-module-a',
+  title: 'Módulo A completado',
+  description: 'Completaste el módulo A',
+  iconEmoji: '📦',
+  condition: { type: 'module_completed_specific', threshold: 1, moduleId: MODULE_A },
+};
+
+function setupPerModuleMocks(overrides: {
+  achievements?: any[];
+  earned?: any[];
+  lessons?: any[];
+  completedLessonIds?: string[];
+} = {}) {
+  const mockUser = { _id: USER_ID, streak: 0, xp: 0, lastActiveDate: new Date() };
+
+  vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+  vi.mocked(UserAchievementModel.find).mockReturnValue({
+    select: vi.fn().mockResolvedValue(overrides.earned ?? []),
+  } as any);
+  vi.mocked(AchievementModel.find).mockResolvedValue(
+    (overrides.achievements ?? [PER_MODULE_ACHIEVEMENT]) as any,
+  );
+
+  const completed = overrides.completedLessonIds ?? ['la1', 'la2'];
+  vi.mocked(ProgressModel.find).mockResolvedValue(
+    completed.map((id) => ({
+      lessonId: { toString: () => id },
+      hintsUsed: 0,
+      completedAt: new Date(),
+      status: 'completed',
+    })) as any,
+  );
+
+  vi.mocked(LessonModel.find).mockResolvedValue(
+    (overrides.lessons ?? [
+      { _id: { toString: () => 'la1' }, moduleId: { toString: () => MODULE_A } },
+      { _id: { toString: () => 'la2' }, moduleId: { toString: () => MODULE_A } },
+    ]) as any,
+  );
+  vi.mocked(ChallengeProgressModel.find).mockResolvedValue([] as any);
+  vi.mocked(ChallengeModel.find).mockResolvedValue([] as any);
+}
+
+describe('checkAchievements — module_completed_specific', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('earns the badge when all published lessons of the target module are completed', async () => {
+    setupPerModuleMocks();
+    vi.mocked(UserAchievementModel.findOneAndUpdate).mockResolvedValue(null);
+
+    const result = await checkAchievements(USER_ID);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].key).toBe('module-completed-module-a');
+    expect(UserAchievementModel.findOneAndUpdate).toHaveBeenCalledOnce();
+    const [, update] = vi.mocked(UserAchievementModel.findOneAndUpdate).mock.calls[0];
+    expect((update as any).$setOnInsert.source).toBe('auto');
+  });
+
+  it('is not earned when one lesson in the target module is still incomplete', async () => {
+    setupPerModuleMocks({ completedLessonIds: ['la1'] }); // la2 missing
+
+    const result = await checkAchievements(USER_ID);
+
+    expect(result).toHaveLength(0);
+    expect(UserAchievementModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('is not earned for a module with zero published lessons', async () => {
+    setupPerModuleMocks({ lessons: [], completedLessonIds: [] });
+
+    const result = await checkAchievements(USER_ID);
+
+    expect(result).toHaveLength(0);
+    expect(UserAchievementModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('only awards the target module badge — sibling module badges are unaffected', async () => {
+    const siblingAchievement = {
+      _id: { toString: () => 'ach-module-b' },
+      key: 'module-completed-module-b',
+      title: 'Módulo B completado',
+      description: 'Completaste el módulo B',
+      iconEmoji: '📦',
+      condition: { type: 'module_completed_specific', threshold: 1, moduleId: MODULE_B },
+    };
+
+    setupPerModuleMocks({
+      achievements: [PER_MODULE_ACHIEVEMENT, siblingAchievement],
+      lessons: [
+        { _id: { toString: () => 'la1' }, moduleId: { toString: () => MODULE_A } },
+        { _id: { toString: () => 'la2' }, moduleId: { toString: () => MODULE_A } },
+        { _id: { toString: () => 'lb1' }, moduleId: { toString: () => MODULE_B } },
+      ],
+      completedLessonIds: ['la1', 'la2'], // module B's lb1 not completed
+    });
+    vi.mocked(UserAchievementModel.findOneAndUpdate).mockResolvedValue(null);
+
+    const result = await checkAchievements(USER_ID);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].key).toBe('module-completed-module-a');
+    expect(UserAchievementModel.findOneAndUpdate).toHaveBeenCalledOnce();
+  });
+
+  it('leaves the aggregate module_completed evaluation unchanged (regression)', async () => {
+    const aggregateAchievement = {
+      _id: { toString: () => 'ach-aggregate' },
+      key: 'modules_completed_1',
+      title: '1 módulo completado',
+      description: 'Completa 1 módulo',
+      iconEmoji: '🏅',
+      condition: { type: 'module_completed', threshold: 1 },
+    };
+
+    setupPerModuleMocks({
+      achievements: [PER_MODULE_ACHIEVEMENT, aggregateAchievement],
+    });
+    vi.mocked(UserAchievementModel.findOneAndUpdate).mockResolvedValue(null);
+
+    const result = await checkAchievements(USER_ID);
+
+    // Both the per-module badge AND the aggregate badge (1 completed module >= threshold 1) fire
+    expect(result.map((a) => a.key).sort()).toEqual(['module-completed-module-a', 'modules_completed_1']);
+  });
+});

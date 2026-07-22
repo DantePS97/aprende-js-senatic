@@ -8,7 +8,8 @@ export type AdminAuditAction =
   | 'publish'
   | 'unpublish'
   | 'promote'
-  | 'demote';
+  | 'demote'
+  | 'grant';
 
 export type AdminAuditEntityType =
   | 'course'
@@ -16,7 +17,8 @@ export type AdminAuditEntityType =
   | 'lesson'
   | 'lessonContent'
   | 'user'
-  | 'challenge';
+  | 'challenge'
+  | 'achievement';
 
 export interface IAdminAudit extends Document {
   adminId: mongoose.Types.ObjectId;
@@ -38,12 +40,12 @@ const AdminAuditSchema = new Schema<IAdminAudit>(
     action: {
       type: String,
       required: true,
-      enum: ['create', 'update', 'delete', 'reorder', 'publish', 'unpublish', 'promote', 'demote'],
+      enum: ['create', 'update', 'delete', 'reorder', 'publish', 'unpublish', 'promote', 'demote', 'grant'],
     },
     entityType: {
       type: String,
       required: true,
-      enum: ['course', 'module', 'lesson', 'lessonContent', 'user', 'challenge'],
+      enum: ['course', 'module', 'lesson', 'lessonContent', 'user', 'challenge', 'achievement'],
       index: true,
     },
     entityId: {
