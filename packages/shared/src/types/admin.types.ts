@@ -12,6 +12,7 @@ import type {
   ReorderSchema,
   PromoteDemoteSchema,
   AuditQuerySchema,
+  GrantRewardSchema,
 } from '../schemas/admin';
 
 // z.input gives the type BEFORE defaults are applied (order?, isPublished? are optional)
@@ -34,3 +35,5 @@ export type ReorderInput = z.infer<typeof ReorderSchema>;
 export type PromoteDemoteInput = z.infer<typeof PromoteDemoteSchema>;
 
 export type AuditQueryInput = z.infer<typeof AuditQuerySchema>;
+
+export type GrantRewardInput = z.infer<typeof GrantRewardSchema>;
