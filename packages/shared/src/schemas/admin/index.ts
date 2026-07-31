@@ -6,3 +6,4 @@ export * from './reorder.schema';
 export * from './user.schema';
 export * from './audit.schema';
 export * from './challenge.schema';
+export * from './reward.schema';

@@ -202,6 +202,12 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
       case 'xp':                       isEarned = user.xp >= threshold; break;
       case 'no_hints':                 isEarned = noHintsCount >= threshold; break;
       case 'module_completed':         isEarned = completedModulesCount >= threshold; break;
+      case 'module_completed_specific': {
+        const mId = achievement.condition.moduleId;
+        const ids = mId ? lessonsByModule.get(mId) : undefined;
+        isEarned = !!ids && ids.length > 0 && ids.every((id) => completedLessonIdSet.has(id));
+        break;
+      }
       case 'lessons_in_day':           isEarned = lessonsToday >= threshold; break;
       case 'challenges_solved':        isEarned = challengesSolvedCount >= threshold; break;
       case 'challenges_solved_difficulty': {
@@ -218,7 +224,7 @@ export async function checkAchievements(userId: string): Promise<Achievement[]> 
       // skip adding it to newAchievements — no E11000 crash, no duplicate notification.
       const existing = await UserAchievementModel.findOneAndUpdate(
         { userId, achievementId: achievement._id },
-        { $setOnInsert: { userId, achievementId: achievement._id, earnedAt: new Date() } },
+        { $setOnInsert: { userId, achievementId: achievement._id, earnedAt: new Date(), source: 'auto' } },
         { upsert: true, new: false },
       );
 

@@ -28,8 +28,8 @@ const AchievementSchema = new Schema<IAchievement>(
       type: {
         type: String,
         enum: [
-          'lessons_completed', 'streak', 'xp', 'module_completed', 'no_hints',
-          'lessons_in_day', 'challenges_solved', 'challenges_solved_difficulty',
+          'lessons_completed', 'streak', 'xp', 'module_completed', 'module_completed_specific',
+          'no_hints', 'lessons_in_day', 'challenges_solved', 'challenges_solved_difficulty',
         ],
         required: true,
       },
@@ -51,6 +51,8 @@ export interface IUserAchievement extends Document {
   achievementId: mongoose.Types.ObjectId;
   earnedAt: Date;
   emailSentAt?: Date;
+  source: 'auto' | 'manual';
+  grantedBy?: mongoose.Types.ObjectId;
 }
 
 const UserAchievementSchema = new Schema<IUserAchievement>(
@@ -59,6 +61,8 @@ const UserAchievementSchema = new Schema<IUserAchievement>(
     achievementId: { type: Schema.Types.ObjectId, ref: 'Achievement', required: true },
     earnedAt: { type: Date, default: () => new Date() },
     emailSentAt: { type: Date, default: null },
+    source: { type: String, enum: ['auto', 'manual'], default: 'auto' },
+    grantedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { versionKey: false }
 );
