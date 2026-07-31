@@ -1,11 +1,15 @@
-const CACHE_VERSION = 'aprendejs-v2';
+const CACHE_VERSION = 'aprendejs-v3';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const API_CACHE = `api-${CACHE_VERSION}`;
 const CONTENT_CACHE = `content-${CACHE_VERSION}`;
 
-// Recursos del app shell que se precargan al instalar
+// Recursos del app shell que se precargan al instalar.
+// OJO: '/' NO va acá — siempre redirige (307) a /courses, y la Cache API
+// rechaza cachear una respuesta redirigida. cache.addAll() es todo-o-nada:
+// esa sola entrada tira abajo el install completo y el SW nunca llega a
+// activarse (queda pegado en la versión vieja para siempre).
 const APP_SHELL = [
-  '/',
+  '/courses',
   '/offline',
   '/manifest.json',
   '/favicon.ico',
@@ -17,7 +21,22 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(STATIC_CACHE).then((cache) =>
+      // Precacheo resiliente: si UNA url falla (404, redirect, red caída),
+      // no debe tumbar el install entero como hacía cache.addAll().
+      Promise.allSettled(
+        APP_SHELL.map((url) =>
+          fetch(url)
+            .then((response) => {
+              if (response.ok && !response.redirected) {
+                return cache.put(url, response);
+              }
+              console.warn(`[SW] Precache omitido para ${url}: status=${response.status} redirected=${response.redirected}`);
+            })
+            .catch((err) => console.warn(`[SW] Precache falló para ${url}:`, err))
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
