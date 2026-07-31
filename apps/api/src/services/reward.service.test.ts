@@ -5,11 +5,32 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../models/Achievement.model', () => ({
   AchievementModel: {
     findOneAndUpdate: vi.fn(),
+    findById: vi.fn(),
+  },
+  UserAchievementModel: {
+    findOneAndUpdate: vi.fn(),
   },
 }));
 
-import { AchievementModel } from '../models/Achievement.model';
-import { provisionModuleBadge } from './reward.service';
+vi.mock('../models/User.model', () => ({
+  UserModel: {
+    findById: vi.fn(),
+  },
+}));
+
+vi.mock('./audit.service', () => ({
+  writeAudit: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('./notification.service', () => ({
+  dispatchNotification: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { AchievementModel, UserAchievementModel } from '../models/Achievement.model';
+import { UserModel } from '../models/User.model';
+import { writeAudit } from './audit.service';
+import { dispatchNotification } from './notification.service';
+import { provisionModuleBadge, grantAchievement } from './reward.service';
 
 const MODULE_ID = '507f1f77bcf86cd799439011';
 const MODULE_TITLE = 'Funciones y Scope';
@@ -76,5 +97,100 @@ describe('provisionModuleBadge', () => {
     vi.mocked(AchievementModel.findOneAndUpdate).mockRejectedValue(new Error('DB down'));
 
     await expect(provisionModuleBadge(MODULE_ID, MODULE_TITLE)).resolves.not.toThrow();
+  });
+});
+
+// ─── grantAchievement ──────────────────────────────────────────────────────────
+
+describe('grantAchievement', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const USER_ID = '507f1f77bcf86cd799439022';
+  const ACHIEVEMENT_ID = '507f1f77bcf86cd799439033';
+  const ADMIN_ID = '507f1f77bcf86cd799439099';
+
+  function mockUser(overrides: Record<string, unknown> = {}) {
+    const user = { _id: USER_ID, email: 'student@example.com', preferences: {}, ...overrides };
+    vi.mocked(UserModel.findById).mockReturnValue({ select: vi.fn().mockResolvedValue(user) } as any);
+    return user;
+  }
+
+  function mockAchievement(overrides: Record<string, unknown> = {}) {
+    const achievement = { _id: ACHIEVEMENT_ID, key: 'module-completed-x', title: 'Badge', ...overrides };
+    vi.mocked(AchievementModel.findById).mockResolvedValue(achievement as any);
+    return achievement;
+  }
+
+  it('grants a new achievement: inserts source manual + grantedBy, writes audit, dispatches notification', async () => {
+    const user = mockUser();
+    const achievement = mockAchievement();
+    vi.mocked(UserAchievementModel.findOneAndUpdate).mockResolvedValue(null as any);
+
+    const result = await grantAchievement({ userId: USER_ID, achievementId: ACHIEVEMENT_ID, grantedBy: ADMIN_ID });
+
+    expect(result).toEqual({ status: 'GRANTED', achievement });
+
+    const [filter, update, options] = vi.mocked(UserAchievementModel.findOneAndUpdate).mock.calls[0];
+    expect(filter).toEqual({ userId: USER_ID, achievementId: ACHIEVEMENT_ID });
+    expect((update as any).$set).toBeUndefined();
+    expect((update as any).$setOnInsert).toMatchObject({
+      userId: USER_ID,
+      achievementId: ACHIEVEMENT_ID,
+      source: 'manual',
+      grantedBy: ADMIN_ID,
+    });
+    expect(options).toMatchObject({ upsert: true, new: false });
+
+    expect(writeAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adminId: ADMIN_ID,
+        action: 'grant',
+        entityType: 'achievement',
+        entityId: achievement._id,
+      })
+    );
+    expect(dispatchNotification).toHaveBeenCalledWith(user, 'achievement_unlocked', expect.any(Object));
+  });
+
+  it('is idempotent when already earned — still writes an audit record, but no notification, no overwrite', async () => {
+    mockUser();
+    const achievement = mockAchievement();
+    vi.mocked(UserAchievementModel.findOneAndUpdate).mockResolvedValue({
+      _id: 'existing-row',
+      source: 'auto',
+    } as any);
+
+    const result = await grantAchievement({ userId: USER_ID, achievementId: ACHIEVEMENT_ID, grantedBy: ADMIN_ID });
+
+    expect(result).toEqual({ status: 'ALREADY_EARNED', achievement });
+    expect(writeAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adminId: ADMIN_ID,
+        action: 'grant',
+        entityType: 'achievement',
+        entityId: achievement._id,
+      })
+    );
+    expect(dispatchNotification).not.toHaveBeenCalled();
+  });
+
+  it('returns USER_NOT_FOUND when the user does not exist', async () => {
+    vi.mocked(UserModel.findById).mockReturnValue({ select: vi.fn().mockResolvedValue(null) } as any);
+
+    const result = await grantAchievement({ userId: USER_ID, achievementId: ACHIEVEMENT_ID, grantedBy: ADMIN_ID });
+
+    expect(result).toEqual({ status: 'USER_NOT_FOUND' });
+    expect(AchievementModel.findById).not.toHaveBeenCalled();
+    expect(UserAchievementModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('returns ACHIEVEMENT_NOT_FOUND when the achievement does not exist', async () => {
+    mockUser();
+    vi.mocked(AchievementModel.findById).mockResolvedValue(null as any);
+
+    const result = await grantAchievement({ userId: USER_ID, achievementId: ACHIEVEMENT_ID, grantedBy: ADMIN_ID });
+
+    expect(result).toEqual({ status: 'ACHIEVEMENT_NOT_FOUND' });
+    expect(UserAchievementModel.findOneAndUpdate).not.toHaveBeenCalled();
   });
 });
